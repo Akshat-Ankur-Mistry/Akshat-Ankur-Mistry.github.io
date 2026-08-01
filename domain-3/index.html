@@ -1,0 +1,2287 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Sixty original CCAR-F Domain 3 practice questions for Claude Code Configuration and Workflows.">
+  <title>CCAR-F Domain 3 Practice</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-raised: #f7f7f8;
+      --text: #171a20;
+      --text-muted: #6b6f76;
+      --border: #e6e6e9;
+      --selected-bg: #171a20;
+      --selected-text: #ffffff;
+      --correct: #0f7a3d;
+      --correct-bg: #e8f5ec;
+      --incorrect: #b3261e;
+      --incorrect-bg: #fbeae9;
+      --focus-ring: #3b82f6;
+      --shadow: 0 1px 2px rgba(20, 20, 22, 0.04);
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #121214;
+      --bg-raised: #1b1c1f;
+      --text: #f2f2f3;
+      --text-muted: #9a9ca3;
+      --border: #2c2d31;
+      --selected-bg: #f2f2f3;
+      --selected-text: #121214;
+      --correct: #3ddc84;
+      --correct-bg: rgba(61, 220, 132, 0.12);
+      --incorrect: #ff8a80;
+      --incorrect-bg: rgba(255, 138, 128, 0.12);
+      --focus-ring: #6aa9ff;
+      --shadow: none;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      height: 100%;
+    }
+
+    body {
+      height: 100%;
+      margin: 0;
+      color: var(--text);
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 17px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+
+    button {
+      font: inherit;
+      color: inherit;
+    }
+
+    code {
+      padding: 0.08em 0.34em;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg-raised);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.9em;
+      overflow-wrap: anywhere;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 8px;
+      z-index: 100;
+      padding: 8px 14px;
+      border-radius: 6px;
+      background: var(--selected-bg);
+      color: var(--selected-text);
+    }
+
+    .skip-link:focus {
+      top: 8px;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+
+    /* ---------- Top bar ---------- */
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: color-mix(in srgb, var(--bg) 92%, transparent);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: transparent;
+      cursor: pointer;
+      font-size: 0.95rem;
+      line-height: 1;
+    }
+
+    .icon-btn:hover {
+      background: var(--bg-raised);
+    }
+
+    .icon-btn:focus-visible,
+    button:focus-visible,
+    .opt:focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    .seg {
+      display: inline-flex;
+      padding: 3px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--bg-raised);
+    }
+
+    .seg-btn {
+      padding: 6px 16px;
+      border: none;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.83rem;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .seg-btn[aria-selected="true"] {
+      background: var(--selected-bg);
+      color: var(--selected-text);
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .switch input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
+
+    .switch-track {
+      position: relative;
+      width: 36px;
+      height: 21px;
+      border-radius: 999px;
+      background: var(--border);
+      transition: background 0.15s ease;
+      flex: none;
+    }
+
+    .switch-thumb {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      background: var(--bg);
+      box-shadow: var(--shadow);
+      transition: transform 0.15s ease;
+    }
+
+    .switch input:checked + .switch-track {
+      background: var(--selected-bg);
+    }
+
+    .switch input:checked + .switch-track .switch-thumb {
+      transform: translateX(15px);
+      background: var(--selected-text);
+    }
+
+    .switch input:focus-visible + .switch-track {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    .switch-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .popover {
+      position: absolute;
+      top: 54px;
+      left: 20px;
+      z-index: 20;
+      width: min(360px, calc(100vw - 40px));
+      padding: 18px 20px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg-raised);
+      box-shadow: 0 10px 30px rgba(20, 20, 22, 0.16);
+      font-size: 0.86rem;
+      color: var(--text-muted);
+    }
+
+    .popover h2 {
+      margin: 0 0 10px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .popover dl {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 4px 10px;
+      margin: 0 0 14px;
+    }
+
+    .popover dt {
+      font-weight: 650;
+      color: var(--text);
+    }
+
+    .popover dd {
+      margin: 0;
+    }
+
+    .popover p {
+      margin: 0 0 10px;
+    }
+
+    .popover a {
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .popover .text-btn {
+      color: var(--incorrect);
+    }
+
+    /* ---------- Shared bits ---------- */
+
+    .text-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.83rem;
+      font-weight: 650;
+      cursor: pointer;
+      padding: 4px 2px;
+    }
+
+    .text-btn:hover {
+      color: var(--text);
+    }
+
+    .pill-btn {
+      padding: 10px 22px;
+      border: 1px solid var(--selected-bg);
+      border-radius: 999px;
+      background: var(--selected-bg);
+      color: var(--selected-text);
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .pill-btn:hover {
+      opacity: 0.85;
+    }
+
+    /* ---------- Focus view ---------- */
+
+    #focus-view {
+      display: flex;
+      flex-direction: column;
+      min-height: calc(100vh - 57px);
+    }
+
+    #focus-view[hidden] {
+      display: none;
+    }
+
+    .focus-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      width: min(700px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 48px 0;
+    }
+
+    .q-meta {
+      margin: 0 0 14px;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .q-prompt {
+      margin: 0 0 10px;
+      font-size: clamp(1.35rem, 1rem + 1.6vw, 2rem);
+      font-weight: 620;
+      line-height: 1.42;
+      letter-spacing: -0.01em;
+    }
+
+    .q-hint {
+      margin: 0 0 24px;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-style: italic;
+    }
+
+    .q-options {
+      display: grid;
+      gap: 10px;
+      margin: 0 0 4px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .opt {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 0.12s ease, background 0.12s ease;
+    }
+
+    .opt:hover {
+      border-color: var(--text-muted);
+    }
+
+    .opt-letter {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      font-size: 0.78rem;
+      font-weight: 700;
+      flex: none;
+      transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
+    }
+
+    .opt-text {
+      padding-top: 2px;
+      font-size: 1.02rem;
+      line-height: 1.5;
+    }
+
+    .opt.selected {
+      border-color: var(--text);
+    }
+
+    .opt.selected .opt-letter {
+      background: var(--selected-bg);
+      border-color: var(--selected-bg);
+      color: var(--selected-text);
+    }
+
+    .opt.correct {
+      border-color: var(--correct);
+      background: var(--correct-bg);
+    }
+
+    .opt.correct .opt-letter {
+      background: var(--correct);
+      border-color: var(--correct);
+      color: #fff;
+    }
+
+    .opt.incorrect {
+      border-color: var(--incorrect);
+      background: var(--incorrect-bg);
+    }
+
+    .opt.incorrect .opt-letter {
+      background: var(--incorrect);
+      border-color: var(--incorrect);
+      color: #fff;
+    }
+
+    .q-feedback {
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .feedback-result {
+      margin: 0 0 6px;
+      font-size: 0.86rem;
+      font-weight: 750;
+    }
+
+    .feedback-result.is-correct {
+      color: var(--correct);
+    }
+
+    .feedback-result.is-incorrect {
+      color: var(--incorrect);
+    }
+
+    .feedback-rationale {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+
+    .focus-nav {
+      position: sticky;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      padding: 14px 20px 22px;
+      background: linear-gradient(to top, var(--bg) 60%, transparent);
+    }
+
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: var(--bg);
+      font-size: 1.15rem;
+      cursor: pointer;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      border-color: var(--text);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    .progress {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      width: 180px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 3px;
+      border-radius: 999px;
+      background: var(--border);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--selected-bg);
+      transition: width 0.2s ease;
+    }
+
+    .progress-text {
+      font-size: 0.76rem;
+      font-weight: 650;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+
+    .q-summary {
+      text-align: center;
+      padding: 12px 0 8px;
+    }
+
+    .summary-score {
+      margin: 0 0 26px;
+      font-size: 1.6rem;
+      font-weight: 650;
+    }
+
+    .summary-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    /* ---------- List view ---------- */
+
+    #list-view {
+      width: min(760px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 32px 0 80px;
+    }
+
+    .list-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .list-count {
+      color: var(--text-muted);
+      font-size: 0.84rem;
+      font-weight: 650;
+    }
+
+    .list-actions {
+      display: flex;
+      gap: 16px;
+    }
+
+    .list-section-title {
+      margin: 34px 0 14px;
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    .list-section-title:first-child {
+      margin-top: 0;
+    }
+
+    .list-item {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .list-item-meta {
+      margin: 0 0 8px;
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      font-weight: 650;
+      letter-spacing: 0.02em;
+    }
+
+    .list-item-prompt {
+      margin: 0 0 12px;
+      font-size: 1.04rem;
+      font-weight: 560;
+      line-height: 1.5;
+    }
+
+    .list-item-options {
+      display: grid;
+      gap: 6px;
+      margin: 0 0 10px;
+      padding: 0;
+      list-style: none;
+      color: var(--text-muted);
+      font-size: 0.94rem;
+    }
+
+    .list-item-options li {
+      display: flex;
+      gap: 8px;
+    }
+
+    .list-item-options .opt-letter-plain {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .list-answer summary {
+      display: inline-block;
+      color: var(--text);
+      font-size: 0.83rem;
+      font-weight: 700;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .list-answer summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .list-answer summary::before {
+      content: "Show answer  ";
+    }
+
+    .list-answer[open] summary::before {
+      content: "Hide answer  ";
+    }
+
+    .list-answer-panel {
+      margin-top: 12px;
+      padding-left: 14px;
+      border-left: 2px solid var(--border);
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+
+    .list-answer-panel p {
+      margin: 0 0 8px;
+    }
+
+    .list-answer-panel p:last-child {
+      margin-bottom: 0;
+    }
+
+    .list-your-answer {
+      font-weight: 700;
+    }
+
+    .list-your-answer.is-correct {
+      color: var(--correct);
+    }
+
+    .list-your-answer.is-incorrect {
+      color: var(--incorrect);
+    }
+
+    .answer-key {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    @media (max-width: 640px) {
+      .topbar-inner {
+        flex-wrap: wrap;
+        row-gap: 8px;
+      }
+
+      .switch-label {
+        display: none;
+      }
+
+      .focus-wrap {
+        padding: 30px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button type="button" id="info-btn" class="icon-btn" aria-haspopup="true" aria-expanded="false" title="About this practice set">i</button>
+        <span class="brand">CCAR&#8209;F &middot; Domain 3</span>
+      </div>
+      <div class="seg" role="tablist" aria-label="View mode">
+        <button type="button" class="seg-btn" data-view="focus" role="tab" aria-selected="true">Focus</button>
+        <button type="button" class="seg-btn" data-view="list" role="tab" aria-selected="false">List</button>
+      </div>
+      <div class="topbar-actions">
+        <label class="switch" id="auto-advance-wrap" title="Automatically move to the next question after answering">
+          <input type="checkbox" id="auto-advance" checked>
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+          <span class="switch-label">Auto&#8209;advance</span>
+        </label>
+        <button type="button" id="fullscreen-btn" class="icon-btn" title="Toggle fullscreen" aria-pressed="false">&#9974;</button>
+        <button type="button" id="theme-btn" class="icon-btn" title="Toggle dark / light theme">&#9789;</button>
+      </div>
+    </div>
+    <div class="popover" id="info-popover" hidden>
+      <h2>About this set</h2>
+      <dl>
+        <dt>Exam code</dt><dd>CCAR-F</dd>
+        <dt>Official exam</dt><dd>60 items / 120 minutes</dd>
+        <dt>Domain weight</dt><dd>20%</dd>
+        <dt>Guide</dt><dd>v1.0, effective July 2026</dd>
+      </dl>
+      <p>Independently authored study questions, not official Anthropic exam items. They map to the published Domain 3 task statements and mirror the official scenario-based multiple-choice / multiple-response format.</p>
+      <p>Sources:
+        <a href="https://anthropic-partners.skilljar.com/claude-certified-architect-foundations-certification">certification page</a>,
+        <a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf">exam guide</a>,
+        <a href="https://code.claude.com/docs/en/overview">Claude Code docs</a>.
+      </p>
+      <p>From the author's <em>Sāṅkhya</em> series:
+        <a href="https://medium.com/@akshat.mistry/part-viii-cca-f-domain-3-claude-code-configuration-workflows-91959a6f5dd1?sharedUserId=akshat.mistry">Part VIII - Claude Code Configuration &amp; Workflows</a>.
+      </p>
+      <button type="button" class="text-btn" id="reset-progress">Reset progress</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <section id="focus-view" class="view">
+      <div class="focus-wrap">
+        <div id="question-block">
+          <p class="q-meta" id="q-meta"></p>
+          <h1 class="q-prompt" id="q-prompt"></h1>
+          <p class="q-hint" id="q-hint"></p>
+          <div class="q-options" id="q-options" role="group" aria-label="Answer choices"></div>
+          <div class="q-feedback" id="q-feedback" hidden></div>
+        </div>
+        <div class="q-summary" id="q-summary" hidden>
+          <p class="summary-score" id="summary-score"></p>
+          <div class="summary-actions">
+            <button type="button" class="text-btn" id="summary-back">&lsaquo; Back to last question</button>
+            <button type="button" class="text-btn" id="summary-review">Review in list</button>
+            <button type="button" class="pill-btn" id="summary-restart">Restart practice</button>
+          </div>
+        </div>
+      </div>
+      <nav class="focus-nav" id="focus-nav" aria-label="Question navigation">
+        <button type="button" id="prev-btn" class="nav-btn" aria-label="Previous question">&lsaquo;</button>
+        <div class="progress">
+          <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+          <span class="progress-text" id="progress-text"></span>
+        </div>
+        <button type="button" id="next-btn" class="nav-btn" aria-label="Next question">&rsaquo;</button>
+      </nav>
+    </section>
+
+    <section id="list-view" class="view" hidden>
+      <div class="list-controls">
+        <span class="list-count" id="list-count"></span>
+        <div class="list-actions">
+          <button type="button" class="text-btn" id="expand-all">Expand all</button>
+          <button type="button" class="text-btn" id="collapse-all">Collapse all</button>
+        </div>
+      </div>
+      <div id="list-bank"></div>
+    </section>
+
+    <p class="visually-hidden" id="live-region" aria-live="polite"></p>
+    <noscript>This page requires JavaScript to render the question bank.</noscript>
+  </main>
+
+  <script>
+    const questions = [
+      {
+        id: 1,
+        scenario: 1,
+        scenarioTitle: "Shared configuration drift",
+        objective: "3.1 CLAUDE.md hierarchy",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "A senior engineer's Claude sessions consistently follow the team's coding standards. A new hire and the CI runner ignore those standards, even though the instruction file is valid. Investigation shows the standards are stored in `~/.claude/CLAUDE.md`. What is the most effective correction?",
+        choices: [
+          "Move the shared standards to a committed root `CLAUDE.md` or `.claude/CLAUDE.md`.",
+          "Copy the user-level file into every developer's home directory during onboarding.",
+          "Add the standards to `.claude/settings.local.json` so each clone loads them.",
+          "Require every developer and CI job to run `/memory` before starting work."
+        ],
+        answer: [0],
+        rationale: "User-scope instructions are local to one account and do not travel with a clone. Shared repository standards belong in a committed project-level memory file."
+      },
+      {
+        id: 2,
+        scenario: 1,
+        scenarioTitle: "Shared configuration drift",
+        objective: "3.1 CLAUDE.md hierarchy",
+        difficulty: "Hard",
+        select: 2,
+        prompt: "A root `CLAUDE.md` has grown to 900 lines. It mixes universal repository rules with API-only conventions and test-only guidance. Claude increasingly overlooks important instructions. Which TWO changes best improve relevance without losing shared standards?",
+        choices: [
+          "Keep only concise, repository-wide facts and commands in the root `CLAUDE.md`.",
+          "Move the entire file to `~/.claude/CLAUDE.md` so project context stays small.",
+          "Move API and test guidance into focused `.claude/rules/` files with appropriate `paths` patterns.",
+          "Copy the complete file into every source directory so the nearest version has priority."
+        ],
+        answer: [0, 2],
+        rationale: "Universal guidance should remain concise and shared. Conditional, topic-specific guidance belongs in path-scoped rules so it enters context only when relevant."
+      },
+      {
+        id: 3,
+        scenario: 1,
+        scenarioTitle: "Shared configuration drift",
+        objective: "3.1 CLAUDE.md hierarchy",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "Three packages maintain separate `CLAUDE.md` files but must use one centrally maintained secure-coding standard. The team wants explicit reuse without copying the standard into every package. Which approach best fits this requirement?",
+        choices: [
+          "Place the standard in managed `settings.json` under `permissions`.",
+          "Store the standard in one Markdown file and reference it with an `@` import from each package's `CLAUDE.md`.",
+          "Add the standard's directory to `permissions.additionalDirectories`.",
+          "Put the standard in one maintainer's `~/.claude/CLAUDE.md`."
+        ],
+        answer: [1],
+        rationale: "An `@` import composes shared instruction content explicitly while preserving package-level organization. Permission settings and additional directories do not import behavioral guidance."
+      },
+      {
+        id: 4,
+        scenario: 1,
+        scenarioTitle: "Shared configuration drift",
+        objective: "3.1 CLAUDE.md hierarchy",
+        difficulty: "Hard",
+        select: 2,
+        prompt: "A developer believes a nested memory file should affect the current task, but Claude behaves as if it is absent. Which TWO checks provide the strongest diagnosis?",
+        choices: [
+          "Use `/memory` to inspect known memory locations and open the relevant files.",
+          "Use `/context` to confirm which memory files are currently loaded in the active session.",
+          "Use `/permissions` to grant the nested file permission to override its parent.",
+          "Use `/reload-plugins` because memory files are loaded by the plugin subsystem."
+        ],
+        answer: [0, 1],
+        rationale: "`/memory` exposes memory locations and editing controls; `/context` confirms what actually entered the current context. Permissions and plugin reloads do not resolve memory discovery."
+      },
+      {
+        id: 5,
+        scenario: 1,
+        scenarioTitle: "Shared configuration drift",
+        objective: "3.1 CLAUDE.md hierarchy",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "A user's `~/.claude/CLAUDE.md` requires tabs, while the repository's committed `CLAUDE.md` requires spaces. What should the architect expect, and what is the best remedy?",
+        choices: [
+          "The project file replaces the user file, so no action is needed.",
+          "The user file always wins because personal scope has higher priority.",
+          "Both instructions enter context; remove the contradiction and keep repository-specific formatting in the project file.",
+          "Claude Code converts both rules into a deterministic permission policy."
+        ],
+        answer: [2],
+        rationale: "Memory files are cumulative rather than scalar overrides. Contradictory instructions remain visible to the model and reduce consistency, so the conflict should be removed."
+      },
+      {
+        id: 6,
+        scenario: 1,
+        scenarioTitle: "Shared configuration drift",
+        objective: "3.1 CLAUDE.md hierarchy",
+        difficulty: "Moderate",
+        select: 2,
+        prompt: "Which TWO placement decisions correctly separate personal preferences from team guidance?",
+        choices: [
+          "Put a developer's preferred response style in `~/.claude/CLAUDE.md`.",
+          "Put shared API naming rules in `~/.claude/CLAUDE.md`.",
+          "Commit a developer's local database port in the root `CLAUDE.md`.",
+          "Commit repository build and test commands in the project `CLAUDE.md`."
+        ],
+        answer: [0, 3],
+        rationale: "Personal, cross-project preferences belong at user scope. Team-wide repository facts must be committed at project scope. Machine-specific values should remain local."
+      },
+      {
+        id: 7,
+        scenario: 2,
+        scenarioTitle: "Reusable developer workflows",
+        objective: "3.2 Commands and skills",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "A repository still uses the legacy custom-command layout. The team wants `/review-pr` to become available to every developer after checkout, with no personal setup. Where should the command be defined?",
+        choices: [
+          "`.claude/commands/review-pr.md` in the repository",
+          "`~/.claude/commands/review-pr.md` for each developer",
+          "`.claude/skills/review-pr.md` in the repository",
+          "A `commands` array inside `.claude/settings.json`"
+        ],
+        answer: [0],
+        rationale: "Project commands under `.claude/commands/` are version-controlled and shared. The user directory is personal, and a skill requires its own directory containing `SKILL.md`."
+      },
+      {
+        id: 8,
+        scenario: 2,
+        scenarioTitle: "Reusable developer workflows",
+        objective: "3.2 Commands and skills",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "A new `/release-notes` workflow needs a Markdown template, examples, and a validation script. Which implementation is most maintainable?",
+        choices: [
+          "Place all instructions and script text in one legacy command file.",
+          "Create `.claude/skills/release-notes/SKILL.md` with supporting template, example, and script files.",
+          "Append the full release procedure to the root `CLAUDE.md`.",
+          "Create a subagent and hard-code the release task into its system prompt."
+        ],
+        answer: [1],
+        rationale: "A skill packages reusable instructions with scripts, templates, and reference files while loading the full workflow only when invoked."
+      },
+      {
+        id: 9,
+        scenario: 2,
+        scenarioTitle: "Reusable developer workflows",
+        objective: "3.2 Commands and skills",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "A repository-audit skill reads hundreds of files and produces extensive intermediate output. Developers need only its final risk summary, and the main session must remain available for implementation. Which configuration best addresses this?",
+        choices: [
+          "Set `context: fork` in the skill and give the fork a complete audit task.",
+          "Set `user-invocable: false` so no user can run the skill directly.",
+          "Move the audit body into the root `CLAUDE.md` so it is always present.",
+          "Set `allowed-tools: Read` because tool approval alone creates a new context."
+        ],
+        answer: [0],
+        rationale: "`context: fork` runs task-oriented skill content in an isolated subagent context and returns the result without filling the main conversation with exploration."
+      },
+      {
+        id: 10,
+        scenario: 2,
+        scenarioTitle: "Reusable developer workflows",
+        objective: "3.2 Commands and skills",
+        difficulty: "Hard",
+        select: 2,
+        prompt: "A deployment skill accepts either `staging` or `production`. It must appear in slash-command autocomplete but must never be selected automatically by Claude. Which TWO frontmatter entries are most directly relevant?",
+        choices: [
+          "`disable-model-invocation: true`",
+          "`user-invocable: false`",
+          "`argument-hint: [staging|production]`",
+          "`context: main`"
+        ],
+        answer: [0, 2],
+        rationale: "Disabling model invocation makes the skill manual-only, while `argument-hint` communicates the required input in autocomplete. Hiding user invocation would defeat the requirement."
+      },
+      {
+        id: 11,
+        scenario: 2,
+        scenarioTitle: "Reusable developer workflows",
+        objective: "3.2 Commands and skills",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "A team sets `allowed-tools: Bash(kubectl get *)` on a diagnostic skill and assumes this removes every other tool during execution. Which assessment is correct?",
+        choices: [
+          "The assumption is correct; `allowed-tools` is a permanent allowlist for the skill.",
+          "The assumption is correct only when the skill uses `context: fork`.",
+          "`allowed-tools` pre-approves matching calls for the invoking turn; use `disallowed-tools` or permission deny rules to remove or block other tools.",
+          "Project skills ignore `allowed-tools`; only managed skills support it."
+        ],
+        answer: [2],
+        rationale: "Current Claude Code treats `allowed-tools` as a temporary approval grant, not as the complete tool pool. Restrictions require explicit disallow or deny controls."
+      },
+      {
+        id: 12,
+        scenario: 2,
+        scenarioTitle: "Reusable developer workflows",
+        objective: "3.2 Commands and skills",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "The repository contains a shared `format-report` skill. One developer wants a personal compact variant with a private template, without changing or shadowing the team workflow. What should the developer do?",
+        choices: [
+          "Edit the project skill and add a machine-name condition.",
+          "Create `~/.claude/skills/format-report-compact/SKILL.md` with a distinct skill name.",
+          "Create `.claude/settings.local.json` and redefine the skill body there.",
+          "Copy the skill to `~/.claude/skills/format-report/` using the same name."
+        ],
+        answer: [1],
+        rationale: "A distinct user-scoped skill provides personal behavior across projects without overriding the shared project skill or affecting teammates."
+      },
+      {
+        id: 13,
+        scenario: 3,
+        scenarioTitle: "Polyglot monorepo conventions",
+        objective: "3.3 Path-specific rules",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "React test files are co-located with components throughout a monorepo. Every `*.test.tsx` file must follow the same fixture and assertion conventions. Which configuration best applies those conventions automatically?",
+        choices: [
+          "A root `CLAUDE.md` section titled Testing",
+          "A `.claude/rules/react-tests.md` file with `paths: [\"**/*.test.tsx\"]`",
+          "A `CLAUDE.md` copied into every component directory",
+          "A manually invoked `react-tests` skill"
+        ],
+        answer: [1],
+        rationale: "A path-scoped rule follows the file pattern across directory boundaries and loads only when matching tests are in play."
+      },
+      {
+        id: 14,
+        scenario: 3,
+        scenarioTitle: "Polyglot monorepo conventions",
+        objective: "3.3 Path-specific rules",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "Terraform files exist under `infrastructure/`, `services/*/deploy/`, and `examples/`. The same security guidance must apply to every `.tf` file, regardless of location. What is the most maintainable solution?",
+        choices: [
+          "Add a directory-level `CLAUDE.md` only under `infrastructure/`.",
+          "Create a path-specific rule using a glob such as `**/*.tf`.",
+          "Load the guidance from the user's global `CLAUDE.md`.",
+          "Create one slash command per Terraform directory."
+        ],
+        answer: [1],
+        rationale: "File-type conventions distributed across unrelated directories are the strongest use case for path-specific rules with glob patterns."
+      },
+      {
+        id: 15,
+        scenario: 3,
+        scenarioTitle: "Polyglot monorepo conventions",
+        objective: "3.3 Path-specific rules",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "All files under `packages/payments/` share domain terminology, build commands, and architecture constraints. No other package should receive that context. Which approach is simplest and clearest?",
+        choices: [
+          "Place a `CLAUDE.md` in `packages/payments/`.",
+          "Add every payments path as a separate entry in the root settings file.",
+          "Put the guidance in the user-level `CLAUDE.md` and mention the package name.",
+          "Create a manual skill and require every payments task to invoke it."
+        ],
+        answer: [0],
+        rationale: "A directory-level `CLAUDE.md` naturally scopes standing context to one contiguous subtree. Path rules are more valuable when matching files are dispersed or type-based."
+      },
+      {
+        id: 16,
+        scenario: 3,
+        scenarioTitle: "Polyglot monorepo conventions",
+        objective: "3.3 Path-specific rules",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "One rule matching `**/*.ts` requires semicolons. A second rule matching `**/*.test.ts` forbids semicolons. Claude becomes inconsistent while editing a TypeScript test. What is the most likely cause and best remedy?",
+        choices: [
+          "Only the more specific rule loads, so the behavior must come from model randomness.",
+          "Both matching rules load; remove the contradiction by narrowing, consolidating, or aligning the rules.",
+          "The alphabetically later rule overrides the earlier file; rename it to load first.",
+          "Path rules cannot match files that also match a broader extension pattern."
+        ],
+        answer: [1],
+        rationale: "Conditional rules are cumulative when their patterns match. Specificity does not provide a CSS-like override system, so conflicting guidance must be resolved explicitly."
+      },
+      {
+        id: 17,
+        scenario: 3,
+        scenarioTitle: "Polyglot monorepo conventions",
+        objective: "3.3 Path-specific rules",
+        difficulty: "Hard",
+        select: 2,
+        prompt: "Which TWO conditions favor a path-specific rule over a subdirectory `CLAUDE.md`?",
+        choices: [
+          "The convention applies to one file type spread across many directories.",
+          "The guidance applies to every file in one self-contained package subtree.",
+          "The guidance should stay out of context until a matching file is read or edited.",
+          "The workflow should run only when a developer types a slash command."
+        ],
+        answer: [0, 2],
+        rationale: "Path rules excel at pattern-based distribution and conditional context loading. A subtree-wide standing rule favors a nested `CLAUDE.md`; explicit workflows favor skills."
+      },
+      {
+        id: 18,
+        scenario: 4,
+        scenarioTitle: "Migration planning and execution",
+        objective: "3.4 Plan vs direct execution",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "A team will replace an authentication library across 58 files. Two migration strategies have different compatibility and rollout implications, and the affected dependency graph is not yet understood. What should Claude do first?",
+        choices: [
+          "Enter plan mode, map dependencies and alternatives, then present an implementation approach.",
+          "Begin direct edits in the most central module and let failures reveal dependencies.",
+          "Use bypass permissions so the migration can complete before the context fills.",
+          "Create a root rule that selects the migration strategy automatically."
+        ],
+        answer: [0],
+        rationale: "The task combines broad scope, architectural choice, and costly rework risk. Plan mode creates an explicit investigation and design checkpoint before source changes."
+      },
+      {
+        id: 19,
+        scenario: 4,
+        scenarioTitle: "Migration planning and execution",
+        objective: "3.4 Plan vs direct execution",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "A reproducible stack trace points to a missing null check in one function. A focused test already covers the function and clearly expresses the expected behavior. Which approach is most proportionate?",
+        choices: [
+          "Run a repository-wide Explore pass before choosing an approach.",
+          "Enter plan mode and request an architecture proposal.",
+          "Implement the narrow fix directly and run the focused test plus relevant regression checks.",
+          "Create a custom subagent so the fix occurs in an isolated context."
+        ],
+        answer: [2],
+        rationale: "The location, intended behavior, and verification are already clear. A direct, minimal edit has lower overhead than a separate planning phase."
+      },
+      {
+        id: 20,
+        scenario: 4,
+        scenarioTitle: "Migration planning and execution",
+        objective: "3.4 Plan vs direct execution",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "Before designing an authorization refactor in an unfamiliar monorepo, Claude must trace entry points, wrappers, and policy checks across many packages. The main conversation will later hold the design and implementation decisions. What workflow best preserves useful context?",
+        choices: [
+          "Read every candidate file in the main conversation, then run `/compact` before planning.",
+          "Delegate the broad discovery to an Explore subagent, use its summary to plan in the main conversation, then execute the approved approach.",
+          "Skip exploration and ask a general-purpose subagent to implement the entire refactor.",
+          "Put the repository tree into `CLAUDE.md` so every session starts with the map."
+        ],
+        answer: [1],
+        rationale: "Explore isolates high-volume discovery while returning a concise map. Plan mode then protects the design decision, leaving the main context focused on implementation."
+      },
+      {
+        id: 21,
+        scenario: 4,
+        scenarioTitle: "Migration planning and execution",
+        objective: "3.4 Plan vs direct execution",
+        difficulty: "Hard",
+        select: 2,
+        prompt: "Which TWO tasks most strongly justify plan mode?",
+        choices: [
+          "Replacing a core SDK across 45 files while choosing a backward-compatibility strategy",
+          "Correcting a misspelled label in one component",
+          "Choosing among queueing architectures and data-migration paths for three services",
+          "Adding a known validation guard beside an existing focused test"
+        ],
+        answer: [0, 2],
+        rationale: "Plan mode earns its overhead when scope, architecture, or competing approaches make a wrong first move expensive. Clear local edits are better handled directly."
+      },
+      {
+        id: 22,
+        scenario: 4,
+        scenarioTitle: "Migration planning and execution",
+        objective: "3.4 Plan vs direct execution",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "Which statement most accurately describes current plan-mode boundaries?",
+        choices: [
+          "It is an OS sandbox in which no process may write anywhere on disk.",
+          "It supports reading, searching, and exploratory commands under the active permission flow while source edits remain blocked until approval, except when bypass permissions are available.",
+          "It disables every shell command and every subagent until a plan is approved.",
+          "It is identical to Manual mode but forces a longer final response."
+        ],
+        answer: [1],
+        rationale: "Plan mode separates investigation from source editing; it is not a complete filesystem sandbox. After approval, the session switches to the selected execution mode."
+      },
+      {
+        id: 23,
+        scenario: 5,
+        scenarioTitle: "Refinement and reliability",
+        objective: "3.5 Iterative refinement",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "Claude repeatedly interprets 'display timestamps in a friendly format' differently across files. What is the highest-leverage prompt improvement?",
+        choices: [
+          "Ask Claude to be more consistent and professional.",
+          "Provide two or three representative input/output pairs, including a boundary or invalid case.",
+          "Increase the model's effort level and keep the original prompt.",
+          "Move the vague sentence into managed settings."
+        ],
+        answer: [1],
+        rationale: "Concrete examples demonstrate the transformation and edge behavior directly, removing ambiguity that adjectives such as friendly or consistent leave unresolved."
+      },
+      {
+        id: 24,
+        scenario: 5,
+        scenarioTitle: "Refinement and reliability",
+        objective: "3.5 Iterative refinement",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "A legacy parser must satisfy ten known behaviors, including empty input, Unicode, and a latency threshold. Which workflow gives Claude the clearest progressive feedback?",
+        choices: [
+          "Implement first, then ask Claude to review its own code for robustness.",
+          "Write the behavior and performance tests first, confirm meaningful failures, implement, and iterate on the exact failing cases.",
+          "Describe all behaviors in prose and run the tests only after the final refactor.",
+          "Ask Claude to maximize coverage without showing the current tests."
+        ],
+        answer: [1],
+        rationale: "Tests turn requirements into objective feedback. Confirming the expected failure guards against tests that already pass or fail for an unrelated reason."
+      },
+      {
+        id: 25,
+        scenario: 5,
+        scenarioTitle: "Refinement and reliability",
+        objective: "3.5 Iterative refinement",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "A developer asks Claude to build distributed rate limiting but has not specified identity scope, algorithm, persistence, failure policy, or latency targets. What should happen before implementation?",
+        choices: [
+          "Claude should choose industry defaults and document them afterward.",
+          "Claude should use the interview pattern to ask only the questions whose answers materially change the design.",
+          "Claude should begin with a fixed-window implementation because it is simplest.",
+          "Claude should create path-specific rules for each possible design."
+        ],
+        answer: [1],
+        rationale: "The interview pattern surfaces consequential unknowns before they harden into code. The resulting decisions can then feed exploration and plan approval."
+      },
+      {
+        id: 26,
+        scenario: 5,
+        scenarioTitle: "Refinement and reliability",
+        objective: "3.5 Iterative refinement",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "A cache refactor has two interacting defects: key construction and invalidation disagree about tenant scope. The same change also introduced an unrelated documentation typo. How should feedback be organized?",
+        choices: [
+          "Describe the two cache defects together because their fixes interact, and handle the independent typo separately.",
+          "Submit all three issues one at a time without explaining their relationship.",
+          "Batch all three as one root-cause problem so Claude changes them atomically.",
+          "Ignore the invalidation issue until key construction is merged."
+        ],
+        answer: [0],
+        rationale: "Interacting issues need shared context so one fix does not undermine another. Independent work can be isolated and verified separately."
+      },
+      {
+        id: 27,
+        scenario: 5,
+        scenarioTitle: "Refinement and reliability",
+        objective: "3.5 Iterative refinement",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "A migration script still fails on null source values after Claude's first fix. Which feedback is most actionable?",
+        choices: [
+          "Make the migration more defensive around unusual data.",
+          "The code is still not production quality; reconsider the approach.",
+          "For input `{source: null}`, test `migrates_null_source` returns an empty object but must preserve `source: null`; run the named test and fix that case without changing non-null behavior.",
+          "Use a stronger model and repeat the same instruction."
+        ],
+        answer: [2],
+        rationale: "The best feedback names the failing input, observed result, expected result, scope boundary, and verification command instead of relying on subjective adjectives."
+      },
+      {
+        id: 28,
+        scenario: 5,
+        scenarioTitle: "Refinement and reliability",
+        objective: "3.5 Iterative refinement",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "Claude has taken three failed approaches to the same concurrency bug. The conversation now contains contradictory hypotheses and abandoned patches. What is the best next step?",
+        choices: [
+          "Continue correcting the latest approach so no context is lost.",
+          "Run `/compact` with no instructions and repeat the original prompt.",
+          "Start a fresh session with the verified evidence, failed hypotheses to avoid, exact acceptance criteria, and reproduction command.",
+          "Add all failed approaches to `CLAUDE.md` for future sessions."
+        ],
+        answer: [2],
+        rationale: "After repeated corrections, stale approaches become harmful context. A clean session with a better evidence-based prompt is usually more reliable than accumulating another repair attempt."
+      },
+      {
+        id: 29,
+        scenario: 6,
+        scenarioTitle: "Governed CI review",
+        objective: "3.6 CI/CD integration",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "A CI step must run without a terminal, return machine-parseable findings, and validate the findings against a supplied JSON Schema. Which command shape provides the required controls?",
+        choices: [
+          "`claude \"review the diff\" --output-format json`",
+          "`claude -p \"review the diff\" --output-format json --json-schema \"$SCHEMA\"`",
+          "`claude --resume review-session --json-schema schema.json`",
+          "`claude -p \"review the diff\" --output-format text --json-schema \"$SCHEMA\"`"
+        ],
+        answer: [1],
+        rationale: "`-p` selects non-interactive execution. JSON output plus `--json-schema` places validated data in `structured_output`. The flag expects schema JSON content, not merely a file path."
+      },
+      {
+        id: 30,
+        scenario: 6,
+        scenarioTitle: "Governed CI review",
+        objective: "3.6 CI/CD integration",
+        difficulty: "Hard",
+        select: 2,
+        prompt: "A read-only CI reviewer needs `Read`, `Grep`, and `Glob`, but no editing or shell access. Which TWO controls most directly create a fail-closed least-privilege run?",
+        choices: [
+          "Use `--tools \"Read,Grep,Glob\"` to restrict the available built-in tool set.",
+          "Use `--allowedTools \"Read,Grep,Glob\"` alone, because omitted tools are removed.",
+          "Use `--permission-mode dontAsk` so actions lacking approval are denied rather than waiting for input.",
+          "Use `--dangerously-skip-permissions` inside the shared runner."
+        ],
+        answer: [0, 2],
+        rationale: "`--tools` restricts built-in availability, while `dontAsk` fails closed for unapproved actions. `--allowedTools` pre-approves but does not remove omitted tools."
+      },
+      {
+        id: 31,
+        scenario: 6,
+        scenarioTitle: "Governed CI review",
+        objective: "3.6 CI/CD integration",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "The same long-running session generated a feature and is now asked to review it. Evaluations show the review repeats assumptions from implementation and misses a subtle race. Which change most directly improves review independence?",
+        choices: [
+          "Add 'be objective' to the current conversation.",
+          "Increase extended thinking in the authoring session.",
+          "Start a separate `claude -p` review without `--continue` or `--resume`, supplying the diff and review criteria explicitly.",
+          "Ask the authoring session to summarize its reasoning before reviewing."
+        ],
+        answer: [2],
+        rationale: "An independent invocation removes the generator's reasoning history. Explicit inputs preserve required evidence without importing the assumptions that produced the change."
+      },
+      {
+        id: 32,
+        scenario: 6,
+        scenarioTitle: "Governed CI review",
+        objective: "3.6 CI/CD integration",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "A PR reviewer runs after every push and repeatedly posts issues already fixed or explicitly accepted by maintainers. Each run starts a new session. What is the most effective design change?",
+        choices: [
+          "Resume the first review session forever so it remembers every comment.",
+          "Persist or retrieve prior structured findings, inject them into each run, and request only new or still-unaddressed issues.",
+          "Disable all nit-level findings after the first pipeline run.",
+          "Increase the prompt's confidence threshold without supplying prior comments."
+        ],
+        answer: [1],
+        rationale: "Fresh CI sessions do not inherit earlier findings. Supplying structured prior state enables delta review and prevents duplicate comments while retaining still-open issues."
+      },
+      {
+        id: 33,
+        scenario: 6,
+        scenarioTitle: "Governed CI review",
+        objective: "3.6 CI/CD integration",
+        difficulty: "Moderate",
+        select: 2,
+        prompt: "A nightly job generates many tests that duplicate existing coverage and ignore the repository's fixture conventions. Which TWO changes best improve test value?",
+        choices: [
+          "Provide the nearest existing test files and ask for only uncovered behaviors and branches.",
+          "Document testing standards, valuable test criteria, and available fixtures in the project `CLAUDE.md`.",
+          "Remove all current tests from context so Claude is not biased by their structure.",
+          "Ask for a fixed number of tests per production function."
+        ],
+        answer: [0, 1],
+        rationale: "Existing tests reveal covered behavior and local style; project guidance supplies durable fixture and quality conventions. A test count is not a measure of distinct coverage."
+      },
+      {
+        id: 34,
+        scenario: 6,
+        scenarioTitle: "Governed CI review",
+        objective: "3.6 CI/CD integration",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "A fresh CI checkout contains project `permissions.allow` entries for review commands, but the non-interactive run never displays a workspace-trust dialog and those grants do not apply. What is the most reliable correction?",
+        choices: [
+          "Commit `.claude/settings.local.json` so trust is implicit.",
+          "Pass the required narrow approvals through platform-owned CI settings or CLI flags, while retaining project and managed deny rules.",
+          "Switch to `bypassPermissions` so project trust is unnecessary.",
+          "Run `/permissions` as the first line of the non-interactive prompt."
+        ],
+        answer: [1],
+        rationale: "Project capability grants are gated by workspace trust, and `-p` cannot show that dialog. CI-owned settings or flags provide explicit job capability; restrictive rules continue to apply."
+      },
+      {
+        id: 35,
+        scenario: 6,
+        scenarioTitle: "Governed CI review",
+        objective: "3.6 CI/CD integration",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "A review job exits successfully and returns valid JSON with no findings. Later investigation shows Claude never received the diff and lacked tools to obtain it. How should the pipeline prevent this false green result?",
+        choices: [
+          "Require a schema status such as `pass`, `fail`, or `inconclusive`, require reviewed-file evidence, and fail the job on missing evidence or `inconclusive`.",
+          "Treat exit code zero as authoritative because permissions worked as configured.",
+          "Grant unrestricted Bash access so Claude can always recover missing input.",
+          "Retry the same job until at least one finding appears."
+        ],
+        answer: [0],
+        rationale: "Process success proves only that the run completed. A CI gate must validate task-level evidence and represent insufficient context explicitly instead of confusing silence with a clean review."
+      },
+      {
+        id: 36,
+        scenario: 7,
+        scenarioTitle: "Memory architecture at scale",
+        objective: "3.1 CLAUDE.md hierarchy",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "A team splits a 900-line root `CLAUDE.md` into six files and imports all six from the root with `@` references. The file layout is cleaner, but startup context usage is almost unchanged. What best explains the result?",
+        choices: [
+          "Imported files are organizational only; their contents still enter context when the parent loads.",
+          "Claude Code caches imported files but counts their tokens twice.",
+          "Only files under `.claude/rules/` are excluded from startup context.",
+          "Imports reduce context only after the session runs `/compact`."
+        ],
+        answer: [0],
+        rationale: "Imports improve maintainability but do not make eagerly imported content free. To reduce startup context, trim universal guidance or move conditional guidance into path-scoped rules or on-demand skills."
+      },
+      {
+        id: 37,
+        scenario: 7,
+        scenarioTitle: "Memory architecture at scale",
+        objective: "3.1 CLAUDE.md hierarchy",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "A developer starts Claude Code in `~/projects/payments`. Their user file `~/.claude/CLAUDE.md` contains `@rules/style.md`. Which path does Claude Code resolve?",
+        choices: [
+          "`~/projects/payments/rules/style.md`, relative to the working directory",
+          "`~/.claude/rules/style.md`, relative to the importing file",
+          "`~/rules/style.md`, relative to the home directory",
+          "Nothing; user-scope memory files cannot use relative imports"
+        ],
+        answer: [1],
+        rationale: "Relative imports resolve from the file that declares them, not from the session's working directory. This keeps a memory file and its companion references portable as a unit."
+      },
+      {
+        id: 38,
+        scenario: 7,
+        scenarioTitle: "Memory architecture at scale",
+        objective: "3.1 CLAUDE.md hierarchy",
+        difficulty: "Hard",
+        select: 2,
+        prompt: "A maintainer documents import syntax inside `CLAUDE.md` and also creates a chain of imported instruction files. Which TWO statements describe current import behavior?",
+        choices: [
+          "An `@path` inside inline code or a fenced code block remains literal and is not imported.",
+          "Nested imports may recurse without a depth limit when every path is unique.",
+          "Nested imports are limited to four hops.",
+          "Relative imports always resolve from the repository root."
+        ],
+        answer: [0, 2],
+        rationale: "Code formatting escapes import parsing, and recursive imports have a four-hop maximum. Relative paths resolve from the importing file."
+      },
+      {
+        id: 39,
+        scenario: 7,
+        scenarioTitle: "Memory architecture at scale",
+        objective: "3.1 CLAUDE.md hierarchy",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "A session starts at the repository root. `packages/billing/CLAUDE.md` contains financial-data guidance. Claude reads `packages/billing/invoice.ts`, later runs `/compact`, and then continues discussing billing without reading another billing file. When is the nested guidance present?",
+        choices: [
+          "It loads at session startup and is automatically re-injected after compaction.",
+          "It first loads when the billing file is read; after compaction it reloads only when Claude reads a file in that subtree again.",
+          "It loads only if the session changes its working directory to `packages/billing`.",
+          "It is discarded permanently by compaction and cannot reload in the same session."
+        ],
+        answer: [1],
+        rationale: "Nested memory is discovered lazily. Project-root memory is re-injected after compaction, while nested memory returns when a later file access triggers that subtree again."
+      },
+      {
+        id: 40,
+        scenario: 7,
+        scenarioTitle: "Memory architecture at scale",
+        objective: "3.3 Path-specific rules",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "A file at `.claude/rules/team-conventions.md` has no YAML frontmatter and no `paths` field. When does its guidance apply?",
+        choices: [
+          "It is ignored as malformed.",
+          "It loads only when the user invokes `/team-conventions`.",
+          "It loads unconditionally with project instructions.",
+          "It loads after the first file edit, regardless of path."
+        ],
+        answer: [2],
+        rationale: "A project rule without `paths` is unconditional. Conditional loading requires valid `paths` frontmatter with one or more matching globs."
+      },
+      {
+        id: 41,
+        scenario: 7,
+        scenarioTitle: "Memory architecture at scale",
+        objective: "3.3 Path-specific rules",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "A team copies a rule format from another editor using `globs` and `alwaysApply: false`. The guidance enters unrelated work instead of loading only for the intended files. Which correction is most appropriate?",
+        choices: [
+          "Replace those fields with a `paths` list in YAML frontmatter.",
+          "Rename the file from `.md` to `.rule`.",
+          "Move the file into `.claude/commands/` so glob matching is enabled.",
+          "Add `context: fork` to make the rule conditional."
+        ],
+        answer: [0],
+        rationale: "Claude Code path-scoped rules use `paths`, not editor-specific `globs` or `alwaysApply` fields. A rule without a recognized `paths` field behaves as unconditional guidance."
+      },
+      {
+        id: 42,
+        scenario: 8,
+        scenarioTitle: "Skill governance and execution",
+        objective: "3.2 Commands and skills",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "A `/new-component` skill declares `argument-hint: [component-name]`. A developer invokes it without an argument, and Claude still attempts the workflow. What should the skill author conclude?",
+        choices: [
+          "`argument-hint` is an autocomplete hint, not required-input validation or a guaranteed question.",
+          "`argument-hint` works only for plugin skills, not project skills.",
+          "The missing argument is automatically read from the active filename.",
+          "Adding `context: fork` will make the hint mandatory."
+        ],
+        answer: [0],
+        rationale: "The field communicates expected arguments in autocomplete. If input is mandatory, the skill instructions or a validating script must detect absence and stop or ask explicitly."
+      },
+      {
+        id: 43,
+        scenario: 8,
+        scenarioTitle: "Skill governance and execution",
+        objective: "3.2 Commands and skills",
+        difficulty: "Hard",
+        select: 2,
+        prompt: "A production-deploy skill must be visible as `/deploy` but executable only when a person invokes it. A legacy-system reference skill should load automatically when relevant but should not appear as a user command. Which TWO configurations satisfy these requirements?",
+        choices: [
+          "Set `disable-model-invocation: true` on the deploy skill.",
+          "Set `user-invocable: false` on the deploy skill.",
+          "Set `user-invocable: false` on the reference skill.",
+          "Set `disable-model-invocation: true` on the reference skill."
+        ],
+        answer: [0, 2],
+        rationale: "Disabling model invocation creates a human-only skill. Setting `user-invocable: false` creates model-only background knowledge hidden from the slash menu."
+      },
+      {
+        id: 44,
+        scenario: 8,
+        scenarioTitle: "Skill governance and execution",
+        objective: "3.2 Commands and skills",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "A project provides `/commit`, but one developer installs a personal skill with the same name under `~/.claude/skills/commit/`. In that repository, which definition is selected?",
+        choices: [
+          "The project skill, because repository configuration always outranks user configuration",
+          "The personal skill, because personal skills outrank project skills when names collide",
+          "Both skills, concatenated in project-then-personal order",
+          "Neither skill; Claude Code requires the user to disambiguate every invocation"
+        ],
+        answer: [1],
+        rationale: "Skill precedence is enterprise, personal, project, then plugin. This differs from ordinary settings scalar precedence, where project settings outrank user settings."
+      },
+      {
+        id: 45,
+        scenario: 8,
+        scenarioTitle: "Skill governance and execution",
+        objective: "3.2 Commands and skills",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "A repository contains both `.claude/commands/audit.md` and `.claude/skills/audit/SKILL.md`. Both define `/audit`. What should the team expect in current Claude Code?",
+        choices: [
+          "The legacy command always wins to preserve backward compatibility.",
+          "The skill takes precedence; command files still work and support skill frontmatter, but skills are preferred for supporting files and newer capabilities.",
+          "Both expand and their instructions are stacked.",
+          "The collision disables `/audit` until one definition is deleted."
+        ],
+        answer: [1],
+        rationale: "Custom commands are handled through the unified skill framework. Existing command files remain valid, but a same-named skill wins."
+      },
+      {
+        id: 46,
+        scenario: 8,
+        scenarioTitle: "Skill governance and execution",
+        objective: "3.2 Commands and skills",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "A skill uses `context: fork` and `agent: Explore`. The main conversation already contains two hours of architecture discussion. What context drives the forked execution?",
+        choices: [
+          "The fork inherits the full conversation, plus the skill body as a final reminder.",
+          "A new isolated context uses the Explore agent's system prompt and tools, with the rendered skill body as its task; it does not inherit the conversation history.",
+          "The skill body replaces the Explore system prompt and receives every main-session tool.",
+          "The skill remains inline because only custom agents support forked execution."
+        ],
+        answer: [1],
+        rationale: "For a forked skill, the selected agent supplies the execution environment and the skill supplies the task. This is distinct from `/subtask` conversation forks, which inherit full history."
+      },
+      {
+        id: 47,
+        scenario: 8,
+        scenarioTitle: "Skill governance and execution",
+        objective: "3.2 Commands and skills",
+        difficulty: "Hard",
+        select: 2,
+        prompt: "A custom `payments-reviewer` subagent lists `pci-guidance` under its `skills` field. Which TWO statements are correct?",
+        choices: [
+          "The full `pci-guidance` skill content is injected into the subagent at startup.",
+          "The listed skill becomes the runtime task and replaces the subagent's system prompt.",
+          "The `skills` field controls preloading, not the complete set of skills the subagent may access.",
+          "Only the skill description is loaded until the subagent invokes it explicitly."
+        ],
+        answer: [0, 2],
+        rationale: "Preloaded skills supply full reference content alongside the agent's own prompt and delegated task. Access to other skills is governed separately by the available `Skill` tool."
+      },
+      {
+        id: 48,
+        scenario: 9,
+        scenarioTitle: "Deterministic workflow controls",
+        objective: "3.6 CI/CD integration",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "A `PreToolUse` policy script detects a destructive Bash command, writes a reason to stderr, and exits with code 1. The command still runs. What is the root cause?",
+        choices: [
+          "Only exit code 2 blocks most hook events; exit code 1 is a non-blocking hook error.",
+          "Bash hooks cannot block commands; only MCP hooks can.",
+          "The script must write the reason to stdout instead of stderr.",
+          "A hook may block only when the session uses `dontAsk`."
+        ],
+        answer: [0],
+        rationale: "For `PreToolUse`, exit 2 blocks and feeds stderr to Claude. Other non-zero exits normally report an error but allow execution to continue."
+      },
+      {
+        id: 49,
+        scenario: 9,
+        scenarioTitle: "Deterministic workflow controls",
+        objective: "3.6 CI/CD integration",
+        difficulty: "Hard",
+        select: 2,
+        prompt: "Several `PreToolUse` hooks evaluate one command. One returns `allow`, another returns `ask`, and a matching settings deny rule also exists. Which TWO statements are correct?",
+        choices: [
+          "Among hook decisions, the effective precedence is `deny` over `defer` over `ask` over `allow`.",
+          "The hook's `allow` bypasses matching settings rules because it ran first.",
+          "Matching deny and ask permission rules are still evaluated regardless of a hook's decision.",
+          "The last hook to finish determines the result."
+        ],
+        answer: [0, 2],
+        rationale: "Hook results have defined restrictive precedence, not timing precedence. Permission deny and ask rules remain an independent boundary and cannot be bypassed by hook approval."
+      },
+      {
+        id: 50,
+        scenario: 9,
+        scenarioTitle: "Deterministic workflow controls",
+        objective: "3.6 CI/CD integration",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "A `PostToolUse` hook detects that a file just written violates a naming policy and exits 2, expecting Claude Code to undo the write. What actually happens?",
+        choices: [
+          "The write is rolled back before Claude sees the result.",
+          "The file remains changed; the hook can provide feedback, but prevention requires `PreToolUse`.",
+          "The next tool call is blocked until the user approves the file.",
+          "Claude Code deletes the file automatically and retries with a new name."
+        ],
+        answer: [1],
+        rationale: "`PostToolUse` runs after success, so its feedback cannot reverse filesystem, command, or network effects. A precondition belongs before execution."
+      },
+      {
+        id: 51,
+        scenario: 9,
+        scenarioTitle: "Deterministic workflow controls",
+        objective: "3.1 CLAUDE.md hierarchy",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "A team writes 'always run the security scanner before committing' in `CLAUDE.md`. Claude follows it most of the time but occasionally skips it. The scanner is a mandatory compliance gate. What is the best correction?",
+        choices: [
+          "Repeat the sentence in uppercase in every nested `CLAUDE.md`.",
+          "Use a deterministic hook or permission gate at the relevant lifecycle point.",
+          "Move the sentence to an unconditional `.claude/rules/` file.",
+          "Increase the model effort level for commit tasks."
+        ],
+        answer: [1],
+        rationale: "Memory and rules guide model behavior; they do not guarantee an action. Mandatory sequencing or validation needs a client-enforced mechanism."
+      },
+      {
+        id: 52,
+        scenario: 9,
+        scenarioTitle: "Deterministic workflow controls",
+        objective: "3.1 CLAUDE.md hierarchy",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "User settings set `permissions.defaultMode` to `acceptEdits`, while project settings set it to `plan`. The user's `CLAUDE.md` requires tabs, while the project's `CLAUDE.md` requires spaces. Which outcome is correct?",
+        choices: [
+          "Both permission modes and both indentation rules remain active simultaneously.",
+          "`plan` wins as a higher-precedence settings scalar, while both contradictory memory instructions enter context.",
+          "User scope wins in both systems because it is personal.",
+          "Project scope replaces both the user setting and the user memory file."
+        ],
+        answer: [1],
+        rationale: "Settings scalars override by scope, whereas memory files concatenate. Confusing those resolution models is a common source of configuration errors."
+      },
+      {
+        id: 53,
+        scenario: 9,
+        scenarioTitle: "Deterministic workflow controls",
+        objective: "3.1 CLAUDE.md hierarchy",
+        difficulty: "Hard",
+        select: 2,
+        prompt: "An administrator and a developer each introduce one invalid setting. The administrator's managed policy also contains several valid deny rules; the developer's project settings contain valid preferences beside the bad entry. Which TWO outcomes are expected?",
+        choices: [
+          "Managed parsing strips the invalid entry and continues enforcing valid policy entries.",
+          "The complete managed policy is rejected to avoid partial enforcement.",
+          "The invalid project settings file is rejected as a whole and reported.",
+          "Project settings use the same tolerant per-entry parsing as managed policy."
+        ],
+        answer: [0, 2],
+        rationale: "Managed policy is deliberately tolerant so one typo cannot disable the security floor. User, project, and local files remain strict."
+      },
+      {
+        id: 54,
+        scenario: 9,
+        scenarioTitle: "Deterministic workflow controls",
+        objective: "3.1 CLAUDE.md hierarchy",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "Mid-session, a developer adds a permission deny rule and changes the `model` key in project settings. The deny applies immediately, but the active model does not change. Why?",
+        choices: [
+          "Permission and hook settings reload live, while `model` is read at startup and should be changed with `/model` or a restart.",
+          "Project settings may restrict permissions but may never select a model.",
+          "The settings watcher reloads only array values, not scalar values.",
+          "Model changes require deleting the session transcript first."
+        ],
+        answer: [0],
+        rationale: "Most settings reload while a session runs. `model` is a documented startup exception; `outputStyle` similarly needs `/clear` or restart to rebuild the prompt."
+      },
+      {
+        id: 55,
+        scenario: 10,
+        scenarioTitle: "Permission and sandbox design",
+        objective: "3.6 CI/CD integration",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "An unattended CI job must run only pre-approved actions and immediately refuse anything else, including protected-path writes. Which permission mode best matches the requirement?",
+        choices: [
+          "`default`, because prompts provide the strongest review",
+          "`dontAsk`, because unapproved actions are denied instead of prompting",
+          "`bypassPermissions`, because it removes every interruption",
+          "`acceptEdits`, because CI changes are temporary"
+        ],
+        answer: [1],
+        rationale: "`dontAsk` is designed for locked-down automation. `bypassPermissions` removes most checks and is appropriate only inside a separate, trusted isolation boundary."
+      },
+      {
+        id: 56,
+        scenario: 10,
+        scenarioTitle: "Permission and sandbox design",
+        objective: "3.6 CI/CD integration",
+        difficulty: "Hard",
+        select: 2,
+        prompt: "A sandboxed build may write only inside the repository and must not read SSH or cloud credentials. Which TWO statements are important when designing this boundary?",
+        choices: [
+          "The sandbox enforces Bash and child-process filesystem and network access at the OS level.",
+          "Default sandbox reads already block all credential files automatically.",
+          "Credential paths or variables must be denied explicitly with sandbox credential or filesystem settings.",
+          "The sandbox also confines built-in `Read`, `Edit`, and `WebFetch` tools."
+        ],
+        answer: [0, 2],
+        rationale: "The sandbox contains subprocesses, not every Claude Code tool. Its default write boundary is narrow, but default reads remain broad, so sensitive files and variables require explicit protection."
+      },
+      {
+        id: 57,
+        scenario: 10,
+        scenarioTitle: "Permission and sandbox design",
+        objective: "3.6 CI/CD integration",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "A `PreToolUse` hook returns `permissionDecision: allow` for `terraform apply`, but project settings contain a matching `ask` rule. The command runs under `claude -p` with no permission-prompt handler. What is the expected result?",
+        choices: [
+          "The command runs because hook approval outranks settings rules.",
+          "The ask rule still applies; because the run cannot prompt and no hook resolves the permission request, the tool call is denied.",
+          "The command waits indefinitely for terminal input.",
+          "The ask rule is converted to an allow rule in print mode."
+        ],
+        answer: [1],
+        rationale: "A `PreToolUse` allow does not bypass settings ask or deny rules. Non-interactive permission requests can be handled programmatically, but without such a decision they fail closed."
+      },
+      {
+        id: 58,
+        scenario: 10,
+        scenarioTitle: "Permission and sandbox design",
+        objective: "3.6 CI/CD integration",
+        difficulty: "Hard",
+        select: 1,
+        prompt: "Repository maintainers commit an `autoMode` classifier policy to `.claude/settings.json`, expecting every clone to use it. The policy has no effect. What is the best explanation?",
+        choices: [
+          "`autoMode` configuration is read from user, managed, or CLI `--settings` sources, not project or local settings.",
+          "Auto mode policies apply only after a project has at least one path-scoped rule.",
+          "Classifier rules must be stored in `CLAUDE.md`, not JSON.",
+          "The project must enable `bypassPermissions` before auto mode settings load."
+        ],
+        answer: [0],
+        rationale: "A repository is not allowed to grant itself classifier autonomy. Team-wide policy belongs in managed settings; a developer's own default may live in user settings."
+      },
+      {
+        id: 59,
+        scenario: 10,
+        scenarioTitle: "Permission and sandbox design",
+        objective: "3.6 CI/CD integration",
+        difficulty: "Hard",
+        select: 2,
+        prompt: "A CI architect adds `--bare` to improve startup consistency, but the review then ignores repository `CLAUDE.md` and custom skills. Which TWO responses correctly address the trade-off?",
+        choices: [
+          "Remove `--bare` when the job intentionally relies on repository-discovered context.",
+          "Keep `--bare` and pass required prompts, settings, agents, or plugins explicitly.",
+          "Add `/memory` to the prompt because it re-enables discovery under bare mode.",
+          "Use `--continue`; resumed sessions always restore skipped customizations."
+        ],
+        answer: [0, 1],
+        rationale: "Bare mode deliberately skips auto-discovery. Either opt into normal project context or keep deterministic startup and provide every required component explicitly."
+      },
+      {
+        id: 60,
+        scenario: 10,
+        scenarioTitle: "Permission and sandbox design",
+        objective: "3.6 CI/CD integration",
+        difficulty: "Moderate",
+        select: 1,
+        prompt: "A security review must begin with no prior conversation and leave no resumable transcript on the runner. Which invocation design best fits?",
+        choices: [
+          "Start a new `claude -p` call without `--continue` or `--resume`, and add `--no-session-persistence`.",
+          "Use `--continue` so the reviewer sees the latest repository context, then run `/clear` inside the prompt.",
+          "Reuse a fixed session ID and overwrite it for every build.",
+          "Use `--fork-session` from the authoring session so its reasoning remains available."
+        ],
+        answer: [0],
+        rationale: "A new print-mode invocation provides independent conversation context. Disabling persistence prevents that one-off review from being stored for later resumption."
+      }
+    ];
+
+    const scenarioTitles = new Map([
+      [1, "Shared configuration drift"],
+      [2, "Reusable developer workflows"],
+      [3, "Polyglot monorepo conventions"],
+      [4, "Migration planning and execution"],
+      [5, "Refinement and reliability"],
+      [6, "Governed CI review"],
+      [7, "Memory architecture at scale"],
+      [8, "Skill governance and execution"],
+      [9, "Deterministic workflow controls"],
+      [10, "Permission and sandbox design"]
+    ]);
+
+    const numberWords = new Map([
+      [1, "one"],
+      [2, "two"],
+      [3, "three"]
+    ]);
+
+    const STORAGE_KEY = "ccarf-domain3-practice-state-v1";
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatInline(value) {
+      return escapeHtml(value).replace(/`([^`]+)`/g, "<code>$1</code>");
+    }
+
+    function letterFor(index) {
+      return String.fromCharCode(65 + index);
+    }
+
+    function answerLabel(indices) {
+      const letters = indices.map(letterFor);
+      if (letters.length === 1) return letters[0];
+      if (letters.length === 2) return `${letters[0]} and ${letters[1]}`;
+      return `${letters.slice(0, -1).join(", ")}, and ${letters.at(-1)}`;
+    }
+
+    function setEquals(a, b) {
+      if (a.size !== b.size) return false;
+      for (const value of a) {
+        if (!b.has(value)) return false;
+      }
+      return true;
+    }
+
+    function loadState() {
+      let saved = {};
+      try {
+        saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      } catch {
+        saved = {};
+      }
+      const theme = saved.theme === "dark" || saved.theme === "light"
+        ? saved.theme
+        : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      const view = saved.view === "list" ? "list" : "focus";
+      const autoAdvance = typeof saved.autoAdvance === "boolean" ? saved.autoAdvance : true;
+      const currentIndex = Number.isInteger(saved.currentIndex)
+        ? Math.min(Math.max(saved.currentIndex, 0), questions.length)
+        : 0;
+      const answers = {};
+      if (saved.answers && typeof saved.answers === "object") {
+        for (const [id, record] of Object.entries(saved.answers)) {
+          if (!record) continue;
+          answers[id] = {
+            selected: new Set(Array.isArray(record.selected) ? record.selected : []),
+            evaluated: !!record.evaluated
+          };
+        }
+      }
+      return { theme, view, autoAdvance, currentIndex, answers };
+    }
+
+    const state = loadState();
+    let advanceTimer = null;
+
+    function saveState() {
+      const answers = {};
+      for (const [id, record] of Object.entries(state.answers)) {
+        answers[id] = { selected: [...record.selected], evaluated: record.evaluated };
+      }
+      const payload = {
+        theme: state.theme,
+        view: state.view,
+        autoAdvance: state.autoAdvance,
+        currentIndex: state.currentIndex,
+        answers
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch {
+        /* storage unavailable; state stays in memory for this session */
+      }
+    }
+
+    function getRecord(id) {
+      if (!state.answers[id]) {
+        state.answers[id] = { selected: new Set(), evaluated: false };
+      }
+      return state.answers[id];
+    }
+
+    function computeScore() {
+      let answered = 0;
+      let correct = 0;
+      for (const question of questions) {
+        const record = state.answers[question.id];
+        if (record && record.evaluated) {
+          answered += 1;
+          if (setEquals(record.selected, new Set(question.answer))) correct += 1;
+        }
+      }
+      return { answered, correct, total: questions.length };
+    }
+
+    function announce(message) {
+      document.getElementById("live-region").textContent = message;
+    }
+
+    // ---------- Theme ----------
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      const btn = document.getElementById("theme-btn");
+      btn.textContent = theme === "dark" ? "☀" : "☽";
+      btn.setAttribute("aria-label", theme === "dark" ? "Switch to light theme" : "Switch to dark theme");
+    }
+
+    // ---------- Fullscreen ----------
+
+    function updateFullscreenButton() {
+      const btn = document.getElementById("fullscreen-btn");
+      const isFs = !!document.fullscreenElement;
+      btn.setAttribute("aria-pressed", String(isFs));
+      btn.setAttribute("title", isFs ? "Exit fullscreen" : "Enter fullscreen");
+    }
+
+    // ---------- Focus view ----------
+
+    function clearAdvanceTimer() {
+      if (advanceTimer) {
+        clearTimeout(advanceTimer);
+        advanceTimer = null;
+      }
+    }
+
+    function goNext() {
+      clearAdvanceTimer();
+      if (state.currentIndex < questions.length) {
+        state.currentIndex += 1;
+        saveState();
+        renderFocusView();
+      }
+    }
+
+    function goPrev() {
+      clearAdvanceTimer();
+      if (state.currentIndex > 0) {
+        state.currentIndex -= 1;
+        saveState();
+        renderFocusView();
+      }
+    }
+
+    function handleOptionClick(question, idx) {
+      const record = getRecord(question.id);
+      if (question.select === 1) {
+        record.selected = new Set([idx]);
+        record.evaluated = true;
+      } else {
+        if (record.selected.has(idx)) {
+          record.selected.delete(idx);
+          record.evaluated = false;
+        } else {
+          if (record.selected.size >= question.select) return;
+          record.selected.add(idx);
+          record.evaluated = record.selected.size === question.select;
+        }
+      }
+      saveState();
+      renderFocusQuestion(question);
+      if (record.evaluated && state.autoAdvance) {
+        clearAdvanceTimer();
+        advanceTimer = setTimeout(goNext, 900);
+      }
+    }
+
+    function renderFocusQuestion(question) {
+      const record = getRecord(question.id);
+      const isMultiSelect = question.select > 1;
+
+      document.getElementById("q-meta").textContent =
+        `Scenario ${question.scenario} · ${scenarioTitles.get(question.scenario)}`;
+      document.getElementById("q-prompt").innerHTML = formatInline(question.prompt);
+      document.getElementById("q-hint").textContent = isMultiSelect
+        ? `Select ${numberWords.get(question.select) || question.select} answers.`
+        : "";
+
+      const optionsEl = document.getElementById("q-options");
+      optionsEl.innerHTML = "";
+      question.choices.forEach((choice, idx) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "opt";
+        const selected = record.selected.has(idx);
+        const isAnswer = question.answer.includes(idx);
+        if (record.evaluated) {
+          if (isAnswer) btn.classList.add("correct");
+          if (selected && !isAnswer) btn.classList.add("incorrect");
+          else if (selected) btn.classList.add("selected");
+        } else if (selected) {
+          btn.classList.add("selected");
+        }
+        btn.innerHTML =
+          `<span class="opt-letter">${letterFor(idx)}</span><span class="opt-text">${formatInline(choice)}</span>`;
+        btn.addEventListener("click", () => handleOptionClick(question, idx));
+        optionsEl.appendChild(btn);
+      });
+
+      const feedback = document.getElementById("q-feedback");
+      if (record.evaluated) {
+        const isCorrect = setEquals(record.selected, new Set(question.answer));
+        feedback.hidden = false;
+        feedback.innerHTML = `
+          <p class="feedback-result ${isCorrect ? "is-correct" : "is-incorrect"}">
+            ${isCorrect ? "Correct" : "Not quite"} - answer: ${answerLabel(question.answer)}
+          </p>
+          <p class="feedback-rationale">${formatInline(question.rationale)}</p>
+        `;
+      } else {
+        feedback.hidden = true;
+        feedback.innerHTML = "";
+      }
+    }
+
+    function renderSummary() {
+      const { answered, correct, total } = computeScore();
+      const skipped = total - answered;
+      document.getElementById("summary-score").textContent =
+        `${correct} / ${total} correct` + (skipped ? ` · ${skipped} skipped` : "");
+    }
+
+    function renderFocusView() {
+      const questionBlock = document.getElementById("question-block");
+      const summaryBlock = document.getElementById("q-summary");
+      const nav = document.getElementById("focus-nav");
+      const isSummary = state.currentIndex >= questions.length;
+
+      questionBlock.hidden = isSummary;
+      summaryBlock.hidden = !isSummary;
+      nav.hidden = isSummary;
+
+      if (isSummary) {
+        renderSummary();
+        announce("Practice complete.");
+      } else {
+        const question = questions[state.currentIndex];
+        renderFocusQuestion(question);
+        announce(`Question ${state.currentIndex + 1} of ${questions.length}`);
+      }
+
+      const progressPct = isSummary ? 100 : (state.currentIndex / questions.length) * 100;
+      document.getElementById("progress-fill").style.width = `${progressPct}%`;
+      document.getElementById("progress-text").textContent = isSummary
+        ? "Complete"
+        : `${state.currentIndex + 1} / ${questions.length}`;
+      document.getElementById("prev-btn").disabled = state.currentIndex === 0;
+    }
+
+    // ---------- List view ----------
+
+    function renderListItem(question) {
+      const record = state.answers[question.id];
+      const options = question.choices
+        .map((choice, idx) => `
+          <li><span class="opt-letter-plain">${letterFor(idx)}.</span><span>${formatInline(choice)}</span></li>
+        `)
+        .join("");
+
+      let yourAnswer = "";
+      if (record && record.evaluated) {
+        const isCorrect = setEquals(record.selected, new Set(question.answer));
+        const chosen = answerLabel([...record.selected].sort((a, b) => a - b));
+        yourAnswer = `<p class="list-your-answer ${isCorrect ? "is-correct" : "is-incorrect"}">Your answer: ${chosen} (${isCorrect ? "correct" : "incorrect"})</p>`;
+      }
+
+      const selectNote = question.select > 1
+        ? ` &middot; Select ${numberWords.get(question.select) || question.select}`
+        : "";
+
+      return `
+        <article class="list-item" data-question="${question.id}">
+          <p class="list-item-meta">Q${question.id} &middot; ${escapeHtml(question.objective)} &middot; ${escapeHtml(question.difficulty)}${selectNote}</p>
+          <p class="list-item-prompt">${formatInline(question.prompt)}</p>
+          <ol class="list-item-options">${options}</ol>
+          <details class="list-answer">
+            <summary></summary>
+            <div class="list-answer-panel">
+              ${yourAnswer}
+              <p class="answer-key">Answer: ${answerLabel(question.answer)}</p>
+              <p>${formatInline(question.rationale)}</p>
+            </div>
+          </details>
+        </article>
+      `;
+    }
+
+    function renderListView() {
+      const bank = document.getElementById("list-bank");
+      const sections = [];
+      for (const [scenario, title] of scenarioTitles) {
+        const items = questions
+          .filter((question) => question.scenario === scenario)
+          .map(renderListItem)
+          .join("");
+        sections.push(`
+          <h2 class="list-section-title">Scenario ${scenario} &middot; ${escapeHtml(title)}</h2>
+          ${items}
+        `);
+      }
+      bank.innerHTML = sections.join("");
+      document.getElementById("list-count").textContent = `${questions.length} questions`;
+    }
+
+    // ---------- View switching ----------
+
+    function setView(view) {
+      state.view = view;
+      document.getElementById("focus-view").hidden = view !== "focus";
+      document.getElementById("list-view").hidden = view !== "list";
+      document.getElementById("auto-advance-wrap").hidden = view !== "focus";
+      document.querySelectorAll(".seg-btn").forEach((btn) => {
+        btn.setAttribute("aria-selected", String(btn.dataset.view === view));
+      });
+      if (view === "list") renderListView();
+      saveState();
+    }
+
+    // ---------- Wiring ----------
+
+    function init() {
+      applyTheme(state.theme);
+      document.getElementById("auto-advance").checked = state.autoAdvance;
+      setView(state.view);
+      renderFocusView();
+      updateFullscreenButton();
+
+      document.getElementById("theme-btn").addEventListener("click", () => {
+        state.theme = state.theme === "dark" ? "light" : "dark";
+        applyTheme(state.theme);
+        saveState();
+      });
+
+      document.getElementById("fullscreen-btn").addEventListener("click", () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen?.().catch(() => {});
+          if (state.view !== "focus") setView("focus");
+        } else {
+          document.exitFullscreen?.();
+        }
+      });
+      document.addEventListener("fullscreenchange", updateFullscreenButton);
+
+      document.querySelectorAll(".seg-btn").forEach((btn) => {
+        btn.addEventListener("click", () => setView(btn.dataset.view));
+      });
+
+      document.getElementById("auto-advance").addEventListener("change", (event) => {
+        state.autoAdvance = event.target.checked;
+        saveState();
+      });
+
+      document.getElementById("prev-btn").addEventListener("click", goPrev);
+      document.getElementById("next-btn").addEventListener("click", goNext);
+      document.getElementById("summary-back").addEventListener("click", goPrev);
+      document.getElementById("summary-review").addEventListener("click", () => setView("list"));
+      document.getElementById("summary-restart").addEventListener("click", () => {
+        if (confirm("Clear all answers and restart from question 1?")) {
+          state.answers = {};
+          state.currentIndex = 0;
+          clearAdvanceTimer();
+          saveState();
+          renderFocusView();
+          if (state.view === "list") renderListView();
+        }
+      });
+
+      const infoBtn = document.getElementById("info-btn");
+      const infoPopover = document.getElementById("info-popover");
+      infoBtn.addEventListener("click", () => {
+        const willOpen = infoPopover.hidden;
+        infoPopover.hidden = !willOpen;
+        infoBtn.setAttribute("aria-expanded", String(willOpen));
+      });
+      document.addEventListener("click", (event) => {
+        if (!infoPopover.hidden && !infoPopover.contains(event.target) && event.target !== infoBtn) {
+          infoPopover.hidden = true;
+          infoBtn.setAttribute("aria-expanded", "false");
+        }
+      });
+      document.getElementById("reset-progress").addEventListener("click", () => {
+        if (confirm("Clear all answers and restart from question 1?")) {
+          state.answers = {};
+          state.currentIndex = 0;
+          clearAdvanceTimer();
+          saveState();
+          renderFocusView();
+          if (state.view === "list") renderListView();
+          infoPopover.hidden = true;
+          infoBtn.setAttribute("aria-expanded", "false");
+        }
+      });
+
+      document.getElementById("expand-all").addEventListener("click", () => {
+        document.querySelectorAll(".list-answer").forEach((el) => { el.open = true; });
+      });
+      document.getElementById("collapse-all").addEventListener("click", () => {
+        document.querySelectorAll(".list-answer").forEach((el) => { el.open = false; });
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          if (!infoPopover.hidden) {
+            infoPopover.hidden = true;
+            infoBtn.setAttribute("aria-expanded", "false");
+          }
+          return;
+        }
+        if (state.view !== "focus" || state.currentIndex >= questions.length) return;
+        if (event.key === "ArrowRight") {
+          goNext();
+        } else if (event.key === "ArrowLeft") {
+          goPrev();
+        } else if (/^[1-9]$/.test(event.key) || /^[a-iA-I]$/.test(event.key)) {
+          const question = questions[state.currentIndex];
+          const idx = /^[1-9]$/.test(event.key)
+            ? Number(event.key) - 1
+            : event.key.toUpperCase().charCodeAt(0) - 65;
+          if (idx >= 0 && idx < question.choices.length) handleOptionClick(question, idx);
+        }
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
