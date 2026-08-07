@@ -23,7 +23,15 @@
       "This series is devoted to illustration - the visual work, and the seeing behind it. These posts share drawings, studies, and finished pieces, along with the choices that shaped them: what to show, what to leave out, and why a subject looks the way it does through this particular pair of eyes. It's a space for the image to carry the idea, and for perspective to do the talking."
     ],
     "exploreLink": "explore.html#series-nazarya",
-    "groups": []
+    "groups": [
+      {
+        "heading": "Claude Certified Architect - Foundations",
+        "description": "Sample questions for each of the domains under CCAR-F certification",
+        "links": [
+          { "text": "Domain 3 Samples", "url": "illustration/ccar-f/domain-3/index.html" }
+        ]
+      }
+    ]
   },
   {
     "id": "sankhya",
