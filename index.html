@@ -1,391 +1,81 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Practice exam hub for the Claude Certified Architect – Foundations (CCAR-F) certification - one self-contained practice set per domain.">
-  <title>CCAR-F Practice Exams</title>
-  <style>
-    :root {
-      --bg: #ffffff;
-      --bg-raised: #f7f7f8;
-      --text: #171a20;
-      --text-muted: #6b6f76;
-      --border: #e6e6e9;
-      --selected-bg: #171a20;
-      --selected-text: #ffffff;
-      --focus-ring: #3b82f6;
-      --shadow: 0 1px 2px rgba(20, 20, 22, 0.04);
-    }
-
-    :root[data-theme="dark"] {
-      --bg: #121214;
-      --bg-raised: #1b1c1f;
-      --text: #f2f2f3;
-      --text-muted: #9a9ca3;
-      --border: #2c2d31;
-      --selected-bg: #f2f2f3;
-      --selected-text: #121214;
-      --focus-ring: #6aa9ff;
-      --shadow: none;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      height: 100%;
-    }
-
-    body {
-      min-height: 100%;
-      margin: 0;
-      color: var(--text);
-      background: var(--bg);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      font-size: 17px;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-      transition: background 0.2s ease, color 0.2s ease;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      * {
-        transition: none !important;
-      }
-    }
-
-    a {
-      color: inherit;
-    }
-
-    .skip-link {
-      position: absolute;
-      top: -40px;
-      left: 8px;
-      z-index: 100;
-      padding: 8px 14px;
-      border-radius: 6px;
-      background: var(--selected-bg);
-      color: var(--selected-text);
-    }
-
-    .skip-link:focus {
-      top: 8px;
-    }
-
-    /* ---------- Top bar ---------- */
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: color-mix(in srgb, var(--bg) 92%, transparent);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .topbar-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 10px 20px;
-    }
-
-    .brand {
-      font-size: 0.82rem;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      white-space: nowrap;
-    }
-
-    .icon-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 34px;
-      height: 34px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      background: transparent;
-      cursor: pointer;
-      font-size: 0.95rem;
-      line-height: 1;
-      color: inherit;
-      font: inherit;
-    }
-
-    .icon-btn:hover {
-      background: var(--bg-raised);
-    }
-
-    .icon-btn:focus-visible,
-    a:focus-visible {
-      outline: 2px solid var(--focus-ring);
-      outline-offset: 2px;
-    }
-
-    .popover {
-      position: absolute;
-      top: 54px;
-      left: 20px;
-      z-index: 20;
-      width: min(360px, calc(100vw - 40px));
-      padding: 18px 20px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--bg-raised);
-      box-shadow: 0 10px 30px rgba(20, 20, 22, 0.16);
-      font-size: 0.86rem;
-      color: var(--text-muted);
-    }
-
-    .popover h2 {
-      margin: 0 0 10px;
-      font-size: 0.78rem;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--text);
-    }
-
-    .popover p {
-      margin: 0 0 10px;
-    }
-
-    .popover p:last-child {
-      margin-bottom: 0;
-    }
-
-    .popover a {
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
-
-    /* ---------- Hero ---------- */
-
-    .wrap {
-      width: min(680px, calc(100% - 48px));
-      margin: 0 auto;
-    }
-
-    .hero {
-      padding: 56px 0 40px;
-    }
-
-    .hero h1 {
-      margin: 0 0 14px;
-      font-size: clamp(1.7rem, 1.1rem + 2.2vw, 2.5rem);
-      font-weight: 650;
-      line-height: 1.2;
-      letter-spacing: -0.01em;
-    }
-
-    .hero p {
-      margin: 0;
-      max-width: 52ch;
-      color: var(--text-muted);
-      font-size: 1.02rem;
-    }
-
-    /* ---------- Domain list ---------- */
-
-    .domain-list {
-      display: grid;
-      gap: 10px;
-      margin: 0 0 64px;
-      padding: 0;
-      list-style: none;
-    }
-
-    .domain-card {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 16px 18px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      text-decoration: none;
-      transition: border-color 0.12s ease;
-    }
-
-    a.domain-card:hover,
-    a.domain-card:focus-visible {
-      border-color: var(--text);
-    }
-
-    .domain-card[data-ready="false"] {
-      color: var(--text-muted);
-    }
-
-    .domain-num {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 34px;
-      height: 34px;
-      border: 1px solid var(--border);
-      border-radius: 50%;
-      font-size: 0.82rem;
-      font-weight: 700;
-      flex: none;
-    }
-
-    .domain-body {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .domain-title {
-      font-size: 1.02rem;
-      font-weight: 620;
-    }
-
-    .domain-desc {
-      margin-top: 2px;
-      color: var(--text-muted);
-      font-size: 0.86rem;
-    }
-
-    .domain-tag {
-      flex: none;
-      padding: 3px 9px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      color: var(--text-muted);
-      font-size: 0.72rem;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Akshat Mistry</title>
+  <meta name="description" content="Software engineer writing about how machines learn to represent meaning." />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    document.documentElement.classList.add('js');
+  </script>
 </head>
 <body>
-  <a class="skip-link" href="#main">Skip to content</a>
+<header class="nav">
+  <div class="nav-inner container">
+    <a class="nav-mark" href="index.html">Akshatmistry.</a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="explore.html">His Writing</a>
+      <button type="button" data-open-about>About Him</button>
+    </nav>
+  </div>
+</header>
 
-  <header class="topbar">
-    <div class="topbar-inner">
-      <div style="display:flex; align-items:center; gap:10px;">
-        <button type="button" id="info-btn" class="icon-btn" aria-haspopup="true" aria-expanded="false" title="About this site">i</button>
-        <span class="brand">CCAR&#8209;F Practice</span>
+<main>
+  <section class="hero-wrap container">
+    <div class="hero-panel">
+      <div class="hero-copy">
+        <h1 class="hero-headline reveal" id="profile-headline"></h1>
+        <div class="hero-contacts reveal" id="hero-contacts">
+          <button type="button" class="contact-link" id="hero-contact-email" data-copy-email>Email</button>
+          <span class="contact-sep" aria-hidden="true"> - </span>
+          <a class="contact-link" id="hero-contact-linkedin" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <span class="contact-sep" aria-hidden="true"> - </span>
+          <a class="contact-link" id="hero-contact-medium" target="_blank" rel="noopener noreferrer">Medium</a>
+        </div>
       </div>
-      <button type="button" id="theme-btn" class="icon-btn" title="Toggle dark / light theme">&#9789;</button>
-    </div>
-    <div class="popover" id="info-popover" hidden>
-      <h2>About this site</h2>
-      <p>Independently authored study questions, not official Anthropic exam items. Each domain below is a self-contained practice set mirroring the official scenario-based multiple-choice / multiple-response format.</p>
-      <p>Sources:
-        <a href="https://anthropic-partners.skilljar.com/claude-certified-architect-foundations-certification">certification page</a>,
-        <a href="https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F6nizmqk8tpzpfjvt6qmmav7rh%2Fpublic%2F1783542750%2FClaude+Certified+Architect+%E2%80%93+Foundations+Exam+Guide.pdf">exam guide</a>,
-        <a href="https://code.claude.com/docs/en/overview">Claude Code docs</a>.
-      </p>
-      <p>Companion essay: <a href="https://medium.com/@akshat.mistry/part-viii-cca-f-domain-3-claude-code-configuration-workflows-91959a6f5dd1?sharedUserId=akshat.mistry">Sāṅkhya - Part VIII</a></p>
-    </div>
-  </header>
 
-  <main id="main">
-    <div class="wrap">
-      <div class="hero">
-        <h1>Claude Certified Architect &ndash; Foundations</h1>
-        <p>Pick a domain to start a 60-question practice set. Each one opens as its own self-contained page &mdash; your progress in one doesn't affect the others.</p>
+      <div class="hero-figure">
+        <div class="portrait-shadow">
+          <div class="portrait-frame">
+            <img id="profile-portrait" alt="Portrait" />
+          </div>
+        </div>
       </div>
-      <ul class="domain-list" id="domain-list"></ul>
     </div>
-  </main>
+  </section>
 
-  <script>
-    // Add, remove, or edit entries as each domain's practice page ships.
-    // Set ready:true and fill in title/weight/path once a domain folder exists.
-    const domains = [
-      { id: 1, title: "Domain 1", weight: "", desc: "Practice questions for this domain.", path: "domain-1/", ready: false },
-      { id: 2, title: "Domain 2", weight: "", desc: "Practice questions for this domain.", path: "domain-2/", ready: false },
-      {
-        id: 3,
-        title: "Claude Code Configuration & Workflows",
-        weight: "20%",
-        desc: "60 scenario-based questions on CLAUDE.md hierarchy, commands & skills, path rules, plan mode, iterative refinement, and CI/permission governance.",
-        path: "domain-3/",
-        ready: true
-      },
-      { id: 4, title: "Domain 4", weight: "", desc: "Practice questions for this domain.", path: "domain-4/", ready: false },
-      { id: 5, title: "Domain 5", weight: "", desc: "Practice questions for this domain.", path: "domain-5/", ready: false }
-      // { id: 6, title: "Domain 6", weight: "", desc: "Practice questions for this domain.", path: "domain-6/", ready: false }
-    ];
+  <section class="series-wrap container" id="series">
+    <a class="series-title" href="#series-root">Explore His Work</a>
+    <div class="series-grid" id="series-root"></div>
+  </section>
+</main>
 
-    function escapeHtml(value) {
-      return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
+<div class="about-modal-backdrop" id="about-modal-backdrop" hidden>
+  <div class="about-modal-panel" role="dialog" aria-modal="true" aria-labelledby="about-modal-name">
+    <button type="button" class="about-modal-close" data-close-about aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round" />
+      </svg>
+    </button>
+    <p class="about-modal-name" id="about-modal-name">Akshatmistry.</p>
+    <div class="about-modal-scroll">
+      <div id="about-modal-body"></div>
+      <div class="about-modal-contacts">
+        <button type="button" class="contact-link" id="about-contact-email" data-copy-email>Email</button>
+        <span class="contact-sep" aria-hidden="true"> - </span>
+        <a class="contact-link" id="about-contact-linkedin" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <span class="contact-sep" aria-hidden="true"> - </span>
+        <a class="contact-link" id="about-contact-medium" target="_blank" rel="noopener noreferrer">Medium</a>
+      </div>
+    </div>
+  </div>
+</div>
 
-    function renderDomains() {
-      const list = document.getElementById("domain-list");
-      list.innerHTML = domains.map((domain) => {
-        const tag = domain.ready
-          ? (domain.weight ? `<span class="domain-tag">${escapeHtml(domain.weight)}</span>` : "")
-          : `<span class="domain-tag">Coming soon</span>`;
-        const inner = `
-          <span class="domain-num">${String(domain.id).padStart(2, "0")}</span>
-          <span class="domain-body">
-            <span class="domain-title">${escapeHtml(domain.title)}</span>
-            <span class="domain-desc">${escapeHtml(domain.desc)}</span>
-          </span>
-          ${tag}
-        `;
-        return domain.ready
-          ? `<li><a class="domain-card" data-ready="true" href="${escapeHtml(domain.path)}">${inner}</a></li>`
-          : `<li><div class="domain-card" data-ready="false">${inner}</div></li>`;
-      }).join("");
-    }
-
-    function applyTheme(theme) {
-      document.documentElement.setAttribute("data-theme", theme);
-      const btn = document.getElementById("theme-btn");
-      btn.textContent = theme === "dark" ? "☀" : "☽";
-      btn.setAttribute("aria-label", theme === "dark" ? "Switch to light theme" : "Switch to dark theme");
-    }
-
-    function init() {
-      renderDomains();
-
-      const stored = localStorage.getItem("ccarf-theme");
-      const theme = stored === "dark" || stored === "light"
-        ? stored
-        : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-      applyTheme(theme);
-
-      document.getElementById("theme-btn").addEventListener("click", () => {
-        const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
-        applyTheme(next);
-        try { localStorage.setItem("ccarf-theme", next); } catch { /* storage unavailable */ }
-      });
-
-      const infoBtn = document.getElementById("info-btn");
-      const infoPopover = document.getElementById("info-popover");
-      infoBtn.addEventListener("click", () => {
-        const willOpen = infoPopover.hidden;
-        infoPopover.hidden = !willOpen;
-        infoBtn.setAttribute("aria-expanded", String(willOpen));
-      });
-      document.addEventListener("click", (event) => {
-        if (!infoPopover.hidden && !infoPopover.contains(event.target) && event.target !== infoBtn) {
-          infoPopover.hidden = true;
-          infoBtn.setAttribute("aria-expanded", "false");
-        }
-      });
-      document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && !infoPopover.hidden) {
-          infoPopover.hidden = true;
-          infoBtn.setAttribute("aria-expanded", "false");
-        }
-      });
-    }
-
-    init();
-  </script>
+<script src="script.js"></script>
+<script src="content.js"></script>
 </body>
 </html>

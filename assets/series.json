@@ -1,0 +1,65 @@
+[
+  {
+    "id": "prakriti",
+    "name": "Prakriti",
+    "image": "assets/prakriti.png",
+    "quote": "In all things of nature there is something of the marvelous.",
+    "quoteAuthor": "Aristotle",
+    "paragraphs": [
+      "Prakriti is Sanskrit for nature - though not nature as scenery. In philosophy it names the primordial source from which all form and change emerge. That's the spirit behind the name: nature as the original innovator, the first laboratory, quietly running experiments long before we ever thought to.",
+      "This is where new ideas begin. These posts follow original thoughts, untested experiments, and fresh perspectives - the kind that come from looking at the world sideways rather than straight on. Some entries will be finished ideas; many will be half-formed ones worth thinking through in the open. If a concept is exploratory, unproven, or simply curious, it belongs here. The throughline is discovery: treating every observation as a possible seed, and giving it the room to grow."
+    ],
+    "exploreLink": "explore.html#series-prakriti",
+    "groups": []
+  },
+  {
+    "id": "nazarya",
+    "name": "Nazarya",
+    "image": "assets/nazarya.png",
+    "quote": "A line is a dot that went for a walk.",
+    "quoteAuthor": "Paul Klee",
+    "paragraphs": [
+      "Nazarya means perspective - a way of seeing. And that, in the end, is what an illustration really is: not a picture of a thing, but a point of view on it. The name is a reminder that the drawing matters less as decoration than as a lens.",
+      "This series is devoted to illustration - the visual work, and the seeing behind it. These posts share drawings, studies, and finished pieces, along with the choices that shaped them: what to show, what to leave out, and why a subject looks the way it does through this particular pair of eyes. It's a space for the image to carry the idea, and for perspective to do the talking."
+    ],
+    "exploreLink": "explore.html#series-nazarya",
+    "groups": []
+  },
+  {
+    "id": "sankhya",
+    "name": "Sāṅkhya",
+    "image": "assets/sankhya.png",
+    "quote": "If you can't explain it simply, you don't understand it well enough.",
+    "quoteAuthor": "Albert Einstein",
+    "paragraphs": [
+      "Sāṅkhya comes from the Sanskrit for enumeration and analysis - the discipline of understanding something by taking it apart, piece by piece, down to its roots. It names knowledge that is earned through depth rather than skimmed from the surface.",
+      "This is where things slow down and go deep. These posts unpack the fundamentals - the concepts most of us use without ever examining - and take them back to first principles, explained properly. Expect careful breakdowns, the why beneath the what, and the patient work of making a hard idea genuinely clear. Where Prakriti asks new questions, Sankhya answers old ones thoroughly. It's for anyone who would rather understand a thing completely than merely recognize it."
+    ],
+    "exploreLink": "explore.html#series-sankhya",
+    "groups": [
+      {
+        "heading": "CCAR-F Study Series",
+        "description": "Study notes toward 'Claude Certified Architect - Foundations', worked through domain by domain.",
+        "links": [
+          { "text": "Claude 101: The Foundation to CCA-F", "url": "https://medium.com/@akshat.mistry/claude-101-the-foundation-to-cca-f-7d4243e42d45" },
+          { "text": "Part-II | The Seven 'stop_reason' Values", "url": "https://medium.com/@akshat.mistry/part-ii-the-seven-stop-reason-values-b0626f486d1b" },
+          { "text": "Part III | 'tool_use', End to End: The Agentic Loop in Three Iterations", "url": "https://medium.com/@akshat.mistry/tool-use-end-to-end-the-agentic-loop-in-three-iterations-87cde7765dfc" },
+          { "text": "Part IV | Multi-Agent Coordination: The Hub-and-Spoke Architecture", "url": "https://medium.com/@akshat.mistry/part-iv-multi-agent-coordination-the-hub-and-spoke-architecture-529ad62d10c7" },
+          { "text": "Part V | Multi-Step Workflows: Enforcement and Handoff Patterns", "url": "https://medium.com/@akshat.mistry/part-v-multi-step-workflows-enforcement-and-handoff-patterns-106f676d799f"},
+          { "text": "Part VI | Session State, Resumption, and Forking", "url": "https://medium.com/@akshat.mistry/part-vi-session-state-resumption-and-forking-3ff40f4d48d9" },
+          { "text": "Part VII | Tool Design and MCP Integration", "url": "https://medium.com/@akshat.mistry/part-vii-tool-design-and-mcp-integration-cf0147c91146" },
+          { "text": "Part VIII | Claude Code Configuration & Workflows", "url": "https://medium.com/@akshat.mistry/part-viii-cca-f-domain-3-claude-code-configuration-workflows-91959a6f5dd1" }
+        ]
+      },
+      {
+        "heading": "Machine Learning Foundations",
+        "description": "How machines come to represent meaning - from raw text, to tokens, to vectors.",
+        "links": [
+          { "text": "ELMo, Functionally Explained", "url": "https://medium.com/@akshat.mistry/elmo-functionally-explained-0becc59ff40d" },
+          { "text": "The Artificial Neuron: A Field Guide", "url": "https://medium.com/@akshat.mistry/the-artificial-neuron-a-field-guide-354a45612744" },
+          { "text": "From Words to Vectors", "url": "https://medium.com/@akshat.mistry/from-words-to-vectors-a905d8ff07f5" }
+        ]
+      }
+    ]
+  }
+]

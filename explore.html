@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Writing - Akshat Mistry</title>
+    <meta name="description" content="Essays on machine learning foundations and AI tooling, grouped by topic. Hosted on Medium." />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="styles.css" />
+    <script>
+        document.documentElement.classList.add('js');
+    </script>
+</head>
+<body>
+<header class="nav">
+    <div class="nav-inner container">
+        <a class="nav-mark" href="index.html">Akshatmistry.</a>
+    </div>
+</header>
+<main>
+    <section class="explore container">
+        <header class="explore-head">
+            <p class="eyebrow">Writing</p>
+            <h1>Essays, hosted on Medium</h1>
+            <p class="explore-intro">
+                Grouped by series below. Every link opens the full piece on Medium.
+            </p>
+        </header>
+        <! - Populated at runtime from assets/series.json - see content.js >
+        <div id="series-archive"></div>
+    </section>
+</main>
+<script src="script.js"></script>
+<script src="content.js"></script>
+</body>
+</html>

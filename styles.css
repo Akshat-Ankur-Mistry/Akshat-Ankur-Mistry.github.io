@@ -1,0 +1,887 @@
+/*
+Two families, deliberately: nav/body/UI text stays on the same system-font
+approach apple.com uses (-apple-system/BlinkMacSystemFont gives Mac/iOS
+visitors real SF Pro for free, since SF Pro itself can't be shipped as a
+webfont off Apple platforms; Inter is the fallback for everyone else). The
+hero headline gets its own serif - matching the reference's editorial
+headline-vs-sans-UI pairing - via IBM Plex Serif.
+*/
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500&display=swap');
+
+:root {
+    --bg: #ffffff;
+    --panel: #eae9e4;
+    --ink: #1b1b1a;
+    --ink-soft: #625f58;
+    --ink-faint: #96938a;
+    --line: rgba(27, 27, 26, 0.1);
+    --line-strong: rgba(27, 27, 26, 0.2);
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-display: 'IBM Plex Serif', 'Iowan Old Style', Georgia, serif;
+    --font-body: var(--font-sans);
+    --text-xs: 0.75rem;
+    --text-sm: 0.9rem;
+    --text-base: 1.05rem;
+    --text-md: 1.2rem;
+    --text-lg: 1.5rem;
+    --text-xl: 2rem;
+    --text-2xl: 2.75rem;
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.5rem;
+    --space-6: 2.25rem;
+    --space-7: 3.25rem;
+    --space-8: 4.5rem;
+    --radius-sm: 10px;
+    --radius-md: 20px;
+    --radius-lg: 32px;
+    --radius-pill: 999px;
+    --measure: 60ch;
+    --dur-fast: 160ms;
+    --dur-med: 420ms;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+    -webkit-text-size-adjust: 100%;
+    /* the reduced-motion block below already forces this back to auto -
+    this is the smooth-scroll behavior it was written to guard against. */
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: 1.6;
+}
+
+h1,
+h2,
+h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    text-wrap: balance;
+    margin: 0;
+}
+
+p {
+    margin: 0;
+}
+
+a {
+    color: inherit;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+
+.container {
+    width: 100%;
+    max-width: 78rem;
+    margin-inline: auto;
+    padding-inline: var(--space-5);
+}
+
+:focus-visible {
+    outline: 2.5px solid var(--ink);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+::selection {
+    background: rgba(27, 27, 26, 0.14);
+}
+
+.eyebrow {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+}
+
+/* ---------- progressive-enhancement reveal ---------- */
+.js .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
+}
+
+.js .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+    .js .reveal {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* ---------- nav ---------- */
+.nav {
+    /* pinned across the whole scroll, not just the hero - the frosted glass
+    on ::before only earns its keep if content keeps passing behind it as
+    the page scrolls, rather than scrolling away with everything else. */
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    padding-block: var(--space-5);
+}
+
+/*
+The frosted-glass backdrop lives on this ::before, not on .nav itself.
+backdrop-filter creates a stacking context on whatever element it's set
+on - same trapping effect as z-index - so if .nav had it directly,
+.nav-links would still be sealed inside .nav's context with no way to
+out-rank .portrait-shadow outside it. A ::before has no descendants of
+its own to trap, so it can carry the blur with no side effect on stacking.
+*/
+.nav::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* translucent + blurred, not solid - the portrait extends up behind the
+    nav (see .portrait-shadow's poke), and a fully opaque background here
+    would hide it completely up to one hard line right at the nav's own
+    edge, then reveal it all at once. Frosted glass keeps nav text legible
+    without masking the image so abruptly. */
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.nav-inner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-mark {
+    /* explicitly --font-sans, not --font-display - the wordmark stays sans
+    ("jonnyczar." in the reference) even though the hero headline below is
+    serif; the two are deliberately different faces, not a mistake to sync */
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: var(--text-md);
+    text-decoration: none;
+    color: var(--ink);
+}
+
+.nav-links {
+    /* higher than .portrait-shadow's z-index:20 - the portrait renders above
+    the nav bar itself (so it stays crisp, not dimmed by the nav's frosted
+    glass), but the actual links need to out-rank the portrait too, or the
+    image covers them and they stop being clickable. */
+    position: relative;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: var(--text-sm);
+}
+
+.nav-links a,
+.nav-links button {
+    /* a background chip, not just text - once above the portrait, these can
+    land on top of dark hair, and var(--ink-soft) text has no chance of
+    staying legible against that without something opaque behind it. */
+    font: inherit;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius-pill);
+    text-decoration: none;
+    color: var(--ink-soft);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+
+.nav-links a:hover,
+.nav-links button:hover,
+.nav-links a[aria-current='page'] {
+    color: var(--ink);
+    border-color: var(--line-strong);
+}
+
+/* ---------- hero ---------- */
+.hero-wrap {
+    /* fixed height, bottom-anchored content: .hero-panel sits flush against
+    the bottom of this box (justify-content) and grows *upward* as the
+    headline gets longer, rather than growing downward from a fixed top
+    padding. That keeps the panel's bottom edge - and therefore
+    .portrait-shadow's bottom:0 anchor and its poke above the nav - at the
+    same fixed position regardless of how many lines profile.json's
+    headline wraps to.
+    The number itself comes from working backward from that: portrait
+    height (41rem) + this box's own bottom padding (space-7) minus the
+    ~2rem of poke wanted above the nav. All three of those are fixed
+    quantities independent of profile.json, which is exactly why this can
+    be a constant instead of something to keep recalculating. */
+    height: 42rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-bottom: var(--space-7);
+}
+
+.hero-panel {
+    position: relative;
+    background-color: var(--panel);
+    /* mild grey, deepening slightly toward the bottom-right - same move as the
+    reference: it eases the panel into the photo instead of a flat card
+    with a photo dropped on top */
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, transparent 40%, rgba(20, 20, 18, 0.22) 100%);
+    border-radius: var(--radius-lg);
+    /* one value, all four sides - .hero-copy's text used to sit off-center
+    because the frame's own padding wasn't uniform (space-8 vertical vs
+    space-7 horizontal) while a separately fixed panel height tried to
+    center it in whatever space that left over. Equal padding on every
+    side, with height left intrinsic to content (below), means the frame
+    always wraps its own content evenly - nothing to keep recalculating
+    by hand as profile.json's text changes. */
+    padding: var(--space-7);
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: var(--space-6);
+    /* no explicit height: it now sizes to whatever .hero-copy's content (plus
+    the padding above) actually needs, bounded by content.js's character
+    cap rather than by a number tuned for one specific headline length.
+    The portrait is unaffected by this either way - .portrait-shadow is
+    positioned with bottom:0 against .hero-panel directly, which holds
+    regardless of what height the panel resolves to. */
+}
+
+.hero-copy {
+    grid-column: 1;
+    max-width: 46ch;
+}
+
+.hero-headline {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.5rem, 1rem + 1.8vw, 2.25rem);
+    line-height: 1.3;
+    max-width: 30ch;
+    color: var(--ink);
+}
+
+.hero-contacts {
+    margin-top: var(--space-5);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+}
+
+/*
+The dash separators are their own <span>s in the HTML, not ::after content
+on the links - an ::after glued onto an <a> renders *inside* that anchor's
+box, so hovering/underlining/focusing the link visibly swallows the dash
+too. Plain siblings keep the separator neutral.
+*/
+.contact-sep {
+    color: var(--ink-faint);
+    margin-inline: 0.4em;
+}
+
+.contact-link {
+    position: relative;
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding: 0;
+}
+
+.contact-link:hover {
+    color: var(--ink);
+    text-decoration: underline;
+}
+
+/* Small feedback bubble for the email "copy" buttons (see script.js) */
+.copy-tooltip {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 0.4rem);
+    transform: translate(-50%, 4px);
+    background: var(--ink);
+    color: var(--bg);
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    white-space: nowrap;
+    padding: 0.3rem 0.65rem;
+    border-radius: var(--radius-sm);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.copy-tooltip.is-visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.hero-figure {
+    grid-column: 2;
+    grid-row: 1;
+    height: 100%;
+}
+
+/*
+.portrait-shadow is positioned against .hero-panel (not .hero-figure) so
+its offsets ignore the panel's own padding: bottom/right sit flush with
+the panel's true edges, and the extra height lets the head break out above
+the top - the treatment from the reference image. .hero-figure itself just
+reserves the grid column.
+The drop-shadow filter lives on the <img> itself, not a wrapper - it needs
+to follow the photo's actual (transparent-PNG) silhouette. Putting it on
+an ancestor instead makes it trace that ancestor's own box/clip shape,
+which for .portrait-frame is a plain rounded rectangle - a hard, straight
+edge instead of a soft shadow following the person's outline.
+*/
+.portrait-shadow {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    /* above the nav (z-index:10) - the portrait stays fully crisp where it
+    overlaps the nav's frosted glass, instead of being the thing that gets
+    blurred/dimmed. .nav-links has its own still-higher z-index below so
+    the links stay clickable rather than getting covered by hair. */
+    z-index: 20;
+    /* fixed, in lockstep with .hero-panel's own fixed height: not tied to
+    viewport size or content. .hero-wrap's top padding is deliberately
+    larger than this poke so it clears the nav bar rather than painting
+    over it. */
+    height: 41rem;
+    width: auto;
+    aspect-ratio: 896 / 1194;
+    max-width: 30rem;
+}
+
+.portrait-frame {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    /*
+    Only bottom-right sits on an actual edge (the panel's own corner - same
+    radius, same point, so the two curves read as one). The frame now
+    extends most of a head-height above a much shorter panel, so top-left,
+    top-right, and bottom-left are all just floating in open space with no
+    edge to follow - rounding any of them just clips a chunk out of the
+    hair/silhouette in a straight-ish line instead of tracing anything real.
+    */
+    border-radius: 0 0 var(--radius-lg) 0;
+    overflow: hidden;
+}
+
+.portrait-frame img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    /*
+    .portrait-frame's overflow:hidden clips exactly at the image's own
+    edge - frame and image are the same size, so there's no spare room for
+    a shadow to fade into before hitting that boundary. A big soft shadow
+    (the kind with real blur/spread) reliably shows a seam somewhere because
+    of that; keeping it this tight means there's barely anything left to
+    clip in the first place.
+    */
+    filter: drop-shadow(0 3px 6px rgba(20, 20, 18, 0.16));
+}
+
+@media (max-width: 860px) {
+    .hero-wrap {
+        height: auto;
+        display: block;
+        padding-bottom: var(--space-6);
+    }
+    .hero-panel {
+        grid-template-columns: 1fr;
+        min-height: 0;
+        padding: var(--space-6) var(--space-5) var(--space-8);
+    }
+    .hero-copy {
+        grid-column: 1;
+        order: 2;
+    }
+    .hero-figure {
+        grid-column: 1;
+        order: 1;
+        height: auto;
+        padding-top: var(--space-4);
+        display: flex;
+        justify-content: center;
+    }
+    /*
+    On mobile the frame drops back into normal flow (no top break-out - the
+    layout is too tight for it); the glass card stays position:absolute but
+    now centers against this normal-flow box instead of the desktop one.
+    .portrait-frame needs no override here - it's already width:100%/height:100%
+    of whatever .portrait-shadow resolves to.
+    */
+    .portrait-shadow {
+        position: relative;
+        width: 100%;
+        max-width: 15rem;
+        height: auto;
+    }
+    .hero-copy h1 {
+        font-size: var(--text-xl);
+    }
+}
+
+/* ---------- series ---------- */
+.series-wrap {
+    padding-block: var(--space-8);
+}
+
+.series-title {
+    /* same treatment as .nav-mark, not the small tracked-out .eyebrow label -
+    this is announcing the section, not captioning something below it. */
+    display: block;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: var(--text-md);
+    color: var(--ink);
+    text-align: center;
+    text-decoration: none;
+}
+
+.series-title:hover {
+    text-decoration: underline;
+}
+
+.series-grid {
+    /* full-width horizontal rows stacked down the page, not side-by-side
+    columns - each series gets the whole container's width to lay the
+    image and its text out next to each other. */
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    margin-top: var(--space-5);
+}
+
+.series-card {
+    /* white, not the hero's grey panel - sits quietly on the page rather than
+    reading as a filled block; the hairline border is what still lets it
+    register as its own frame. */
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    background-color: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.series-card-image {
+    /* these are wordmark-style logos, not photos - object-fit:cover on a
+    stretched-height box was cropping most of the wide logo out of frame.
+    A fixed, moderate box + contain + padding shows the whole mark instead,
+    independent of how tall the text column next to it happens to be. */
+    display: block;
+    width: 20rem;
+    height: 14rem;
+    align-self: center;
+    flex-shrink: 0;
+    object-fit: contain;
+    padding: var(--space-5);
+    border-right: 1px solid var(--line);
+}
+
+.series-card-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: var(--space-5) var(--space-6) var(--space-6);
+}
+
+.series-card-name {
+    font-size: var(--text-lg);
+}
+
+.series-card-quote {
+    margin: var(--space-4) 0;
+    padding-left: var(--space-4);
+    border-left: 3px solid var(--line-strong);
+}
+
+.series-card-quote p {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--text-base);
+    color: var(--ink);
+}
+
+.series-card-quote p::before {
+    content: '\201C';
+}
+
+.series-card-quote p::after {
+    content: '\201D';
+}
+
+.series-card-quote cite {
+    display: block;
+    margin-top: var(--space-2);
+    font-family: var(--font-sans);
+    font-style: normal;
+    font-size: var(--text-xs);
+    color: var(--ink-soft);
+}
+
+.series-card-body p {
+    color: var(--ink-soft);
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-3);
+}
+
+.series-card-body p:last-child {
+    margin-bottom: 0;
+}
+
+.series-card-link {
+    /* auto margin, not a fixed one - pins the link to the bottom of the
+    card's stretched height instead of leaving uneven trailing gaps when
+    one series' text is shorter than its siblings'. */
+    margin-top: auto;
+    padding-top: var(--space-4);
+    align-self: flex-start;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: var(--text-sm);
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--line-strong);
+    padding-bottom: 0.2rem;
+}
+
+.series-card-link:hover {
+    border-color: var(--ink);
+}
+
+/*
+This rule must come after the base .series-card rules above (same
+specificity - source order decides the tie), not inside the earlier
+hero media query block, or the unconditional row-layout rules would win
+the cascade at narrow widths despite this one's narrower condition.
+*/
+@media (max-width: 860px) {
+    .series-card {
+        flex-direction: column;
+    }
+    .series-card-image {
+        width: 100%;
+        height: 12rem;
+        align-self: stretch;
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+    }
+}
+
+/* ---------- about popup ---------- */
+body.modal-open {
+    overflow: hidden;
+}
+
+.about-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+    background: rgba(27, 27, 26, 0.35);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.about-modal-backdrop[hidden] {
+    display: none;
+}
+
+.about-modal-panel {
+    position: relative;
+    /* width is a fixed target (the reading-column width is a design choice,
+    independent of how much text there is), but height is a ceiling -
+    short content should shrink the panel down to fit it, with scrolling
+    only kicking in once content actually reaches this max. */
+    width: min(90vw, 52rem);
+    max-height: min(85vh, 38rem);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* heavier blur than .nav::before's formula, but *more* opaque, not less
+    - this panel is the main event, not a bar something scrolls behind,
+    so what's behind it should read as an indistinct wash of light/dark
+    rather than something translucent enough to compete with the text.
+    More blur washes it out; more opacity keeps it from just showing
+    through anyway underneath that blur. */
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 24px 50px -20px rgba(20, 20, 18, 0.35);
+}
+
+.about-modal-close {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-3);
+    z-index: 1;
+    width: 1.75rem;
+    height: 1.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--ink-soft);
+    transition: color var(--dur-fast) var(--ease);
+}
+
+.about-modal-close:hover {
+    color: var(--ink);
+}
+
+.about-modal-close svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.about-modal-name {
+    /* same treatment as .nav-mark ("Akshatmistry.") - sans, weight 600,
+    left-aligned, not the serif headline register - this *is* that mark,
+    hardcoded in index.html rather than pulled from about.json. Sits
+    outside .about-modal-scroll so it (and the close button) stay in view
+    no matter how far down the bio you scroll.
+    Left/right match .about-modal-scroll below exactly, so the header and
+    the body text share one straight edge instead of the header looking
+    inset differently than the paragraphs under it. */
+    margin: 0;
+    padding: var(--space-6) var(--space-6) var(--space-4);
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: var(--text-md);
+    color: var(--ink);
+    border-bottom: 1px solid var(--line);
+}
+
+.about-modal-scroll {
+    /* flex items default to min-height:auto, which lets a tall child grow
+    past its flex parent's max-height instead of ever scrolling within
+    it - min-height:0 is what actually lets this obey .about-modal-panel's
+    max-height and scroll internally. */
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--space-5) var(--space-6) var(--space-6);
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+}
+
+.about-modal-scroll::-webkit-scrollbar {
+    width: 7px;
+}
+
+.about-modal-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.about-modal-scroll::-webkit-scrollbar-thumb {
+    background-color: var(--line-strong);
+    border-radius: var(--radius-pill);
+}
+
+.about-modal-scroll p {
+    color: var(--ink);
+    font-size: var(--text-sm);
+    line-height: 1.62;
+    margin: 0 0 var(--space-4);
+}
+
+.about-modal-scroll p:last-of-type {
+    margin-bottom: 0;
+}
+
+.about-modal-contacts {
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--line);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+}
+
+/* ---------- explore page ---------- */
+.explore {
+    padding-block: var(--space-7) var(--space-8);
+}
+
+.explore-head h1 {
+    font-size: var(--text-2xl);
+    margin-block: var(--space-2) var(--space-3);
+}
+
+.explore-intro {
+    color: var(--ink-soft);
+    max-width: var(--measure);
+    margin-bottom: var(--space-7);
+}
+
+/* one series' content on screen at a time, so same-series groups never
+have to compete for attention with a different series' - each series'
+panel gets its own subtle tint, matching the color already established
+by that series' own logo, rather than one shared grey. */
+[data-series="prakriti"] {
+    --tint: #e6efe0;
+}
+
+[data-series="nazarya"] {
+    --tint: #f2e9dd;
+}
+
+[data-series="sankhya"] {
+    --tint: #f2e2df;
+}
+
+.archive-tabs {
+    display: flex;
+    gap: var(--space-6);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: var(--space-5);
+}
+
+.archive-tab {
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--ink-faint);
+    padding-block: var(--space-3);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+
+.archive-tab.active {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+}
+
+.archive-panel {
+    display: none;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.archive-panel.active {
+    display: flex;
+}
+
+.archive-group {
+    /* its own frame, not one shared panel with an internal rule - with two
+    groups in the same series, a divider line still read as one
+    continuous block; separate frames (still the same series' tint, so
+    they read as siblings) make each group unmistakable on its own. */
+    background: var(--tint);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+}
+
+.archive-group-desc {
+    color: var(--ink-soft);
+    font-size: var(--text-sm);
+    max-width: var(--measure);
+    margin-block: var(--space-1) var(--space-3);
+}
+
+.archive-empty {
+    background: var(--tint);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+    color: var(--ink-faint);
+    font-size: var(--text-sm);
+}
+
+.post-list {
+    counter-reset: post-index;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+}
+
+.post-list li {
+    counter-increment: post-index;
+    border-bottom: 1px solid var(--line);
+}
+
+.post-list a > span::before {
+    content: counter(post-index) '. ';
+    color: var(--ink-faint);
+}
+
+.post-list a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding-block: var(--space-4);
+    text-decoration: none;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: var(--text-md);
+    transition: color var(--dur-fast) var(--ease);
+}
+
+.post-list a svg {
+    flex: none;
+    width: 1.1rem;
+    height: 1.1rem;
+    color: var(--ink-faint);
+    transition: transform var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+
+.post-list a:hover {
+    color: var(--ink-soft);
+}
+
+.post-list a:hover svg {
+    color: var(--ink);
+    transform: translate(2px, -2px);
+}
