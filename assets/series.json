@@ -26,9 +26,16 @@
     "groups": [
       {
         "heading": "Claude Certified Architect - Foundations",
-        "description": "Sample questions for each of the domains under CCAR-F certification",
+        "description": "Explore sample questions covering all domains of the CCAR-F certification.",
         "links": [
           { "text": "Domain 3 Samples", "url": "illustration/ccar-f/domain-3/index.html" }
+        ]
+      },
+      {
+        "heading": "Claude Certified Associate - Foundations",
+        "description": "Explore sample questions covering all domains of the CCAO-F certification.",
+        "links": [
+          { "text": "Full Guide", "url": "illustration/ccao-f/index.html" }
         ]
       }
     ]
