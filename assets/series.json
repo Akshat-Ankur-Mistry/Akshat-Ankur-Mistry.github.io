@@ -25,17 +25,18 @@
     "exploreLink": "explore.html#series-nazarya",
     "groups": [
       {
-        "heading": "Claude Certified Architect - Foundations",
-        "description": "Explore sample questions covering all domains of the CCAR-F certification.",
+        "heading": "Certifications",
+        "description": "Targeted sample questions designed to support concept revision, knowledge assessment, and certification exam preparation. These resources are intended as focused practice materials, not comprehensive study guides.",
         "links": [
-          { "text": "Domain 3 Samples", "url": "illustration/ccar-f/domain-3/index.html" }
+          { "text": "Claude Certified Architect - Foundations (CCAR-F) | Domain 3 Sample Questions", "url": "illustration/ccar-f/domain-3/index.html" },
+          { "text": "Claude Certified Associate - Foundations (CCAO-F) | Complete Question Set", "url": "illustration/ccao-f/index.html" }
         ]
       },
       {
-        "heading": "Claude Certified Associate - Foundations",
-        "description": "Explore sample questions covering all domains of the CCAO-F certification.",
+        "heading": "Machine Learning Fundamentals",
+        "description": "Structured illustrations designed to explain core machine learning and artificial intelligence concepts through clear, practical breakdowns. These resources support foundational understanding, concept connection, and long-term retention.",
         "links": [
-          { "text": "Full Guide", "url": "illustration/ccao-f/index.html" }
+          { "text": "How Two Neurons Solve the XOR Problem", "url": "illustration/machine-learning/how-two-neurons-solve-xor-problem/index.html" }
         ]
       }
     ]

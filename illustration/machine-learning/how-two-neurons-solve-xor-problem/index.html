@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        (function(){
+            try{
+                var saved = null;
+                try{ saved = localStorage.getItem('xor-sim-theme'); }catch(e){}
+                var theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+                document.documentElement.setAttribute('data-theme', theme);
+            }catch(e){}
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>XOR Forward-Pass Simulator</title>
+    <style>
+        :root{
+            --bg:#0a0a0b;
+            --panel:#131416;
+            --panel-2:#0e0f10;
+            --line:#232527;
+            --line-strong:#3c3f43;
+            --text:#f3f4f5;
+            --text-soft:#8b8d92;
+            --text-faint:#5a5c61;
+            --accent:#e0392b;
+            --accent-soft:rgba(224,57,43,0.14);
+            --zero:#34a866;
+            --zero-soft:rgba(52,168,102,0.14);
+            --radius:20px;
+            --font:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;
+        }
+        @media (prefers-color-scheme: light){
+            :root{
+                --bg:#ffffff; --panel:#f6f6f7; --panel-2:#efeff0; --line:#e4e5e7; --line-strong:#c9cbce;
+                --text:#101113; --text-soft:#5c5e63; --text-faint:#9a9ca0; --accent:#cf2f22; --accent-soft:rgba(207,47,34,0.10);
+                --zero:#1f8a4c; --zero-soft:rgba(31,138,76,0.10);
+            }
+        }
+        :root[data-theme="dark"]{
+            --bg:#0a0a0b; --panel:#131416; --panel-2:#0e0f10; --line:#232527; --line-strong:#3c3f43;
+            --text:#f3f4f5; --text-soft:#8b8d92; --text-faint:#5a5c61; --accent:#e0392b; --accent-soft:rgba(224,57,43,0.14);
+            --zero:#34a866; --zero-soft:rgba(52,168,102,0.14);
+        }
+        :root[data-theme="light"]{
+            --bg:#ffffff; --panel:#f6f6f7; --panel-2:#efeff0; --line:#e4e5e7; --line-strong:#c9cbce;
+            --text:#101113; --text-soft:#5c5e63; --text-faint:#9a9ca0; --accent:#cf2f22; --accent-soft:rgba(207,47,34,0.10);
+            --zero:#1f8a4c; --zero-soft:rgba(31,138,76,0.10);
+        }
+
+        *{ box-sizing:border-box; }
+        html,body{ margin:0; padding:0; background:var(--bg); color:var(--text); font-family:var(--font); }
+        body{ transition:background .2s ease, color .2s ease; }
+        .page{ min-height:100vh; padding:4rem 1.5rem 5rem; }
+        .wrap{ max-width:1560px; margin:0 auto; }
+
+        .head{ display:flex; justify-content:space-between; align-items:flex-start; gap:1.5rem; flex-wrap:wrap; margin-bottom:2.4rem; }
+        .head-text{ flex:1 1 320px; min-width:240px; }
+        .eyebrow{ text-transform:uppercase; letter-spacing:.16em; font-size:.72rem; color:var(--accent); font-weight:600; margin:0 0 .9rem; }
+        h1{ font-size:clamp(1.6rem,4vw,2.35rem); font-weight:600; letter-spacing:-.01em; margin:0 0 1rem; line-height:1.2; }
+        .hint{ color:var(--text-soft); font-size:.96rem; margin:0; min-height:1.4em; }
+        .hint .val{ color:var(--accent); font-weight:600; }
+
+        .theme-toggle{ display:inline-flex; border:1px solid var(--line-strong); border-radius:999px; padding:3px; gap:2px; flex:0 0 auto; }
+        .theme-opt{ appearance:none; -webkit-appearance:none; background:transparent; border:none; color:var(--text-soft); font-family:var(--font); font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; padding:.45rem .95rem; border-radius:999px; cursor:pointer; }
+        .theme-opt.active{ background:var(--text); color:var(--bg); }
+
+        /* ---- Activation mode selector ---- */
+        .mode-row{ display:flex; align-items:center; justify-content:center; gap:1rem; flex-wrap:wrap; margin-bottom:.9rem; }
+        .mode-caption-label{ font-size:.72rem; text-transform:uppercase; letter-spacing:.1em; color:var(--text-soft); }
+        .mode-opts{ display:inline-flex; border:1px solid var(--line-strong); border-radius:999px; padding:3px; gap:2px; }
+        .mode-opt{ appearance:none; -webkit-appearance:none; background:transparent; border:none; color:var(--text-soft); font-family:var(--font); font-size:.8rem; padding:.5rem 1.15rem; border-radius:999px; cursor:pointer; }
+        .mode-opt.active{ background:var(--accent); color:#fff; }
+        .mode-note{ max-width:600px; margin:0 auto 2.2rem; text-align:center; font-size:.82rem; color:var(--text-soft); line-height:1.6; }
+
+        /* ---- Console: one unified card, diagram + readout, divided by a hairline ---- */
+        .console{
+            display:flex; flex-wrap:wrap;
+            background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+            overflow:hidden;
+        }
+        .console-diagram{ flex:2.2 1 480px; padding:2.2rem 2rem; min-width:320px; }
+        .console-divider{ width:1px; background:var(--line); align-self:stretch; }
+        .console-calc{ flex:1 1 320px; padding:2.2rem 2rem; background:var(--panel-2); min-width:300px; max-width:440px; }
+
+        @media (max-width:760px){
+            .console-divider{ width:auto; height:1px; align-self:stretch; }
+        }
+
+        .legend{ display:flex; gap:1.3rem; align-items:center; margin:0 0 1.3rem; font-size:.76rem; color:var(--text-soft); }
+        .legend .dot{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:.4rem; vertical-align:middle; }
+        .legend .dot.zero{ background:var(--zero); }
+        .legend .dot.fire{ background:var(--accent); }
+
+        .stage{ position:relative; width:100%; max-width:920px; margin:0 auto; aspect-ratio:620/380; }
+        svg.wires{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+        .wire{ stroke:var(--line-strong); stroke-width:1.5; fill:none; }
+        .wlabel rect{ fill:var(--panel); }
+        .wlabel text{ fill:var(--text-soft); font-size:11px; font-variant-numeric:tabular-nums; font-family:var(--font); }
+
+        .node-label{ position:absolute; transform:translate(-50%,-50%); white-space:nowrap; font-size:.66rem; letter-spacing:.06em; text-transform:uppercase; color:var(--text-soft); pointer-events:none; }
+        .node-caption{ position:absolute; transform:translate(-50%,-50%); white-space:nowrap; font-size:.65rem; color:var(--text-faint); font-variant-numeric:tabular-nums; pointer-events:none; }
+
+        .node{
+            position:absolute; transform:translate(-50%,-50%); margin:0;
+            appearance:none; -webkit-appearance:none; border-radius:50%; border:1.5px solid var(--line-strong);
+            background:var(--panel-2); color:var(--text);
+            font-family:var(--font); font-weight:600; font-variant-numeric:tabular-nums;
+            cursor:pointer; display:flex; align-items:center; justify-content:center;
+            transition:border-color .15s ease, background .15s ease, color .15s ease, box-shadow .15s ease;
+            padding:0;
+        }
+        .console-calc .node{ background:var(--panel); }
+        .node.input-node{ width:56px; height:56px; font-size:1.1rem; }
+        .node.hidden-node{ width:68px; height:68px; font-size:1.2rem; }
+        .node.hidden-node.decimal{ font-size:.82rem; }
+        .node.output-node{ width:72px; height:72px; font-size:1.3rem; }
+
+        .node:hover:not(:disabled){ border-color:var(--accent); }
+        .node:active:not(:disabled){ transform:translate(-50%,-50%) scale(0.96); }
+        .node:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
+        .node.zero{ border-color:var(--zero); background:var(--zero-soft); color:var(--zero); box-shadow:0 0 0 4px var(--zero-soft); }
+        .node.fire{ border-color:var(--accent); background:var(--accent-soft); color:var(--accent); box-shadow:0 0 0 4px var(--accent-soft); }
+        .node.selected{ box-shadow:0 0 0 3px var(--panel), 0 0 0 5px var(--text-soft); }
+        .node.selected.zero{ box-shadow:0 0 0 3px var(--panel), 0 0 0 5px var(--zero); }
+        .node.selected.fire{ box-shadow:0 0 0 3px var(--panel), 0 0 0 5px var(--accent); }
+        .node:disabled{ opacity:.35; cursor:not-allowed; }
+        .node .placeholder-dash{ color:var(--text-faint); font-weight:400; pointer-events:none; }
+
+        /* ---- Calc readout ---- */
+        .calc-eyebrow{ font-size:.72rem; text-transform:uppercase; letter-spacing:.1em; color:var(--text-soft); font-weight:700; margin:0 0 1.4rem; }
+        .calc-body .placeholder{ color:var(--text-faint); margin:0; font-size:.92rem; }
+        .readout{ margin-bottom:1.5rem; }
+        .readout .r-label{ display:flex; align-items:center; gap:.5rem; font-size:.78rem; color:var(--text-soft); margin-bottom:.5rem; }
+        .readout .r-tag{ font-size:.62rem; text-transform:uppercase; letter-spacing:.07em; border:1px solid var(--line-strong); border-radius:999px; padding:.15rem .5rem; }
+        .readout .r-value{ font-size:3rem; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }
+        .readout .r-value.zero{ color:var(--zero); }
+        .readout .r-value.fire{ color:var(--accent); }
+        .steps{ padding-top:1.3rem; border-top:1px solid var(--line); }
+        .calc-row{ display:flex; justify-content:space-between; gap:1rem; padding:.5rem 0; font-variant-numeric:tabular-nums; font-size:.86rem; }
+        .calc-row .label{ color:var(--text-soft); flex:0 0 auto; }
+        .calc-row .expr{ text-align:right; color:var(--text); }
+
+        /* ---- Data space mini-graphs ---- */
+        .space-graph{ margin-top:1.8rem; padding-top:1.6rem; border-top:1px solid var(--line); }
+        .space-title{ font-size:.72rem; text-transform:uppercase; letter-spacing:.1em; color:var(--text-soft); font-weight:700; margin:0 0 1rem; }
+        .space-plots{ display:flex; gap:1.2rem; }
+        .space-plot{ flex:1; min-width:0; text-align:center; }
+        .space-plot svg{ width:100%; height:auto; display:block; }
+        .space-axis{ stroke:var(--line-strong); stroke-width:1.2; }
+        .space-tick{ font-size:9px; fill:var(--text-faint); font-family:var(--font); }
+        .space-label{ font-size:.68rem; color:var(--text-soft); margin:.5rem 0 0; text-transform:uppercase; letter-spacing:.05em; }
+        .space-pt-zero{ fill:var(--zero); }
+        .space-pt-one{ fill:var(--accent); }
+        .space-ring{ fill:none; stroke:var(--text-soft); stroke-width:1.4; }
+
+        /* ---- Step navigation ---- */
+        .stepnav{ display:flex; align-items:center; justify-content:space-between; gap:1rem; max-width:700px; margin:1.4rem auto 0; padding:.85rem 1.2rem; background:var(--panel); border:1px solid var(--line); border-radius:999px; }
+        .stepnav .steplabel{ font-size:.82rem; color:var(--text-soft); text-align:center; flex:1; }
+        .stepnav .steplabel .em{ color:var(--text); font-weight:600; }
+        .navbtn{ appearance:none; -webkit-appearance:none; background:transparent; border:1px solid var(--line-strong); color:var(--text); font-family:var(--font); padding:.55rem 1.15rem; border-radius:999px; font-size:.76rem; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; white-space:nowrap; }
+        .navbtn:hover:not(:disabled){ border-color:var(--accent); color:var(--accent); }
+        .navbtn:disabled{ opacity:.3; cursor:not-allowed; }
+
+        /* ---- Reference spec strip ---- */
+        .panel{ max-width:920px; margin:2.4rem auto 0; padding:1.8rem 2rem; background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); }
+        .panel h2{ font-size:.72rem; text-transform:uppercase; letter-spacing:.1em; color:var(--text-soft); margin:0 0 1.3rem; font-weight:700; }
+
+        .spec-row{ display:flex; flex-wrap:wrap; gap:1.5rem 0; }
+        .spec-item{ flex:1 1 200px; padding-left:1.5rem; border-left:1px solid var(--line); }
+        .spec-item:first-child{ border-left:none; padding-left:0; }
+        .spec-label{ display:block; font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--text-soft); margin-bottom:.5rem; }
+        .spec-value{ font-variant-numeric:tabular-nums; font-size:.98rem; }
+
+        table.truth{ width:100%; border-collapse:collapse; font-size:.92rem; margin-top:1.6rem; padding-top:1.6rem; border-top:1px solid var(--line); }
+        table.truth th, table.truth td{ padding:.6rem .8rem; text-align:center; font-variant-numeric:tabular-nums; border-bottom:1px solid var(--line); }
+        table.truth th{ color:var(--text-soft); font-weight:600; font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; }
+        table.truth tr.active td{ color:var(--accent); }
+        table.truth tr.active{ background:var(--accent-soft); }
+        table.truth td .ok{ color:var(--accent); }
+
+        .controls{ display:flex; justify-content:center; margin-top:1.8rem; }
+        .reset-link{ appearance:none; background:none; border:none; color:var(--text-soft); font-family:var(--font); font-size:.78rem; letter-spacing:.04em; cursor:pointer; text-decoration:underline; text-underline-offset:3px; padding:.4rem; }
+        .reset-link:hover{ color:var(--accent); }
+
+        @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
+    </style>
+</head>
+<body>
+<script>
+    window.addEventListener('error', function(e){
+        var b = document.createElement('div');
+        b.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;padding:12px 16px;font:13px/1.4 -apple-system,sans-serif;z-index:99999;white-space:pre-wrap;';
+        b.textContent = 'Script error: ' + e.message + ' (line ' + e.lineno + ', col ' + e.colno + ')';
+        document.body.appendChild(b);
+    });
+</script>
+<div class="page">
+    <div class="wrap">
+
+        <header class="head">
+            <div class="head-text">
+                <p class="eyebrow">Neural Network &middot; Forward Pass</p>
+                <h1>How Two Neurons Solve XOR</h1>
+                <p class="hint" id="hint">Click x&#8321; or x&#8322; on the diagram to set an input.</p>
+            </div>
+            <div class="theme-toggle" role="group" aria-label="Theme">
+                <button type="button" class="theme-opt" data-theme-choice="light">Light</button>
+                <button type="button" class="theme-opt" data-theme-choice="dark">Dark</button>
+            </div>
+        </header>
+
+        <div class="mode-row">
+            <span class="mode-caption-label">Activation</span>
+            <div class="mode-opts" role="group" aria-label="Activation function">
+                <button type="button" class="mode-opt" data-mode="step">Step &middot; 1958</button>
+                <button type="button" class="mode-opt" data-mode="sigmoid">Sigmoid &middot; 1986</button>
+                <button type="button" class="mode-opt" data-mode="relu">ReLU &middot; 2012</button>
+            </div>
+        </div>
+        <p class="mode-note" id="modeCaption"></p>
+
+        <div class="console">
+            <div class="console-diagram">
+                <p class="legend"><span><span class="dot zero"></span>0</span><span><span class="dot fire"></span>1</span></p>
+
+                <div class="stage" id="stage">
+                    <svg class="wires" viewBox="0 0 620 380" preserveAspectRatio="xMidYMid meet">
+                        <defs>
+                            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                                <path d="M0,0 L10,5 L0,10 z" fill="var(--line-strong)"></path>
+                            </marker>
+                        </defs>
+
+                        <line class="wire" x1="110" y1="95"  x2="272" y2="95"  marker-end="url(#arrow)"></line>
+                        <line class="wire" x1="110" y1="285" x2="272" y2="285" marker-end="url(#arrow)"></line>
+                        <line class="wire" x1="103" y1="114" x2="281" y2="261" marker-end="url(#arrow)"></line>
+                        <line class="wire" x1="103" y1="266" x2="281" y2="119" marker-end="url(#arrow)"></line>
+                        <line class="wire" x1="345" y1="110" x2="503" y2="175" marker-end="url(#arrow)"></line>
+                        <line class="wire" x1="345" y1="270" x2="503" y2="205" marker-end="url(#arrow)"></line>
+
+                        <g class="wlabel"><rect x="182" y="71"  width="26" height="17" rx="4"></rect><text class="wval" x="195" y="83"  text-anchor="middle">1</text></g>
+                        <g class="wlabel"><rect x="182" y="261" width="26" height="17" rx="4"></rect><text class="wval" x="195" y="273" text-anchor="middle">1</text></g>
+                        <g class="wlabel"><rect x="147" y="141" width="26" height="17" rx="4"></rect><text class="wval" x="160" y="153" text-anchor="middle">1</text></g>
+                        <g class="wlabel"><rect x="217" y="141" width="26" height="17" rx="4"></rect><text class="wval" x="230" y="153" text-anchor="middle">1</text></g>
+                        <g class="wlabel"><rect x="400" y="119" width="50" height="17" rx="4"></rect><text id="wl-v1" x="425" y="131" text-anchor="middle">+1</text></g>
+                        <g class="wlabel"><rect x="400" y="213" width="50" height="17" rx="4"></rect><text id="wl-v2" x="425" y="225" text-anchor="middle">&minus;2</text></g>
+                    </svg>
+
+                    <div class="node-label" style="left:12.9%; top:calc(25% - 46px);">x&#8321;</div>
+                    <button type="button" class="node input-node" id="x1" style="left:12.9%; top:25%;" aria-label="Toggle x1 between 0 and 1">0</button>
+                    <div class="node-caption" style="left:12.9%; top:calc(25% + 44px);">input</div>
+
+                    <div class="node-label" style="left:12.9%; top:calc(75% - 46px);">x&#8322;</div>
+                    <button type="button" class="node input-node" id="x2" style="left:12.9%; top:75%;" aria-label="Toggle x2 between 0 and 1">0</button>
+                    <div class="node-caption" style="left:12.9%; top:calc(75% + 44px);">input</div>
+
+                    <div class="node-label" id="name-h1" style="left:50%; top:calc(25% - 52px);">h&#8321; &middot; ReLU</div>
+                    <button type="button" class="node hidden-node" id="h1" style="left:50%; top:25%;" aria-label="Compute h1">&mdash;</button>
+                    <div class="node-caption" id="sub-h1" style="left:50%; top:calc(25% + 50px);">bias 0</div>
+
+                    <div class="node-label" id="name-h2" style="left:50%; top:calc(75% - 52px);">h&#8322; &middot; ReLU</div>
+                    <button type="button" class="node hidden-node" id="h2" style="left:50%; top:75%;" aria-label="Compute h2">&mdash;</button>
+                    <div class="node-caption" id="sub-h2" style="left:50%; top:calc(75% + 50px);">bias &minus;1</div>
+
+                    <div class="node-label" id="name-y" style="left:87.1%; top:calc(50% - 54px);">&#375; &middot; Step</div>
+                    <button type="button" class="node output-node" id="y" style="left:87.1%; top:50%;" aria-label="Compute output" disabled>&mdash;</button>
+                    <div class="node-caption" id="sub-y" style="left:87.1%; top:calc(50% + 52px);">bias 0</div>
+                </div>
+            </div>
+
+            <div class="console-divider"></div>
+
+            <div class="console-calc">
+                <p class="calc-eyebrow">Calculation</p>
+                <div class="calc-body" id="calcBody">
+                    <p class="placeholder">Click a computed neuron, or use Next, to see its math here.</p>
+                </div>
+
+                <div class="space-graph">
+                    <p class="space-title">Data Space</p>
+                    <div class="space-plots">
+                        <div class="space-plot">
+                            <svg viewBox="0 0 140 140">
+                                <line x1="25" y1="115" x2="125" y2="115" class="space-axis"></line>
+                                <line x1="25" y1="115" x2="25" y2="15" class="space-axis"></line>
+                                <text x="125" y="128" class="space-tick" text-anchor="end">x&#8321;</text>
+                                <text x="10" y="19" class="space-tick">x&#8322;</text>
+                                <g id="inputPts"></g>
+                            </svg>
+                            <p class="space-label">Input</p>
+                        </div>
+                        <div class="space-plot">
+                            <svg viewBox="0 0 140 140">
+                                <line x1="25" y1="115" x2="125" y2="115" class="space-axis"></line>
+                                <line x1="25" y1="115" x2="25" y2="15" class="space-axis"></line>
+                                <text x="125" y="128" class="space-tick" text-anchor="end">h&#8321;</text>
+                                <text x="10" y="19" class="space-tick">h&#8322;</text>
+                                <g id="hiddenPts"></g>
+                            </svg>
+                            <p class="space-label">Hidden</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stepnav">
+            <button type="button" class="navbtn" id="backBtn" disabled>&#9664; Back</button>
+            <p class="steplabel" id="stepLabel">Step 1 of 3 &mdash; compute <span class="em">h&#8321;</span></p>
+            <button type="button" class="navbtn" id="nextBtn">Next &#9654;</button>
+        </div>
+
+        <section class="panel">
+            <h2>Reference</h2>
+            <div class="spec-row">
+                <div class="spec-item">
+                    <span class="spec-label">Hidden layer</span>
+                    <span class="spec-value" id="spec-hidden-formula">h = ReLU(z) = max(z, 0)</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Output layer</span>
+                    <span class="spec-value" id="spec-output-formula">&#375; = 1 if z &gt; 0, else 0</span>
+                </div>
+            </div>
+            <table class="truth" id="truthTable">
+                <thead><tr><th>x&#8321;</th><th>x&#8322;</th><th>XOR</th><th>&#375; (this run)</th></tr></thead>
+                <tbody>
+                <tr data-key="0,0"><td>0</td><td>0</td><td>0</td><td data-match>&mdash;</td></tr>
+                <tr data-key="0,1"><td>0</td><td>1</td><td>1</td><td data-match>&mdash;</td></tr>
+                <tr data-key="1,0"><td>1</td><td>0</td><td>1</td><td data-match>&mdash;</td></tr>
+                <tr data-key="1,1"><td>1</td><td>1</td><td>0</td><td data-match>&mdash;</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <div class="controls">
+            <button type="button" class="reset-link" id="resetBtn">Reset simulation</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    (function(){
+        try{
+
+            var MODES = {
+                step: {
+                    label:'Step', tagHidden:'Step', tagOutput:'Step',
+                    w:1, b1:-0.5, b2:-1.5, v1:1, v2:-2, b3:-0.5,
+                    hiddenFormula:'h = 1 if z &gt; 0, else 0',
+                    outputFormula:'&#375; = 1 if z &gt; 0, else 0',
+                    fmtHidden:function(v){ return String(v); },
+                    note:'Hand-wired, not trained. h&#8321; fires like OR, h&#8322; fires like AND, and the output combines them (h&#8321; AND NOT h&#8322;) &mdash; a circuit anyone could compose from step-function perceptrons in 1958, with no learning algorithm at all.'
+                },
+                sigmoid: {
+                    label:'Sigmoid', tagHidden:'Sigmoid', tagOutput:'Sigmoid',
+                    w:10, b1:-5, b2:-15, v1:10, v2:-20, b3:-5,
+                    hiddenFormula:'h = &#963;(z) = 1 / (1 + e<sup>&minus;z</sup>)',
+                    outputFormula:'&#375; = 1 if &#963;(z) &gt; 0.5, else 0',
+                    fmtHidden:function(v){ return v.toFixed(2); },
+                    note:'This is the shape of the actual 1986 solution (Rumelhart, Hinton &amp; Williams): a smooth, differentiable activation trained end-to-end with backpropagation. Weights here are scaled up so the sigmoid saturates close to 0/1, but the mechanism &mdash; not the exact numbers &mdash; matches history.'
+                },
+                relu: {
+                    label:'ReLU', tagHidden:'ReLU', tagOutput:'Step',
+                    w:1, b1:0, b2:-1, v1:1, v2:-2, b3:0,
+                    hiddenFormula:'h = ReLU(z) = max(z, 0)',
+                    outputFormula:'&#375; = 1 if z &gt; 0, else 0',
+                    fmtHidden:function(v){ return String(v); },
+                    note:'The modern default &mdash; proposed in 2000, adopted in deep learning from 2010&ndash;2012 onward. Included because its arithmetic is the simplest to verify by hand, not because it is what solved XOR originally.'
+                }
+            };
+
+            var state = { mode:'sigmoid', x1:0, x2:0, h1:null, h2:null, y:null, selected:null, order:[] };
+
+            var els = {
+                x1: document.getElementById('x1'),
+                x2: document.getElementById('x2'),
+                h1: document.getElementById('h1'),
+                h2: document.getElementById('h2'),
+                y: document.getElementById('y'),
+                hint: document.getElementById('hint'),
+                calcBody: document.getElementById('calcBody'),
+                truthRows: document.querySelectorAll('#truthTable tbody tr'),
+                stepLabel: document.getElementById('stepLabel'),
+                nextBtn: document.getElementById('nextBtn'),
+                backBtn: document.getElementById('backBtn'),
+                inputPts: document.getElementById('inputPts'),
+                hiddenPts: document.getElementById('hiddenPts')
+            };
+            var CANON = [[0,0],[0,1],[1,0],[1,1]];
+
+            function relu(z){ return Math.max(z, 0); }
+            function sigmoid(z){ return 1/(1+Math.exp(-z)); }
+            function stepFn(z){ return z > 0 ? 1 : 0; }
+
+            function computeH1val(mode){ var m = MODES[mode]; var z = m.w*state.x1 + m.w*state.x2 + m.b1; return mode==='sigmoid' ? sigmoid(z) : (mode==='relu' ? relu(z) : stepFn(z)); }
+            function computeH2val(mode){ var m = MODES[mode]; var z = m.w*state.x1 + m.w*state.x2 + m.b2; return mode==='sigmoid' ? sigmoid(z) : (mode==='relu' ? relu(z) : stepFn(z)); }
+            function computeYval(mode){
+                var m = MODES[mode];
+                var z = m.v1*state.h1 + m.v2*state.h2 + m.b3;
+                return mode==='sigmoid' ? (sigmoid(z) > 0.5 ? 1 : 0) : stepFn(z);
+            }
+
+            function fmtNum(n){ return n < 0 ? ('−' + Math.abs(n)) : String(n); }
+            function fmtNumHtml(n){ return n < 0 ? ('&minus;' + Math.abs(n)) : String(n); }
+            function valClass(v){ return v > 0.5 ? 'fire' : 'zero'; }
+
+            function row(label, expr){
+                return '<div class="calc-row"><span class="label">' + label + '</span><span class="expr">' + expr + '</span></div>';
+            }
+
+            function pushOrder(key){
+                if (state.order.indexOf(key) === -1) state.order.push(key);
+            }
+
+            function nextKey(){
+                if (state.h1 === null) return 'h1';
+                if (state.h2 === null) return 'h2';
+                if (state.y === null) return 'y';
+                return null;
+            }
+
+            function computeKey(key){
+                if (key === 'h1' && state.h1 === null){ state.h1 = computeH1val(state.mode); }
+                else if (key === 'h2' && state.h2 === null){ state.h2 = computeH2val(state.mode); }
+                else if (key === 'y' && state.y === null){
+                    if (state.h1 === null || state.h2 === null) return;
+                    state.y = computeYval(state.mode);
+                }
+                pushOrder(key);
+            }
+
+            function resetDownstream(){
+                state.h1 = null; state.h2 = null; state.y = null; state.selected = null; state.order = [];
+            }
+
+            function toggleInput(key){
+                state[key] = state[key] === 0 ? 1 : 0;
+                resetDownstream();
+                renderAll();
+            }
+
+            function clickHidden(key){
+                computeKey(key);
+                state.selected = key;
+                renderAll();
+            }
+
+            function clickOutput(){
+                if (state.h1 === null || state.h2 === null) return;
+                computeKey('y');
+                state.selected = 'y';
+                renderAll();
+            }
+
+            function handleNext(){
+                var k = nextKey();
+                if (!k) return;
+                computeKey(k);
+                state.selected = k;
+                renderAll();
+            }
+
+            function handleBack(){
+                if (state.order.length === 0) return;
+                var last = state.order.pop();
+                state[last] = null;
+                state.selected = null;
+                renderAll();
+            }
+
+            function renderCalc(){
+                if (state.selected === null){
+                    els.calcBody.innerHTML = '<p class="placeholder">Click a computed neuron, or use Next, to see its math here.</p>';
+                    return;
+                }
+                var m = MODES[state.mode];
+                var html = '';
+                if (state.selected === 'h1' || state.selected === 'h2'){
+                    var isH1 = state.selected === 'h1';
+                    var bias = isH1 ? m.b1 : m.b2;
+                    var wl1 = isH1 ? 'w&#8321;' : 'w&#8323;';
+                    var wl2 = isH1 ? 'w&#8322;' : 'w&#8324;';
+                    var bl  = isH1 ? 'b&#8321;' : 'b&#8322;';
+                    var z = m.w*state.x1 + m.w*state.x2 + bias;
+                    var val = state[state.selected];
+                    html += '<div class="readout"><div class="r-label"><span>' + (isH1?'h&#8321;':'h&#8322;') + ' output</span><span class="r-tag">' + m.tagHidden + '</span></div>';
+                    html += '<div class="r-value ' + valClass(val) + '">' + m.fmtHidden(val) + '</div></div>';
+                    html += '<div class="steps">';
+                    html += row('Weighted sum', 'z = (' + wl1 + '&middot;x&#8321;) + (' + wl2 + '&middot;x&#8322;) + ' + bl);
+                    html += row('&nbsp;', '(' + m.w + '&times;' + state.x1 + ') + (' + m.w + '&times;' + state.x2 + ') + (' + fmtNumHtml(bias) + ') = ' + fmtNumHtml(z));
+                    html += row('Activation', m.hiddenFormula);
+                    html += row('Result', (isH1?'h&#8321;':'h&#8322;') + ' = ' + m.fmtHidden(val));
+                    html += '</div>';
+                } else if (state.selected === 'y'){
+                    var zy = m.v1*state.h1 + m.v2*state.h2 + m.b3;
+                    html += '<div class="readout"><div class="r-label"><span>&#375; output</span><span class="r-tag">' + m.tagOutput + '</span></div>';
+                    html += '<div class="r-value ' + valClass(state.y) + '">' + state.y + '</div></div>';
+                    html += '<div class="steps">';
+                    html += row('Weighted sum', 'z = (v&#8321;&middot;h&#8321;) + (v&#8322;&middot;h&#8322;) + b&#8323;');
+                    html += row('&nbsp;', '(' + m.v1 + '&times;' + m.fmtHidden(state.h1) + ') + (' + fmtNumHtml(m.v2) + '&times;' + m.fmtHidden(state.h2) + ') + (' + fmtNumHtml(m.b3) + ') = ' + fmtNumHtml(zy));
+                    if (state.mode === 'sigmoid'){
+                        html += row('Probability', '&#963;(z) = ' + sigmoid(zy).toFixed(4));
+                        html += row('Decision', m.outputFormula);
+                    } else {
+                        html += row('Activation', m.outputFormula);
+                    }
+                    html += row('Result', '&#375; = ' + state.y);
+                    html += '</div>';
+                }
+                els.calcBody.innerHTML = html;
+            }
+
+            function renderHint(){
+                if (state.h1 === null || state.h2 === null){
+                    els.hint.innerHTML = 'Click h&#8321; and h&#8322; on the diagram &mdash; or use Next below.';
+                } else if (state.y === null){
+                    els.hint.innerHTML = 'Both hidden neurons are ready &mdash; click &#375; or press Next.';
+                } else {
+                    els.hint.innerHTML = 'Forward pass complete &mdash; &#375; = <span class="val">' + state.y + '</span>. Toggle x&#8321;/x&#8322; to try another input.';
+                }
+            }
+
+            function renderStepNav(){
+                var k = nextKey();
+                var names = { h1:'h₁', h2:'h₂', y:'ŷ' };
+                if (k){
+                    els.stepLabel.innerHTML = 'Step ' + (state.order.length + 1) + ' of 3 &mdash; compute <span class="em">' + names[k] + '</span>';
+                } else {
+                    els.stepLabel.innerHTML = 'Forward pass complete &mdash; <span class="em">&#375; = ' + state.y + '</span>';
+                }
+                els.nextBtn.disabled = !k;
+                els.backBtn.disabled = state.order.length === 0;
+            }
+
+            function renderTruth(){
+                var key = state.x1 + ',' + state.x2;
+                els.truthRows.forEach(function(tr){
+                    var isActive = tr.getAttribute('data-key') === key;
+                    tr.classList.toggle('active', isActive);
+                    var cell = tr.querySelector('[data-match]');
+                    if (isActive && state.y !== null){
+                        var expected = tr.children[2].textContent.trim();
+                        var got = String(state.y);
+                        cell.innerHTML = (got === expected) ? ('<span class="ok">&#10003; ' + got + '</span>') : (got + ' (expected ' + expected + ')');
+                    } else {
+                        cell.textContent = '-';
+                    }
+                });
+            }
+
+            function styleValueNode(el, val, isSelected, formatter){
+                el.classList.remove('fire','zero','selected');
+                if (val === null){
+                    el.innerHTML = '<span class="placeholder-dash">&mdash;</span>';
+                } else {
+                    el.textContent = formatter ? formatter(val) : String(val);
+                    el.classList.add(valClass(val));
+                }
+                if (isSelected) el.classList.add('selected');
+            }
+
+            function renderNodes(){
+                var m = MODES[state.mode];
+                styleValueNode(els.x1, state.x1, false);
+                styleValueNode(els.x2, state.x2, false);
+                styleValueNode(els.h1, state.h1, state.selected === 'h1', m.fmtHidden);
+                styleValueNode(els.h2, state.h2, state.selected === 'h2', m.fmtHidden);
+                els.h1.classList.toggle('decimal', state.mode === 'sigmoid');
+                els.h2.classList.toggle('decimal', state.mode === 'sigmoid');
+
+                var canRunY = state.h1 !== null && state.h2 !== null;
+                els.y.disabled = !canRunY;
+                styleValueNode(els.y, state.y, state.selected === 'y');
+            }
+
+            function applyModeUI(mode){
+                var m = MODES[mode];
+                document.querySelectorAll('.wval').forEach(function(t){ t.textContent = m.w; });
+                document.getElementById('wl-v1').textContent = '+' + m.v1;
+                document.getElementById('wl-v2').textContent = fmtNum(m.v2);
+                document.getElementById('sub-h1').textContent = 'bias ' + fmtNum(m.b1);
+                document.getElementById('sub-h2').textContent = 'bias ' + fmtNum(m.b2);
+                document.getElementById('sub-y').textContent = 'bias ' + fmtNum(m.b3);
+                document.getElementById('name-h1').innerHTML = 'h&#8321; &middot; ' + m.tagHidden;
+                document.getElementById('name-h2').innerHTML = 'h&#8322; &middot; ' + m.tagHidden;
+                document.getElementById('name-y').innerHTML = '&#375; &middot; ' + m.tagOutput;
+                document.getElementById('spec-hidden-formula').innerHTML = m.hiddenFormula;
+                document.getElementById('spec-output-formula').innerHTML = m.outputFormula;
+                document.getElementById('modeCaption').innerHTML = m.note;
+                document.querySelectorAll('.mode-opt').forEach(function(btn){
+                    btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
+                });
+            }
+
+            function renderSpaceGraphs(){
+                var curKey = state.x1 + ',' + state.x2;
+
+                var inputHtml = '';
+                CANON.forEach(function(xy){
+                    var px = 25 + xy[0]*100, py = 115 - xy[1]*100;
+                    var label = (xy[0] !== xy[1]) ? 1 : 0;
+                    inputHtml += '<circle cx="' + px + '" cy="' + py + '" r="4.5" class="' + (label ? 'space-pt-one' : 'space-pt-zero') + '"></circle>';
+                    if ((xy[0] + ',' + xy[1]) === curKey){
+                        inputHtml += '<circle cx="' + px + '" cy="' + py + '" r="8" class="space-ring"></circle>';
+                    }
+                });
+                els.inputPts.innerHTML = inputHtml;
+
+                var m = MODES[state.mode];
+                var pts = CANON.map(function(xy){
+                    var x1 = xy[0], x2 = xy[1];
+                    var z1 = m.w*x1 + m.w*x2 + m.b1, z2 = m.w*x1 + m.w*x2 + m.b2;
+                    var h1v = state.mode === 'sigmoid' ? sigmoid(z1) : (state.mode === 'relu' ? relu(z1) : stepFn(z1));
+                    var h2v = state.mode === 'sigmoid' ? sigmoid(z2) : (state.mode === 'relu' ? relu(z2) : stepFn(z2));
+                    return { x1:x1, x2:x2, h1:h1v, h2:h2v, label:(x1 !== x2) ? 1 : 0 };
+                });
+                var h1vals = pts.map(function(p){ return p.h1; });
+                var h2vals = pts.map(function(p){ return p.h2; });
+                var h1min = Math.min.apply(null, h1vals), h1max = Math.max.apply(null, h1vals);
+                var h2min = Math.min.apply(null, h2vals), h2max = Math.max.apply(null, h2vals);
+                var padH1 = Math.max((h1max - h1min) * 0.3, 0.2);
+                var padH2 = Math.max((h2max - h2min) * 0.3, 0.2);
+                h1min -= padH1; h1max += padH1; h2min -= padH2; h2max += padH2;
+
+                var hiddenHtml = '';
+                pts.forEach(function(p){
+                    var px = 25 + (p.h1 - h1min) / (h1max - h1min) * 100;
+                    var py = 115 - (p.h2 - h2min) / (h2max - h2min) * 100;
+                    hiddenHtml += '<circle cx="' + px.toFixed(1) + '" cy="' + py.toFixed(1) + '" r="4.5" class="' + (p.label ? 'space-pt-one' : 'space-pt-zero') + '"></circle>';
+                    if ((p.x1 + ',' + p.x2) === curKey){
+                        hiddenHtml += '<circle cx="' + px.toFixed(1) + '" cy="' + py.toFixed(1) + '" r="8" class="space-ring"></circle>';
+                    }
+                });
+                els.hiddenPts.innerHTML = hiddenHtml;
+            }
+
+            function renderAll(){
+                renderNodes();
+                renderHint();
+                renderStepNav();
+                renderCalc();
+                renderTruth();
+                renderSpaceGraphs();
+            }
+
+            els.x1.addEventListener('click', function(){ toggleInput('x1'); });
+            els.x2.addEventListener('click', function(){ toggleInput('x2'); });
+            els.h1.addEventListener('click', function(){ clickHidden('h1'); });
+            els.h2.addEventListener('click', function(){ clickHidden('h2'); });
+            els.y.addEventListener('click', clickOutput);
+            els.nextBtn.addEventListener('click', handleNext);
+            els.backBtn.addEventListener('click', handleBack);
+
+            document.getElementById('resetBtn').addEventListener('click', function(){
+                var mode = state.mode;
+                state = { mode:mode, x1:0, x2:0, h1:null, h2:null, y:null, selected:null, order:[] };
+                renderAll();
+            });
+
+            document.querySelectorAll('.mode-opt').forEach(function(btn){
+                btn.addEventListener('click', function(){
+                    state.mode = btn.getAttribute('data-mode');
+                    resetDownstream();
+                    applyModeUI(state.mode);
+                    renderAll();
+                });
+            });
+
+            function applyTheme(t){
+                document.documentElement.setAttribute('data-theme', t);
+                try{ localStorage.setItem('xor-sim-theme', t); }catch(e){}
+                document.querySelectorAll('.theme-opt').forEach(function(btn){
+                    btn.classList.toggle('active', btn.getAttribute('data-theme-choice') === t);
+                });
+            }
+            var currentTheme = document.documentElement.getAttribute('data-theme') ||
+                (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+            applyTheme(currentTheme);
+            document.querySelectorAll('.theme-opt').forEach(function(btn){
+                btn.addEventListener('click', function(){ applyTheme(btn.getAttribute('data-theme-choice')); });
+            });
+
+            applyModeUI(state.mode);
+            renderAll();
+
+        }catch(err){
+            var b = document.createElement('div');
+            b.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;padding:12px 16px;font:13px/1.4 -apple-system,sans-serif;z-index:99999;white-space:pre-wrap;';
+            b.textContent = 'Script error: ' + (err && err.message ? err.message : err);
+            document.body.appendChild(b);
+        }
+    })();
+</script>
+</body>
+</html>
