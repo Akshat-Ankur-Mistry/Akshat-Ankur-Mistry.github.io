@@ -1,49 +1,21 @@
 [
   {
     "id": "prakriti",
-    "name": "Prakriti",
+    "name": "Prakriti - the Ideation",
     "image": "assets/prakriti.png",
     "quote": "In all things of nature there is something of the marvelous.",
     "quoteAuthor": "Aristotle",
     "paragraphs": [
-      "Prakriti is Sanskrit for nature - though not nature as scenery. In philosophy it names the primordial source from which all form and change emerge. That's the spirit behind the name: nature as the original innovator, the first laboratory, quietly running experiments long before we ever thought to.",
-      "This is where new ideas begin. These posts follow original thoughts, untested experiments, and fresh perspectives - the kind that come from looking at the world sideways rather than straight on. Some entries will be finished ideas; many will be half-formed ones worth thinking through in the open. If a concept is exploratory, unproven, or simply curious, it belongs here. The throughline is discovery: treating every observation as a possible seed, and giving it the room to grow."
+      "'Prakriti' is Sanskrit for 'nature'.",
+      "To me, nature represents more than the world around us. It is a living source of imagination, innovation, and discovery. It reminds us that some of the most powerful ideas begin quietly as observations, questions, or unfinished experiments.",
+      "This series is the space for those beginnings: original thoughts, ideation, and fresh perspectives that are still taking shape."
     ],
     "exploreLink": "explore.html#series-prakriti",
     "groups": []
   },
   {
-    "id": "nazarya",
-    "name": "Nazarya",
-    "image": "assets/nazarya.png",
-    "quote": "A line is a dot that went for a walk.",
-    "quoteAuthor": "Paul Klee",
-    "paragraphs": [
-      "Nazarya means perspective - a way of seeing. And that, in the end, is what an illustration really is: not a picture of a thing, but a point of view on it. The name is a reminder that the drawing matters less as decoration than as a lens.",
-      "This series is devoted to illustration - the visual work, and the seeing behind it. These posts share drawings, studies, and finished pieces, along with the choices that shaped them: what to show, what to leave out, and why a subject looks the way it does through this particular pair of eyes. It's a space for the image to carry the idea, and for perspective to do the talking."
-    ],
-    "exploreLink": "explore.html#series-nazarya",
-    "groups": [
-      {
-        "heading": "Certifications",
-        "description": "Targeted sample questions designed to support concept revision, knowledge assessment, and certification exam preparation. These resources are intended as focused practice materials, not comprehensive study guides.",
-        "links": [
-          { "text": "Claude Certified Architect - Foundations (CCAR-F) | Domain 3 Sample Questions", "url": "illustration/ccar-f/domain-3/index.html" },
-          { "text": "Claude Certified Associate - Foundations (CCAO-F) | Complete Question Set", "url": "illustration/ccao-f/index.html" }
-        ]
-      },
-      {
-        "heading": "Machine Learning Fundamentals",
-        "description": "Structured illustrations designed to explain core machine learning and artificial intelligence concepts through clear, practical breakdowns. These resources support foundational understanding, concept connection, and long-term retention.",
-        "links": [
-          { "text": "How Two Neurons Solve the XOR Problem", "url": "illustration/machine-learning/how-two-neurons-solve-xor-problem/index.html" }
-        ]
-      }
-    ]
-  },
-  {
     "id": "sankhya",
-    "name": "Sāṅkhya",
+    "name": "Sāṅkhya - the Exploration",
     "image": "assets/sankhya.png",
     "quote": "If you can't explain it simply, you don't understand it well enough.",
     "quoteAuthor": "Albert Einstein",
@@ -74,6 +46,36 @@
           { "text": "ELMo, Functionally Explained", "url": "https://medium.com/@akshat.mistry/elmo-functionally-explained-0becc59ff40d" },
           { "text": "The Artificial Neuron: A Field Guide", "url": "https://medium.com/@akshat.mistry/the-artificial-neuron-a-field-guide-354a45612744" },
           { "text": "From Words to Vectors", "url": "https://medium.com/@akshat.mistry/from-words-to-vectors-a905d8ff07f5" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "nazarya",
+    "name": "Nazarya - the Outcome",
+    "image": "assets/nazarya.png",
+    "quote": "A line is a dot that went for a walk.",
+    "quoteAuthor": "Paul Klee",
+    "paragraphs": [
+      "'Nazarya' translates to a perspective, or a way of seeing.",
+      "When it comes to learning, how we view a concept changes how we understand it. This series defines a specific lens for that journey—one focused entirely on practical application rather than pure theory.",
+      "It is a space for tangible artifacts: illustrations of complex thoughts, structured preparation materials, and the final results of the ideation process."
+    ],
+    "exploreLink": "explore.html#series-nazarya",
+    "groups": [
+      {
+        "heading": "Certifications",
+        "description": "Targeted sample questions designed to support concept revision, knowledge assessment, and certification exam preparation. These resources are intended as focused practice materials, not comprehensive study guides.",
+        "links": [
+          { "text": "Claude Certified Architect - Foundations (CCAR-F) | Domain 3 Sample Questions", "url": "illustration/ccar-f/domain-3/index.html" },
+          { "text": "Claude Certified Associate - Foundations (CCAO-F) | Complete Question Set", "url": "illustration/ccao-f/index.html" }
+        ]
+      },
+      {
+        "heading": "Machine Learning Fundamentals",
+        "description": "Structured illustrations designed to explain core machine learning and artificial intelligence concepts through clear, practical breakdowns. These resources support foundational understanding, concept connection, and long-term retention.",
+        "links": [
+          { "text": "How Two Neurons Solve the XOR Problem", "url": "illustration/machine-learning/how-two-neurons-solve-xor-problem/index.html" }
         ]
       }
     ]
