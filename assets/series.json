@@ -75,7 +75,8 @@
         "heading": "Machine Learning Fundamentals",
         "description": "Structured illustrations designed to explain core machine learning and artificial intelligence concepts through clear, practical breakdowns. These resources support foundational understanding, concept connection, and long-term retention.",
         "links": [
-          { "text": "How Two Neurons Solve the XOR Problem", "url": "illustration/machine-learning/how-two-neurons-solve-xor-problem/index.html" }
+          { "text": "How Two Neurons Solve the XOR Problem", "url": "illustration/machine-learning/how-two-neurons-solve-xor-problem/index.html" },
+          { "text": "Byte-Pair-Encoding (BPE) Tokenization - Training + Encoding Simulator", "url": "illustration/machine-learning/bpe-tokenization-simulator/index.html" }
         ]
       }
     ]

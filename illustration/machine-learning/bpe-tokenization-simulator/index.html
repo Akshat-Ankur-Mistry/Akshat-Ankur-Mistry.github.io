@@ -1,0 +1,2595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BPE Tokenizer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper: #FBF9F6;
+            --card: #FFFFFF;
+            --ink: #2B2A28;
+            --ink-soft: #6B6660;
+            --ink-faint: #A39C90;
+            --line: #E8E2D8;
+            --accent: #5B7A99;
+            --accent-ink: #FFFFFF;
+            --accent-soft: #E7EEF3;
+            --good: #6E8F6B;
+            --good-soft: #E9F1E7;
+            --warn: #A9813F;
+            --warn-soft: #F6EED9;
+            --danger: #B15C5C;
+            --danger-soft: #F7E7E5;
+            --c1: #F6DCD3; --c1-ink: #7A4A3A;
+            --c2: #D9E6F2; --c2-ink: #3D5A73;
+            --c3: #DEEBDA; --c3-ink: #3E6238;
+            --c4: #F5EAD0; --c4-ink: #7A611F;
+            --c5: #E7DCEF; --c5-ink: #5F4677;
+            --c6: #D9EFEA; --c6-ink: #2E6B5E;
+            --font-display: 'Space Grotesk', system-ui, sans-serif;
+            --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+            --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+            --radius: 8px;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            height: 100%; margin: 0; background: var(--paper); color: var(--ink);
+            font-family: var(--font-body); font-size: 14.5px; line-height: 1.5;
+        }
+        h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; }
+        button { font-family: var(--font-display); }
+        .mono { font-family: var(--font-mono); }
+        :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+        /* ---------- shell ---------- */
+        .shell { height: 100%; display: flex; flex-direction: column; }
+        .topbar {
+            flex: 0 0 auto; display: flex; align-items: center; gap: 18px;
+            padding: 16px 28px; border-bottom: 1px solid var(--line);
+        }
+        .brand { font-size: 15px; font-weight: 600; color: var(--ink); }
+        .progress-track { flex: 1 1 auto; height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; max-width: 320px; }
+        .progress-fill { height: 100%; background: var(--accent); transition: width 0.35s ease; }
+        .step-label { font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint); min-width: 40px; text-align: right; }
+
+        .stage-area { flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 22px; }
+        .stage-area.free { display: block; overflow-y: auto; padding: 32px 0 40px; }
+        .stage {
+            width: min(940px, 94vw); height: min(600px, 100%);
+            background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .stage-area.free .stage { width: min(760px, 92vw); height: auto; margin: 0 auto; border-radius: 14px; }
+
+        .stage-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; padding: 26px 30px; gap: 14px; }
+        .stage-area.free .stage-body { overflow: visible; }
+
+        .actionbar {
+            flex: 0 0 auto; display: grid; grid-template-columns: 1fr auto 1fr;
+            align-items: center; padding: 16px 28px; border-top: 1px solid var(--line);
+        }
+        .ab-left { justify-self: start; }
+        .ab-center { justify-self: center; font-size: 12.5px; color: var(--ink-soft); }
+        .ab-right { justify-self: end; }
+
+        /* ---------- typography helpers ---------- */
+        h2.stage-title { font-size: 17px; display: flex; align-items: center; gap: 8px; position: relative; }
+        p.lede { color: var(--ink-soft); font-size: 13px; margin: -6px 0 0; }
+
+        /* ---------- buttons & inputs ---------- */
+        button {
+            font-size: 13.5px; padding: 9px 18px; border-radius: 7px; border: 1px solid var(--line);
+            background: var(--card); color: var(--ink); cursor: pointer;
+        }
+        button:hover:not(:disabled) { border-color: var(--ink-faint); }
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+        button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+        button.primary:hover:not(:disabled) { background: #4E6C89; }
+        button.ghost { background: transparent; border-color: transparent; color: var(--ink-soft); padding: 9px 10px; }
+        button.ghost:hover:not(:disabled) { color: var(--ink); }
+        button.accent-outline { border-color: var(--warn); color: var(--warn); background: var(--warn-soft); }
+
+        input[type=number], input[type=text], textarea {
+            font-family: var(--font-mono); font-size: 13.5px; color: var(--ink);
+            background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px;
+        }
+        textarea { width: 100%; resize: vertical; font-size: 13px; line-height: 1.55; }
+        .ta-wrap { position: relative; flex: 1 1 auto; min-height: 140px; }
+        .ta-layer {
+            position: absolute; inset: 0; margin: 0; padding: 8px 10px; box-sizing: border-box;
+            font-family: var(--font-mono); font-size: 13px; line-height: 1.55;
+            white-space: pre-wrap; word-wrap: break-word; border: 1px solid var(--line); border-radius: 6px;
+        }
+        #corpusBackdrop { color: transparent; background: var(--card); pointer-events: none; overflow: hidden; }
+        #corpusBackdrop .bad-char { background: var(--danger-soft); }
+        #corpusBox { background: transparent; resize: none; color: var(--ink); overflow: auto; }
+        label.field { font-family: var(--font-body); font-size: 13px; color: var(--ink-soft); }
+        .field-label { font-family: var(--font-display); font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
+        .small-label { font-family: var(--font-display); font-size: 11.5px; font-weight: 600; color: var(--ink-soft); margin: 4px 0 2px; }
+        p.hint { color: var(--ink-soft); font-size: 12.5px; margin: -6px 0 0; }
+
+        .preset-1 { background: var(--c1); border-color: transparent; color: var(--c1-ink); }
+        .preset-2 { background: var(--c2); border-color: transparent; color: var(--c2-ink); }
+        .preset-3 { background: var(--c5); border-color: transparent; color: var(--c5-ink); }
+        .preset-1:hover, .preset-2:hover, .preset-3:hover { filter: brightness(0.96); }
+
+        .pill-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .pill {
+            display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 20px;
+            border: 1px solid var(--line); font-size: 13px; cursor: pointer; user-select: none; background: var(--card);
+            position: relative;
+        }
+        .pill input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+        .pill:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .pill.active { border-color: var(--accent); background: var(--accent-soft); }
+
+        .stat-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .stat { background: var(--paper); border: 1px solid var(--line); border-radius: 7px; padding: 8px 14px; }
+        .stat .num { font-family: var(--font-mono); font-size: 17px; font-weight: 500; }
+        .stat .lbl { font-size: 11px; color: var(--ink-soft); }
+
+        .msg { font-size: 13px; padding: 9px 12px; border-radius: 7px; }
+        .msg.error { background: var(--danger-soft); color: var(--danger); }
+        .msg.note { background: var(--warn-soft); color: var(--warn); }
+        .msg.ok { background: var(--good-soft); color: var(--good); }
+
+        /* ---------- scroll panes ---------- */
+        .scroll { flex: 1 1 auto; min-height: 0; overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
+        .scroll.short { flex: 0 0 auto; max-height: 190px; }
+
+        /* ---------- tables: never wrap, scroll instead ---------- */
+        table { border-collapse: collapse; width: 100%; font-size: 13px; }
+        th, td { padding: 7px 12px; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--line); }
+        th {
+            font-family: var(--font-display); font-weight: 500; font-size: 11.5px; letter-spacing: 0.01em;
+            color: var(--ink-soft); background: var(--paper); position: sticky; top: 0;
+        }
+        td.mono, th.mono { font-family: var(--font-mono); }
+        tr.hl td { background: var(--warn-soft); font-weight: 500; }
+        tr.match td { background: var(--good-soft); }
+        tr.nomatch td { color: var(--ink-faint); }
+        tr.divider td { padding: 0; height: 1px; background: var(--line); border: none; }
+        tr.expand td {
+            text-align: center; color: var(--accent); cursor: pointer; font-size: 12.5px;
+            background: var(--paper);
+        }
+        tr.expand:hover td { background: var(--accent-soft); }
+
+        /* ---------- split panes (main + vocab sidebar), inside one fixed card ---------- */
+        .split { flex: 1 1 auto; min-height: 0; display: flex; gap: 22px; }
+        .pane { flex: 1 1 auto; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+        .pane-side { flex: 0 0 340px; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 10px; border-left: 1px solid var(--line); padding-left: 22px; }
+        .pane-title { font-size: 12px; color: var(--ink-soft); display: flex; align-items: center; gap: 8px; position: relative; }
+        .count-chip { font-family: var(--font-mono); font-size: 11px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 1px 8px; }
+
+        /* ---------- token chips ---------- */
+        .chip { display: inline-flex; align-items: baseline; gap: 4px; border: 1px solid var(--line); background: var(--paper); border-radius: 5px; padding: 2px 7px; margin: 2px 3px 2px 0; font-family: var(--font-mono); font-size: 12px; white-space: nowrap; }
+        .chip .id { color: var(--accent); }
+        .chip.now { background: var(--warn-soft); border-color: var(--warn); }
+
+        /* ---------- chunk-highlighted corpus text ---------- */
+        .corpus-text { white-space: pre-wrap; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.9; padding: 14px; }
+        .chunk-box { border-radius: 3px; padding: 1px 0; }
+        .cb-1 { background: var(--c1); } .cb-2 { background: var(--c2); } .cb-3 { background: var(--c3); }
+        .cb-4 { background: var(--c4); } .cb-5 { background: var(--c5); } .cb-6 { background: var(--c6); }
+
+        /* ---------- row-level pastel highlight (screen 4 only: which chunks/pairs
+           are affected by the merge). Deliberately excludes anything reading as
+           red or green, since those colors are already used elsewhere to mean
+           "error" and "success" - a neutral highlight shouldn't borrow that
+           meaning. Five clearly-distinct, unambiguous hues instead. */
+        tr.rc-1 td { background: #D9E6F2; } /* sky blue */
+        tr.rc-2 td { background: #E7DCEF; } /* lavender */
+        tr.rc-3 td { background: #F5EAD0; } /* honey */
+        tr.rc-4 td { background: #DDE1F5; } /* periwinkle */
+        tr.rc-5 td { background: #EDE7DD; } /* warm taupe */
+        /* Each before/after cell scrolls on its own - keeps long chip rows from
+           forcing the whole table (and an easy-to-lose outer scrollbar) sideways. */
+        /* table-layout:fixed + explicit column widths guarantees the table itself
+           never exceeds its container (no outer horizontal scrollbar); each
+           before/after cell's own div then scrolls within its fixed-width column. */
+        table.update-table { table-layout: fixed; }
+        table.update-table th:nth-child(1), table.update-table td:nth-child(1) { width: 16%; overflow: hidden; text-overflow: ellipsis; }
+        table.update-table th:nth-child(2), table.update-table td:nth-child(2) { width: 36%; }
+        table.update-table th:nth-child(3), table.update-table td:nth-child(3) { width: 36%; }
+        table.update-table th:nth-child(4), table.update-table td:nth-child(4) { width: 12%; }
+        .cell-scroll { width: 100%; overflow-x: auto; white-space: nowrap; }
+        /* Generic fixed-layout table: paired with a <colgroup> (via colgroupHtml())
+           this guarantees the table's own width can never exceed its container -
+           the browser can't inflate a column to fit an unwrapped long list, so
+           nothing gets pushed out of view. The at-risk column's cell content is
+           then wrapped in .cell-scroll to scroll internally within its own
+           now-fixed width, instead of forcing the row (and everything beside the
+           table) wider. */
+        table.fx-table { table-layout: fixed; }
+        table.fx-table td:first-child { overflow: hidden; text-overflow: ellipsis; }
+        /* The vocab table packs 4 columns into a narrow sidebar - tighter padding
+           and an ellipsis fallback on every cell (not just the first) keeps even
+           short headers ("token", "merge") from clipping mid-word. */
+        table.vocab-table th, table.vocab-table td { padding: 4px 6px; overflow: hidden; text-overflow: ellipsis; }
+
+        /* ---------- simulation dynamic region + fast-forward blur ---------- */
+        .sim-frame { position: relative; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+        .sim-live { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 10px; transition: filter 0.25s ease; }
+        .sim-live.blurred { filter: blur(6px); pointer-events: none; user-select: none; }
+        .ff-overlay {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-display); font-size: 14px; color: var(--warn); letter-spacing: 0.01em;
+            background: rgba(251, 249, 246, 0.35); border-radius: 8px; animation: ffpulse 1.1s ease-in-out infinite;
+        }
+        @keyframes ffpulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+
+        .progress-outer { width: 100%; max-width: 380px; height: 8px; background: var(--line); border-radius: 6px; overflow: hidden; margin: 0 auto; }
+        .progress-inner { height: 100%; background: var(--accent); transition: width 0.15s ease; }
+        .spinner { width: 22px; height: 22px; border: 2.5px solid var(--line); border-top-color: var(--accent); border-radius: 50%; margin: 14px auto 0; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .center-block { margin: auto; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+
+        /* ---------- info tooltip/popover ---------- */
+        /* ---------- info tooltip/popover ---------- */
+        .info-btn {
+            width: 20px; height: 20px; padding: 0; border-radius: 50%; font-family: var(--font-display);
+            font-size: 11.5px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+            background: var(--accent-soft); border: 1px solid var(--line); color: var(--accent); cursor: pointer;
+        }
+        .info-btn:hover { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+        .info-pop {
+            position: absolute; top: calc(100% + 10px); left: 0; z-index: 30; width: 340px; max-width: 80vw;
+            background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px;
+            box-shadow: 0 8px 24px rgba(43, 42, 40, 0.14); font-size: 12.5px; color: var(--ink-soft); line-height: 1.6;
+            font-family: var(--font-body);
+        }
+        /* Popovers sometimes sit inside a heading (for anchoring), which would
+           otherwise make all of their text inherit the heading's bold weight. */
+        .info-pop, .info-pop * { font-weight: 400; }
+        /* Used when the icon sits in the narrow sidebar: grows leftward from the
+           icon instead of rightward, so it lands inside the wider main pane
+           instead of spilling past the stage's own right edge (which would
+           otherwise get clipped by the stage's overflow:hidden). */
+        .info-pop.align-right { left: auto; right: 0; }
+        .info-pop .regex-box {
+            font-family: var(--font-mono); font-size: 11px; background: var(--paper); border: 1px solid var(--line);
+            border-radius: 6px; padding: 8px 10px; margin: 8px 0; word-break: break-all; color: var(--ink); line-height: 1.5;
+        }
+        .info-pop ol { margin: 8px 0 0; padding-left: 18px; }
+        .info-pop li { margin-bottom: 5px; }
+
+        /* ---------- pastel question box (screen 3, left pane) ---------- */
+        .question-box {
+            background: var(--c4); border-radius: 8px; padding: 12px 14px; display: flex; gap: 18px;
+            align-items: center; flex-wrap: wrap; font-size: 13px; color: var(--ink);
+        }
+
+        /* ---------- pastel option rows (screen 3, vocab preset question) ---------- */
+        .opt-row {
+            display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px;
+            cursor: pointer; margin-bottom: 8px; position: relative;
+        }
+        .opt-row input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+        .opt-row:focus-within, .opt-row.active { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .opt-row .opt-name { font-family: var(--font-display); font-weight: 600; font-size: 12.5px; min-width: 132px; }
+        .opt-row .opt-example { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-soft); }
+        .opt-row.opt-1 { background: var(--c1); }
+        .opt-row.opt-2 { background: var(--c2); }
+        .opt-row.opt-3 { background: var(--c5); }
+    </style>
+</head>
+<body>
+<div class="shell">
+    <div class="topbar">
+        <div class="brand">BPE Tokenizer</div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="step-label" id="stepLabel">1 / 6</div>
+    </div>
+    <div class="stage-area" id="stageArea">
+        <div class="stage"><div class="stage-body" id="stageBody"></div></div>
+    </div>
+    <div class="actionbar">
+        <div class="ab-left" id="abLeft"></div>
+        <div class="ab-center" id="abCenter"></div>
+        <div class="ab-right" id="abRight"></div>
+    </div>
+</div>
+
+<script>
+    /* =========================================================================
+       CONSTANTS
+       ========================================================================= */
+    var MAX_BYTES = 5000;
+    var TOTAL_SCREENS = 6;
+
+    var DEFAULT_CORPORA = {
+        shakespeare: "William Shakespeare (1564-1616) was an English playwright, poet, and actor, widely regarded as the greatest writer in the English language. Born in Stratford-upon-Avon, he wrote 39 plays and 154 sonnets, including Hamlet, Macbeth, Romeo and Juliet, and Othello. His work explores themes of love, ambition, jealousy, and mortality with unmatched command of language and psychological insight.\n\nOne of his most famous lines comes from Hamlet's soliloquy: \"To be, or not to be, that is the question: whether tis nobler in the mind to suffer the slings and arrows of outrageous fortune, or to take arms against a sea of troubles and by opposing end them.\"\n\nShakespeare's plays are traditionally divided into tragedies, comedies, and histories. His influence on the English language remains immeasurable \u2014 he coined or popularized hundreds of words and phrases still used today, such as \"break the ice\" and \"wild-goose chase.\"",
+        newton: "Isaac Newton (1642-1727) was an English mathematician, physicist, and astronomer, widely recognized as one of the most influential scientists in history. He formulated the laws of motion and universal gravitation, laid the foundations of classical mechanics, and co-invented calculus alongside Gottfried Leibniz.\n\nIn a 1675 letter to fellow scientist Robert Hooke, Newton famously wrote: \"If I have seen further it is by standing on the shoulders of Giants.\" This phrase has since become a common way to describe how scientific progress builds upon earlier discoveries.\n\nNewton's 1687 work, Philosophiae Naturalis Principia Mathematica, established the three laws of motion and the law of universal gravitation, shaping physics for centuries. He also made major contributions to optics, showing that white light is made of a spectrum of colors.",
+        einstein: "Albert Einstein (1879-1955) was a German-born theoretical physicist who developed the theory of relativity, one of the two pillars of modern physics alongside quantum mechanics. His mass-energy equivalence formula, E=mc\u00b2, is often called the world's most famous equation.\n\nEinstein received the 1921 Nobel Prize in Physics for his explanation of the photoelectric effect, a discovery that helped establish quantum theory. He is also remembered for the quote: \"Imagination is more important than knowledge, for knowledge is limited, while imagination embraces the entire world.\"\n\nBeyond physics, Einstein was an outspoken advocate for civil rights, education reform, and international peace, and his name has become synonymous with genius itself."
+    };
+
+    // cl100k_base-style pre-tokenizer regex. JS has no possessive quantifiers /
+    // atomic groups, so the "+" possessive markers from the original rule are
+    // dropped in favor of plain greedy quantifiers - a close functional
+    // approximation that only differs in rare pathological backtracking cases.
+    var PRETOKEN_SRC = "'(?:[sdmt]|ll|ve|re)|[^\\r\\n\\p{L}\\p{N}]?\\p{L}+|\\p{N}{1,3}| ?[^\\s\\p{L}\\p{N}]+[\\r\\n]*|\\s+$|\\s*[\\r\\n]|\\s+(?!\\S)|\\s";
+
+    /* =========================================================================
+       STATE
+       ========================================================================= */
+    var S = null;
+    function freshState() {
+        return {
+            screen: 1,
+            corpus: DEFAULT_CORPORA.shakespeare,
+            encoding: 'utf-8',
+            vocabState: 1,
+            chunks: [],
+            chunkStats: [],       // built on screen 2: {chunk, bytes, count}, sorted by count desc
+            vocab: [],
+            byteToTokenId: [],
+            uniqueChunks: [],     // built on screen 3: chunkStats + tokens (via chosen vocabState)
+            merges: [],
+            stage3: 'idle',        // idle | simulating | counted | tokenCreated
+            sim: null,
+            simConfig: { slowChunks: 3 },
+            uniqueChunksMiniExpanded: false,
+            pendingTokenRecord: null,
+            stage4: 'update',      // update | configure | progress
+            corpusUpdateAffected: [],
+            trainConfig: { totalMerges: 100 },
+            trainProgress: null,
+            vocabExpanded: false,
+            chunkStatsExpanded: false,
+            testText: '',
+            testResult: null,
+            lookupSim: null
+        };
+    }
+    S = freshState();
+
+    /* =========================================================================
+       CORE BPE LOGIC (chunking / encoding / vocab / counting / merging)
+       ========================================================================= */
+    function chunkify(text) {
+        var re = new RegExp(PRETOKEN_SRC, 'gui');
+        return text.match(re) || [];
+    }
+
+    function encodeUTF8(str) { return Array.from(new TextEncoder().encode(str)); }
+    function encodeASCII(str) {
+        var bytes = [];
+        for (var i = 0; i < str.length; i++) {
+            var cp = str.codePointAt(i);
+            if (cp > 0xFFFF) i++;
+            if (cp > 127) throw new Error('non-ASCII character');
+            bytes.push(cp);
+        }
+        return bytes;
+    }
+    function encodeUTF16LE(str) {
+        var bytes = [];
+        for (var i = 0; i < str.length; i++) {
+            var code = str.charCodeAt(i);
+            bytes.push(code & 0xFF, (code >> 8) & 0xFF);
+        }
+        return bytes;
+    }
+    function encodeString(str, encoding) {
+        if (encoding === 'utf-8') return encodeUTF8(str);
+        if (encoding === 'ascii') return encodeASCII(str);
+        if (encoding === 'utf-16') return encodeUTF16LE(str);
+        throw new Error('unknown encoding: ' + encoding);
+    }
+
+    function canEncodeAscii(str) {
+        var bad = [];
+        for (var ch of str) {
+            if (ch.codePointAt(0) > 127 && bad.indexOf(ch) === -1) bad.push(ch);
+        }
+        return { ok: bad.length === 0, badChars: bad };
+    }
+
+    function estimateByteLength(str, encoding) {
+        if (encoding === 'utf-8') return encodeUTF8(str).length;
+        if (encoding === 'utf-16') return str.length * 2;
+        if (encoding === 'ascii') { var n = 0; for (var ch of str) n++; return n; }
+        return str.length;
+    }
+
+    function trimToByteLimit(text, encoding, maxBytes) {
+        if (estimateByteLength(text, encoding) <= maxBytes) return { text: text, trimmed: false };
+        var words = text.split(/(\s+)/);
+        var out = '';
+        for (var i = 0; i < words.length; i++) {
+            var candidate = out + words[i];
+            if (estimateByteLength(candidate, encoding) > maxBytes) break;
+            out = candidate;
+        }
+        return { text: out, trimmed: true };
+    }
+
+    function mulberry32(seed) {
+        return function () {
+            var t = (seed += 0x6D2B79F5);
+            t = Math.imul(t ^ (t >>> 15), t | 1);
+            t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+    }
+    function seededShuffle(arr, seed) {
+        var rng = mulberry32(seed);
+        var a = arr.slice();
+        for (var i = a.length - 1; i > 0; i--) {
+            var j = Math.floor(rng() * (i + 1));
+            var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+        }
+        return a;
+    }
+
+    function visibleChars(str) {
+        var out = '';
+        for (var ch of str) {
+            if (ch === ' ') out += '_';
+            else if (ch === '\n') out += '\\n';
+            else if (ch === '\r') out += '\\r';
+            else if (ch === '\t') out += '\\t';
+            else out += ch;
+        }
+        return out;
+    }
+    function displayBytes(bytes) {
+        var decoded = new TextDecoder('utf-8', { fatal: false }).decode(new Uint8Array(bytes));
+        return visibleChars(decoded);
+    }
+    function escapeHtml(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    // Emits a <colgroup> for a table.fx-table given percentage widths (should
+    // sum to ~100). Pair with table-layout:fixed so a long unwrapped value in
+    // any one cell can never inflate the table (or its container) wider.
+    function colgroupHtml(widths) {
+        return '<colgroup>' + widths.map(function (w) { return '<col style="width:' + w + '%;">'; }).join('') + '</colgroup>';
+    }
+    function cellScroll(html) { return '<div class="cell-scroll">' + html + '</div>'; }
+
+    function buildBaseVocab(vocabState) {
+        var identity = []; for (var i = 0; i < 256; i++) identity.push(i);
+        var permuted;
+        if (vocabState === 1) permuted = identity;
+        else if (vocabState === 2) permuted = seededShuffle(identity, 5);
+        else permuted = seededShuffle(identity, 10);
+        var byteToTokenId = new Array(256);
+        var vocab = new Array(256);
+        permuted.forEach(function (byteVal, tokenId) {
+            byteToTokenId[byteVal] = tokenId;
+            vocab[tokenId] = { tokenId: tokenId, mergeId: null, bytes: [byteVal], display: displayBytes([byteVal]) };
+        });
+        return { vocab: vocab, byteToTokenId: byteToTokenId };
+    }
+
+    // Built once on screen 2 (encoding-dependent only, no vocab needed yet).
+    // Sorted by occurrence count descending - this becomes the single canonical
+    // order shared by the chunk table AND the pair-counting simulation.
+    function buildChunkStats(chunkList, encoding) {
+        var map = {}; var order = [];
+        for (var i = 0; i < chunkList.length; i++) {
+            var c = chunkList[i];
+            if (!map[c]) { var bytes = encodeString(c, encoding); map[c] = { chunk: c, bytes: bytes, count: 0 }; order.push(c); }
+            map[c].count++;
+        }
+        var list = order.map(function (c) { return map[c]; });
+        list.sort(function (a, b) { return b.count - a.count; });
+        return list;
+    }
+
+    function computeCounts(uniqueChunks) {
+        var counts = new Map();
+        for (var u = 0; u < uniqueChunks.length; u++) {
+            var toks = uniqueChunks[u].tokens;
+            if (toks.length < 2) continue;
+            for (var i = 0; i < toks.length - 1; i++) {
+                var key = toks[i] + ',' + toks[i + 1];
+                counts.set(key, (counts.get(key) || 0) + uniqueChunks[u].count);
+            }
+        }
+        return counts;
+    }
+    function topPairFromCounts(counts) {
+        var bestKey = null, bestCount = -1;
+        counts.forEach(function (v, k) { if (v > bestCount) { bestCount = v; bestKey = k; } });
+        if (bestKey === null) return null;
+        var parts = bestKey.split(',');
+        return { left: Number(parts[0]), right: Number(parts[1]), count: bestCount };
+    }
+    function applyMergeToTokens(tokens, left, right, newId) {
+        var out = []; var i = 0;
+        while (i < tokens.length) {
+            if (i < tokens.length - 1 && tokens[i] === left && tokens[i + 1] === right) { out.push(newId); i += 2; }
+            else { out.push(tokens[i]); i += 1; }
+        }
+        return out;
+    }
+
+    function createTokenEntry(tp) {
+        var newId = 256 + S.merges.length;
+        var leftEntry = S.vocab[tp.left], rightEntry = S.vocab[tp.right];
+        var newBytes = leftEntry.bytes.concat(rightEntry.bytes);
+        var mergeId = S.merges.length + 1;
+        var newEntry = { tokenId: newId, mergeId: mergeId, leftId: tp.left, rightId: tp.right, bytes: newBytes, display: displayBytes(newBytes) };
+        S.vocab.push(newEntry);
+        var record = {
+            mergeId: mergeId, left: tp.left, right: tp.right, newId: newId, count: tp.count,
+            leftDisplay: leftEntry.display, rightDisplay: rightEntry.display, newDisplay: newEntry.display
+        };
+        S.merges.push({ mergeId: mergeId, left: tp.left, right: tp.right, newId: newId, count: tp.count });
+        return record;
+    }
+    function applyMergeToUniqueChunks(record) {
+        var affected = [];
+        S.uniqueChunks.forEach(function (uc) {
+            var toks = uc.tokens;
+            for (var j = 0; j < toks.length - 1; j++) {
+                if (toks[j] === record.left && toks[j + 1] === record.right) { affected.push({ chunk: uc.chunk, before: toks.slice(), count: uc.count }); break; }
+            }
+        });
+        S.uniqueChunks = S.uniqueChunks.map(function (uc) {
+            return { chunk: uc.chunk, bytes: uc.bytes, count: uc.count, tokens: applyMergeToTokens(uc.tokens, record.left, record.right, record.newId) };
+        });
+        affected.forEach(function (ex) {
+            var match = S.uniqueChunks.filter(function (uc) { return uc.chunk === ex.chunk; })[0];
+            ex.after = match ? match.tokens.slice() : null;
+        });
+        return affected;
+    }
+    function performOneMerge(tp) {
+        var record = createTokenEntry(tp);
+        applyMergeToUniqueChunks(record);
+        return record;
+    }
+
+    function encodeWithMerges(text, encoding, byteToTokenId, mergesInOrder) {
+        var chks = chunkify(text);
+        var perChunk = []; var allTokens = [];
+        for (var c = 0; c < chks.length; c++) {
+            var chunk = chks[c];
+            var bytes = encodeString(chunk, encoding);
+            var tokens = bytes.map(function (b) { return byteToTokenId[b]; });
+            for (var m = 0; m < mergesInOrder.length; m++) {
+                var rule = mergesInOrder[m];
+                var found = false;
+                for (var i = 0; i < tokens.length - 1; i++) { if (tokens[i] === rule.left && tokens[i + 1] === rule.right) { found = true; break; } }
+                if (found) tokens = applyMergeToTokens(tokens, rule.left, rule.right, rule.newId);
+            }
+            perChunk.push({ chunk: chunk, tokens: tokens });
+            allTokens = allTokens.concat(tokens);
+        }
+        return { perChunk: perChunk, allTokens: allTokens };
+    }
+
+    /* =========================================================================
+       PACED STEPPER ENGINE (shared by the pair-counting simulation and the
+       vocabulary-lookup simulation). First `slowCount` steps play one at a time
+       at `slowDelay`; after that it fast-forwards, batching the rest into
+       roughly `fastFrames` updates at `fastDelay`. `token.phase` reports which
+       mode is active so the UI can blur + label the fast-forward. `token.pause()`
+       / `token.resume()` can freeze and continue the walk (intended for the slow
+       phase only - the UI simply doesn't offer the control during fast-forward).
+       `token.requestSkip()` jumps straight to the end, overriding any pause.
+       ========================================================================= */
+    function runPacedSteps(cfg) {
+        var idx = 0;
+        var slowCount = Math.min(cfg.slowCount, cfg.total);
+        var token = { skip: false, paused: false, phase: (slowCount > 0 ? 'slow' : 'fast') };
+        var timeoutId = null;
+        function tick() {
+            timeoutId = null;
+            if (token.skip) {
+                token.phase = 'done';
+                for (var i = idx; i < cfg.total; i++) cfg.step(i);
+                idx = cfg.total; cfg.onTick(idx); cfg.onDone();
+                return;
+            }
+            if (token.paused) return;
+            if (idx >= cfg.total) { token.phase = 'done'; cfg.onDone(); return; }
+            var batch, delay;
+            if (idx < slowCount) { batch = 1; delay = cfg.slowDelay; token.phase = 'slow'; }
+            else {
+                var remaining = cfg.total - idx;
+                batch = Math.max(1, Math.ceil(remaining / cfg.fastFrames));
+                delay = cfg.fastDelay; token.phase = 'fast';
+            }
+            var end = Math.min(idx + batch, cfg.total);
+            for (var j = idx; j < end; j++) cfg.step(j);
+            idx = end;
+            cfg.onTick(idx);
+            if (idx < cfg.total) timeoutId = setTimeout(tick, delay);
+            else { token.phase = 'done'; cfg.onDone(); }
+        }
+        // pause() and requestSkip() both actively cancel any timer already in
+        // flight - without this, a tick scheduled just before a pause could still
+        // fire later (after a resume, or even after this simulation has been
+        // abandoned for a new one) and silently corrupt whichever state happens
+        // to be current by then.
+        token.pause = function () {
+            token.paused = true;
+            if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
+        };
+        token.resume = function () { if (token.paused) { token.paused = false; tick(); } };
+        token.requestSkip = function () {
+            token.skip = true; token.paused = false;
+            if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
+            tick();
+        };
+        if (cfg.total > 0) tick(); else cfg.onDone();
+        return token;
+    }
+
+    /* =========================================================================
+       SHELL HELPERS: stage body + fixed-position footer slots
+       ========================================================================= */
+    function render() {
+        if (S.screen === 1) renderScreen1();
+        else if (S.screen === 2) renderScreen2();
+        else if (S.screen === 3) renderScreen3();
+        else if (S.screen === 4) renderScreen4();
+        else if (S.screen === 5) renderScreen5();
+        else if (S.screen === 6) renderScreen6();
+    }
+
+    function setChrome(freeScroll) {
+        document.getElementById('progressFill').style.width = (S.screen / TOTAL_SCREENS * 100) + '%';
+        document.getElementById('stepLabel').textContent = S.screen + ' / ' + TOTAL_SCREENS;
+        document.getElementById('stageArea').classList.toggle('free', !!freeScroll);
+    }
+    function setStage(html) { document.getElementById('stageBody').innerHTML = html; }
+    function setFooter(left, center, right) {
+        document.getElementById('abLeft').innerHTML = left || '';
+        document.getElementById('abCenter').innerHTML = center || '';
+        document.getElementById('abRight').innerHTML = right || '';
+    }
+    function backButton(handler) { return '<button class="ghost" onclick="' + handler + '">&larr; Back</button>'; }
+
+    function chunkTokenChipsHtml(tokens, currentIndices) {
+        currentIndices = currentIndices || [];
+        return tokens.map(function (t, i) {
+            var cur = currentIndices.indexOf(i) !== -1;
+            return '<span class="chip' + (cur ? ' now' : '') + '"><span class="id">' + t + '</span>' + escapeHtml(S.vocab[t].display) + '</span>';
+        }).join('');
+    }
+    function lastVocabId() { return (S.vocab.length > 256) ? S.vocab[S.vocab.length - 1].tokenId : null; }
+
+    function vocabRowHtml(v, i, highlightId) {
+        var mergeIdStr = (v.mergeId === null || v.mergeId === undefined) ? '\u2014' : v.mergeId;
+        var pairStr = (v.leftId === undefined || v.leftId === null) ? '\u2014' : (v.leftId + ',' + v.rightId);
+        var cls = (v.tokenId === highlightId) ? ' class="hl"' : '';
+        return '<tr' + cls + '><td class="mono">' + v.tokenId + '</td><td class="mono">' + mergeIdStr +
+            '</td><td>' + cellScroll('<span class="mono">' + escapeHtml(pairStr) + '</span>') + '</td><td>' + cellScroll('<span class="mono">' + escapeHtml(v.display) + '</span>') + '</td></tr>';
+    }
+    function vocabTableHead() {
+        return colgroupHtml([16, 16, 30, 38]) + '<thead><tr><th>token</th><th>merge</th><th>pair merged</th><th>text</th></tr></thead>';
+    }
+
+    // Screen 5's table: one row per learned merge, showing which pair of tokens
+    // combined into which new token (rather than the raw byte/token arrays,
+    // which belong to the vocabulary table used elsewhere).
+    function mergeTableHead() {
+        return colgroupHtml([14, 52, 34]) +
+            '<thead><tr><th>merge</th><th>pair merged</th><th>new token</th></tr></thead>';
+    }
+    function mergeRowHtml(rule, highlightId) {
+        var cls = (rule.newId === highlightId) ? ' class="hl"' : '';
+        var leftEntry = S.vocab[rule.left];
+        var rightEntry = S.vocab[rule.right];
+        var newEntry = S.vocab[rule.newId];
+        var pairHtml =
+            '<span class="chip"><span class="id">' + rule.left + '</span>' + escapeHtml(leftEntry.display) + '</span>' +
+            '<span class="mono" style="color:var(--ink-faint);"> + </span>' +
+            '<span class="chip"><span class="id">' + rule.right + '</span>' + escapeHtml(rightEntry.display) + '</span>';
+        var newHtml = '<span class="chip"><span class="id">' + rule.newId + '</span>' + escapeHtml(newEntry.display) + '</span>';
+        return '<tr' + cls + '>' +
+            '<td class="mono">' + rule.mergeId + '</td>' +
+            '<td>' + cellScroll(pairHtml) + '</td>' +
+            '<td>' + cellScroll(newHtml) + '</td>' +
+            '</tr>';
+    }
+    function renderMergeRows(merges, highlightId) {
+        var rows = '';
+
+        for (var i = 0; i < merges.length; i++) rows += mergeRowHtml(merges[i], highlightId);
+        return rows;
+    }
+    function renderVocabRowsFull(vocab, highlightId) {
+        var rows = '';
+        for (var i = 0; i < vocab.length; i++) { if (i === 256) rows += '<tr class="divider"><td colspan="4"></td></tr>'; rows += vocabRowHtml(vocab[i], i, highlightId); }
+        return rows;
+    }
+    function renderVocabRowsSidebar(vocab, highlightId, expanded) {
+        var rows = ''; var baseCount = Math.min(256, vocab.length);
+        if (expanded) {
+            for (var i = 0; i < baseCount; i++) rows += vocabRowHtml(vocab[i], i, highlightId);
+            rows += '<tr class="expand" onclick="toggleVocabExpand()"><td colspan="4">collapse base tokens</td></tr>';
+        } else {
+            if (baseCount > 0) rows += vocabRowHtml(vocab[0], 0, highlightId);
+            if (baseCount > 1) rows += vocabRowHtml(vocab[1], 1, highlightId);
+            rows += '<tr class="expand" onclick="toggleVocabExpand()"><td colspan="4">&hellip; ' + Math.max(0, baseCount - 2) + ' more base tokens &mdash; show all</td></tr>';
+        }
+        if (vocab.length > 256) { rows += '<tr class="divider"><td colspan="4"></td></tr>'; for (var j = 256; j < vocab.length; j++) rows += vocabRowHtml(vocab[j], j, highlightId); }
+        return rows;
+    }
+    // Regenerates just the vocab table's markup (thead never changes; only the
+    // tbody rows do). Used both for the initial render and for the expand
+    // toggle, so the toggle can update in place without recreating the
+    // scrollable container (which would reset its scroll position to the top).
+    function vocabTableInnerHtml(hid) {
+        return '<table class="fx-table vocab-table">' + vocabTableHead() + '<tbody>' + renderVocabRowsSidebar(S.vocab, hid, S.vocabExpanded) + '</tbody></table>';
+    }
+    window.toggleVocabExpand = function () {
+        S.vocabExpanded = !S.vocabExpanded;
+        var box = document.getElementById('vocabScrollBox');
+        if (box) box.innerHTML = vocabTableInnerHtml(lastVocabId());
+        else render();
+    };
+
+    function byteBinary(n) { return n.toString(2).padStart(8, '0'); }
+    function previewTokenForByte(vocabState, byteVal) { return buildBaseVocab(vocabState).byteToTokenId[byteVal]; }
+
+    function vocabInfoPopHtml() {
+        return '<button class="info-btn" data-pop="vocabInfoPop" onclick="toggleInfoPop(event,\'vocabInfoPop\')" aria-expanded="false" aria-label="About the base token mapping">i</button>' +
+            '<div class="info-pop align-right" id="vocabInfoPop" style="display:none;">This only relabels which integer stands for each byte. It never changes which pairs get merged or the final tokenization \u2014 train under a different preset and compare.</div>';
+    }
+
+    // Screen 3's 'idle' stage: an explicit question ("which preset?"), each
+    // option showing what it would do to one concrete byte. Once training
+    // starts, this is replaced by the read-only vocabulary table below.
+    function vocabQuestionHtml() {
+        var byte = 32;
+        var bin = byteBinary(byte);
+        var options = [1, 2, 3].map(function (n) {
+            var label = n === 1 ? 'Identity' : n === 2 ? 'Shuffled (seed 5)' : 'Shuffled (seed 10)';
+            var tok = previewTokenForByte(n, byte);
+            var cls = 'opt-row opt-' + n + (S.vocabState === n ? ' active' : '');
+            return '<label class="' + cls + '"><input type="radio" name="vocabState" ' + (S.vocabState === n ? 'checked' : '') +
+                ' onclick="setVocabState(' + n + ')"><span class="opt-name">' + label + '</span>' +
+                '<span class="opt-example mono">' + bin + ' (' + byte + ') &rarr; token ' + tok + '</span></label>';
+        }).join('');
+        return '' +
+            '<div class="pane-title">Vocabulary' + vocabInfoPopHtml() + '</div>' +
+            '<p class="lede">Choose how the 256 base bytes map to starting token IDs.</p>' +
+            options;
+    }
+
+    function vocabPaneHtml(highlightId) {
+        if (S.stage3 === 'idle') return vocabQuestionHtml();
+        var hid = (highlightId !== undefined) ? highlightId : lastVocabId();
+        var presetLabel = S.vocabState === 1 ? 'Identity' : S.vocabState === 2 ? 'Shuffled (seed 5)' : 'Shuffled (seed 10)';
+        return '' +
+            '<div class="pane-title">Vocabulary <span class="count-chip">' + S.vocab.length + '</span><span class="count-chip">' + S.merges.length + ' merges</span>' + vocabInfoPopHtml() + '</div>' +
+            '<div class="pill active" style="align-self:flex-start;">' + presetLabel + '</div>' +
+            '<div class="scroll" id="vocabScrollBox">' + vocabTableInnerHtml(hid) + '</div>';
+    }
+
+    /* =========================================================================
+       SCREEN 1: Corpus + Encoding
+       ========================================================================= */
+    function renderScreen1() {
+        setChrome(false);
+        var html = '' +
+            '<h2 class="stage-title">Corpus</h2>' +
+            '<p class="lede">Use a preset below, or write your own.</p>' +
+            '<div class="pill-group">' +
+            '<button class="preset-1" onclick="loadDefaultCorpus(\'shakespeare\')">Shakespeare</button>' +
+            '<button class="preset-2" onclick="loadDefaultCorpus(\'newton\')">Newton</button>' +
+            '<button class="preset-3" onclick="loadDefaultCorpus(\'einstein\')">Einstein</button>' +
+            '</div>' +
+            '<div class="ta-wrap">' +
+            '<div class="ta-layer" id="corpusBackdrop" aria-hidden="true"></div>' +
+            '<textarea class="ta-layer" id="corpusBox" oninput="onCorpusInput(this.value)" onscroll="syncCorpusScroll()">' + escapeHtml(S.corpus) + '</textarea>' +
+            '</div>' +
+            '<div id="byteCounter" class="mono" style="font-size:12.5px;color:var(--ink-soft);"></div>' +
+            '<div id="validationMsg"></div>' +
+            '<div class="field-label">Encoding</div>' +
+            '<p class="hint">Converts the corpus to bytes \u2014 pick one that fits your text.</p>' +
+            '<div class="pill-group" id="encodingPills"></div>';
+        setStage(html);
+        renderEncodingPills();
+        setFooter('', '', '<button class="primary" id="nextBtn1" onclick="goToScreen2()">Next</button>');
+        updateScreen1Status();
+        updateCorpusBackdrop();
+    }
+    function renderEncodingPills() {
+        var html = ['utf-8', 'ascii', 'utf-16'].map(function (enc) {
+            var label = enc === 'utf-8' ? 'UTF-8' : enc === 'ascii' ? 'ASCII' : 'UTF-16';
+            var cls = 'pill' + (S.encoding === enc ? ' active' : '');
+            return '<label class="' + cls + '"><input type="radio" name="encoding" ' + (S.encoding === enc ? 'checked' : '') +
+                ' onclick="onEncodingChange(\'' + enc + '\')">' + label + '</label>';
+        }).join('');
+        document.getElementById('encodingPills').innerHTML = html;
+    }
+    function updateScreen1Status() {
+        var byteLen = estimateByteLength(S.corpus, S.encoding);
+        var counter = document.getElementById('byteCounter');
+        if (counter) {
+            var over = byteLen > MAX_BYTES;
+            counter.innerHTML = (over ? '<span style="color:var(--danger);">' : '<span>') + byteLen + ' / ' + MAX_BYTES + ' bytes &middot; ' + S.encoding.toUpperCase() + '</span>';
+        }
+        var asciiCheck = canEncodeAscii(S.corpus);
+        var msgEl = document.getElementById('validationMsg');
+        var nextBtn = document.getElementById('nextBtn1');
+        var valid = true;
+        if (msgEl) {
+            if (S.encoding === 'ascii' && !asciiCheck.ok) {
+                valid = false;
+                var shown = asciiCheck.badChars.slice(0, 6);
+                var quoted = shown.map(function (c) { return '"' + c + '"'; }).join(', ');
+                var more = asciiCheck.badChars.length > shown.length ? ', \u2026' : '';
+                msgEl.innerHTML = '<div class="msg error">Non-ASCII character(s) detected: {' + escapeHtml(quoted + more) + '}. Requires UTF-8 or UTF-16 encoding.</div>';
+            } else {
+                msgEl.innerHTML = '';
+            }
+        }
+        if (nextBtn) nextBtn.disabled = !valid;
+    }
+    // Highlights offending characters directly in the corpus text. A <textarea>
+    // can't render colored spans, so a matching, invisible backdrop <div> sits
+    // behind it: only the bad-character spans carry a visible (pastel red)
+    // background, and the real, transparent-background textarea on top renders
+    // the actual glyphs in place, in normal ink, over that highlight.
+    function updateCorpusBackdrop() {
+        var backdrop = document.getElementById('corpusBackdrop');
+        if (!backdrop) return;
+        var bad = (S.encoding === 'ascii') ? canEncodeAscii(S.corpus).badChars : [];
+        if (bad.length === 0) { backdrop.textContent = S.corpus; return; }
+        var badSet = new Set(bad);
+        var html = '';
+        for (var ch of S.corpus) html += badSet.has(ch) ? ('<span class="bad-char">' + escapeHtml(ch) + '</span>') : escapeHtml(ch);
+        backdrop.innerHTML = html;
+    }
+    window.syncCorpusScroll = function () {
+        var box = document.getElementById('corpusBox');
+        var backdrop = document.getElementById('corpusBackdrop');
+        if (box && backdrop) { backdrop.scrollTop = box.scrollTop; backdrop.scrollLeft = box.scrollLeft; }
+    };
+    window.onCorpusInput = function (value) {
+        S.corpus = value;
+        var trimmed = trimToByteLimit(S.corpus, S.encoding, MAX_BYTES);
+        if (trimmed.trimmed) { S.corpus = trimmed.text; var box = document.getElementById('corpusBox'); if (box) box.value = S.corpus; }
+        updateScreen1Status();
+        updateCorpusBackdrop();
+    };
+    window.onEncodingChange = function (enc) {
+        S.encoding = enc;
+        var trimmed = trimToByteLimit(S.corpus, S.encoding, MAX_BYTES);
+        if (trimmed.trimmed) S.corpus = trimmed.text;
+        renderScreen1();
+    };
+    window.loadDefaultCorpus = function (name) { S.corpus = DEFAULT_CORPORA[name]; renderScreen1(); };
+
+    /* =========================================================================
+       SCREEN 2: Chunking (chunk visualization + chunk/bytes/count table)
+       ========================================================================= */
+    window.goToScreen2 = function () {
+        S.chunks = chunkify(S.corpus);
+        S.chunkStats = buildChunkStats(S.chunks, S.encoding);
+        S.chunkStatsExpanded = false;
+        S.screen = 2;
+        renderScreen2();
+    };
+    window.goToScreen1Back = function () { S.screen = 1; renderScreen1(); };
+
+    function chunkPalette(i) { return 'cb-' + ((i % 6) + 1); }
+    // Row-level equivalent, used to highlight which chunks contain a specific
+    // merged pair (screen 4) - a separate counter from position in the list, so
+    // adjacent highlighted rows are unlikely to land on the same color.
+    function rowPalette(i) { return 'rc-' + ((i % 5) + 1); }
+
+    function renderScreen2() {
+        setChrome(false);
+        var corpusHtml = S.chunks.map(function (c, i) {
+            return '<span class="chunk-box ' + chunkPalette(i) + '">' + escapeHtml(c) + '</span>';
+        }).join('');
+
+        var html = '' +
+            '<h2 class="stage-title">Chunking' +
+            '<button class="info-btn" data-pop="chunkInfoPop" onclick="toggleInfoPop(event,\'chunkInfoPop\')" aria-expanded="false" aria-label="About chunking">i</button>' +
+            '<div class="info-pop" id="chunkInfoPop" style="display:none;">' +
+            'The corpus splits into chunks with a regex, before any merging starts. A chunk is a hard boundary: pairs are only ever counted and merged within one, never across two.' +
+            '<div class="regex-box">' + escapeHtml(PRETOKEN_SRC) + '</div>' +
+            'JavaScript has no possessive quantifiers, so they\'re dropped here \u2014 matches real text almost identically.' +
+            '</div>' +
+            '</h2>' +
+            '<p class="lede">Text splits into chunks before any merging. Color marks each boundary.</p>' +
+            '<div class="scroll" style="flex:0 0 38%;"><div class="corpus-text">' + corpusHtml + '</div></div>' +
+            '<div class="pane-title">Unique chunks <span class="count-chip">' + S.chunkStats.length + '</span></div>' +
+            '<div class="scroll" id="chunkStatsBox">' + chunkStatsTableInnerHtml() + '</div>';
+        setStage(html);
+        setFooter(backButton('goToScreen1Back()'), '', '<button class="primary" onclick="goToScreen3()">Next</button>');
+    }
+    // Just the table markup for the unique-chunks list - regenerated in place by
+    // the expand toggle so the scrollable container itself is never recreated
+    // (which would otherwise reset its scroll position to the top).
+    function chunkStatsTableInnerHtml() {
+        var cap = 60;
+        var list = S.chunkStats;
+        var shown = S.chunkStatsExpanded ? list : list.slice(0, cap);
+        var rows = shown.map(function (cs) {
+            return '<tr><td class="mono">' + escapeHtml(visibleChars(cs.chunk)) + '</td><td>' + cellScroll('<span class="mono">' + cs.bytes.join(',') + '</span>') + '</td><td class="mono">' + cs.count + '</td></tr>';
+        }).join('');
+        var toggleRow = '';
+        if (list.length > cap) {
+            toggleRow = S.chunkStatsExpanded ?
+                '<tr class="expand" onclick="toggleChunkStatsExpand()"><td colspan="3">collapse</td></tr>' :
+                '<tr class="expand" onclick="toggleChunkStatsExpand()"><td colspan="3">&hellip; ' + (list.length - cap) + ' more chunks &mdash; show all</td></tr>';
+        }
+        return '<table class="fx-table">' + colgroupHtml([20, 65, 15]) + '<thead><tr><th>chunk</th><th>bytes</th><th>count</th></tr></thead><tbody>' + rows + toggleRow + '</tbody></table>';
+    }
+    window.toggleChunkStatsExpand = function () {
+        S.chunkStatsExpanded = !S.chunkStatsExpanded;
+        var box = document.getElementById('chunkStatsBox');
+        if (box) box.innerHTML = chunkStatsTableInnerHtml();
+        else render();
+    };
+
+    /* =========================================================================
+       SCREEN 3: Pair counts (animated simulation) + learn merge #1
+       ========================================================================= */
+    window.goToScreen3 = function () {
+        if (S.vocab.length === 0) {
+            var built = buildBaseVocab(S.vocabState);
+            S.vocab = built.vocab; S.byteToTokenId = built.byteToTokenId;
+            S.uniqueChunks = S.chunkStats.map(function (cs) { return { chunk: cs.chunk, bytes: cs.bytes, count: cs.count, tokens: cs.bytes.map(function (b) { return S.byteToTokenId[b]; }) }; });
+        }
+        S.stage3 = 'idle'; S.sim = null;
+        S.screen = 3;
+        renderScreen3();
+    };
+    window.goToScreen2Back = function () { S.screen = 2; renderScreen2(); };
+
+    window.setVocabState = function (n) {
+        if (S.stage3 !== 'idle') return;
+        S.vocabState = n;
+        var built = buildBaseVocab(n);
+        S.vocab = built.vocab; S.byteToTokenId = built.byteToTokenId;
+        S.uniqueChunks = S.uniqueChunks.map(function (uc) { return { chunk: uc.chunk, bytes: uc.bytes, count: uc.count, tokens: uc.bytes.map(function (b) { return S.byteToTokenId[b]; }) }; });
+        renderScreen3();
+    };
+
+    function uniqueChunksMiniTableHtml() {
+        var rows = S.uniqueChunks.slice(0, 60).map(function (uc) {
+            return '<tr><td class="mono">' + escapeHtml(visibleChars(uc.chunk)) + '</td><td>' + cellScroll('<span class="mono">' + uc.tokens.join(',') + '</span>') + '</td><td class="mono">' + uc.count + '</td></tr>';
+        }).join('');
+        var more = S.uniqueChunks.length > 60 ? '<tr class="expand"><td colspan="3">and ' + (S.uniqueChunks.length - 60) + ' more (see Chunking)</td></tr>' : '';
+        return '<div class="small-label">Unique chunks</div><div class="scroll">' + '<table class="fx-table">' + colgroupHtml([20, 65, 15]) + '<thead><tr><th>chunk</th><th>tokens</th><th>count</th></tr></thead><tbody>' + rows + more + '</tbody></table></div>';
+    }
+
+    // Once training starts, the chunk list is no longer the focus - it collapses
+    // to a 2-row teaser (same pattern as the Chunking screen's table) so the
+    // pair-counting view gets the space instead. Regenerated in place so the
+    // toggle never resets the container's own scroll position.
+    function uniqueChunksMiniInnerHtml() {
+        var cap = 2;
+        var list = S.uniqueChunks;
+        var shown = S.uniqueChunksMiniExpanded ? list : list.slice(0, cap);
+        var rows = shown.map(function (uc) {
+            return '<tr><td class="mono">' + escapeHtml(visibleChars(uc.chunk)) + '</td><td>' + cellScroll('<span class="mono">' + uc.tokens.join(',') + '</span>') + '</td><td class="mono">' + uc.count + '</td></tr>';
+        }).join('');
+        var toggleRow = '';
+        if (list.length > cap) {
+            toggleRow = S.uniqueChunksMiniExpanded ?
+                '<tr class="expand" onclick="toggleUniqueChunksMiniExpand()"><td colspan="3">collapse</td></tr>' :
+                '<tr class="expand" onclick="toggleUniqueChunksMiniExpand()"><td colspan="3">&hellip; ' + (list.length - cap) + ' more &mdash; show all</td></tr>';
+        }
+        return '<table class="fx-table">' + colgroupHtml([20, 65, 15]) + '<thead><tr><th>chunk</th><th>tokens</th><th>count</th></tr></thead><tbody>' + rows + toggleRow + '</tbody></table>';
+    }
+    function uniqueChunksMiniBoxHtml() {
+        return '<div class="small-label">Unique chunks</div><div class="scroll short" id="uniqueChunksMiniBox">' + uniqueChunksMiniInnerHtml() + '</div>';
+    }
+    window.toggleUniqueChunksMiniExpand = function () {
+        S.uniqueChunksMiniExpanded = !S.uniqueChunksMiniExpanded;
+        var box = document.getElementById('uniqueChunksMiniBox');
+        if (box) box.innerHTML = uniqueChunksMiniInnerHtml();
+        else render();
+    };
+
+    function pairCountsHeadingHtml() {
+        return '' +
+            '<h2 class="stage-title">Pair counts' +
+            '<button class="info-btn" data-pop="countsInfoPop" onclick="toggleInfoPop(event,\'countsInfoPop\')" aria-expanded="false" aria-label="How pair counts are built">i</button>' +
+            '<div class="info-pop" id="countsInfoPop" style="display:none;">' +
+            'How <span class="mono">pair_counts</span> is built:' +
+            '<ol>' +
+            '<li>Take the next unique chunk (already grouped, each with a count).</li>' +
+            '<li>Skip it if it has fewer than 2 tokens \u2014 no pair to count.</li>' +
+            '<li>Walk its tokens left to right, one adjacent pair at a time.</li>' +
+            '<li>Add the chunk\u2019s count to that pair\u2019s running total.</li>' +
+            '<li>Repeat for every chunk, then take the pair with the highest total.</li>' +
+            '</ol>' +
+            '</div>' +
+            '</h2>';
+    }
+
+    // Splits the (canonically ordered) unique chunks into the manually-walked
+    // portion (the first `slowChunks` chunks - including an explicit "skip"
+    // entry for any chunk with fewer than 2 tokens, since that's worth seeing
+    // too) and the remainder (pair-only entries, processed later by fast-forward).
+    function buildManualAndRemainingSteps(uniqueChunks, slowChunks) {
+        var manual = [];
+        var remaining = [];
+        for (var ci = 0; ci < uniqueChunks.length; ci++) {
+            var uc = uniqueChunks[ci];
+            var toks = uc.tokens;
+            var isManual = ci < slowChunks;
+            if (toks.length < 2) {
+                if (isManual) manual.push({ type: 'skip', chunk: uc.chunk, tokens: toks, count: uc.count });
+                continue;
+            }
+            var pairsInChunk = toks.length - 1;
+            for (var i = 0; i < pairsInChunk; i++) {
+                var entry = {
+                    type: 'pair', chunk: uc.chunk, tokens: toks, count: uc.count, pos: i,
+                    left: toks[i], right: toks[i + 1], pairIndexInChunk: i + 1, pairsInChunk: pairsInChunk
+                };
+                if (isManual) manual.push(entry); else remaining.push(entry);
+            }
+        }
+        return { manual: manual, remaining: remaining };
+    }
+    // Pair-counts as of exactly `appliedCount` manual steps applied - recomputed
+    // from scratch each time (cheap: at most a few dozen entries), which is what
+    // makes Back as simple and correct as Next.
+    function recomputeManualCounts(manualSteps, appliedCount) {
+        var counts = new Map();
+        for (var i = 0; i < appliedCount; i++) {
+            var st = manualSteps[i];
+            if (st.type === 'pair') {
+                var key = st.left + ',' + st.right;
+                counts.set(key, (counts.get(key) || 0) + st.count);
+            }
+        }
+        return counts;
+    }
+
+    window.startSimulate = function () {
+        var chunkInput = document.getElementById('slowChunkCountInput');
+        var slowChunks = chunkInput ? parseInt(chunkInput.value, 10) : 3;
+        if (isNaN(slowChunks) || slowChunks < 0) slowChunks = 3;
+        slowChunks = Math.max(0, Math.min(20, slowChunks));
+        S.simConfig = { slowChunks: slowChunks };
+        S.uniqueChunksMiniExpanded = false;
+
+        var built = buildManualAndRemainingSteps(S.uniqueChunks, slowChunks);
+        S.sim = {
+            manualSteps: built.manual, remainingSteps: built.remaining,
+            appliedCount: Math.min(1, built.manual.length),
+            counts: new Map(), mode: 'manual', ffIdx: 0, lastStep: null, token: null, done: false
+        };
+        if (S.sim.appliedCount > 0) S.sim.counts = recomputeManualCounts(S.sim.manualSteps, S.sim.appliedCount);
+        S.stage3 = 'simulating';
+
+        if (built.manual.length === 0) { renderScreen3(); beginFastForward(); return; }
+        renderScreen3();
+    };
+    window.nextManualStep = function () {
+        if (!S.sim || S.sim.mode !== 'manual') return;
+        if (S.sim.appliedCount >= S.sim.manualSteps.length) { beginFastForward(); return; }
+        S.sim.appliedCount++;
+        S.sim.counts = recomputeManualCounts(S.sim.manualSteps, S.sim.appliedCount);
+        renderScreen3();
+    };
+    window.backManualStep = function () {
+        if (!S.sim || S.sim.mode !== 'manual' || S.sim.appliedCount <= 1) return;
+        S.sim.appliedCount--;
+        S.sim.counts = recomputeManualCounts(S.sim.manualSteps, S.sim.appliedCount);
+        renderScreen3();
+    };
+    function beginFastForward() {
+        S.sim.mode = 'fastforward';
+        S.sim.lastStep = null; S.sim.ffIdx = 0;
+        renderScreen3();
+        if (S.sim.remainingSteps.length === 0) { S.sim.done = true; S.stage3 = 'counted'; renderScreen3(); return; }
+        S.sim.token = runPacedSteps({
+            total: S.sim.remainingSteps.length,
+            slowCount: 0, slowDelay: 0, fastDelay: 25, fastFrames: 60,
+            step: function (i) {
+                var st = S.sim.remainingSteps[i]; var key = st.left + ',' + st.right;
+                S.sim.counts.set(key, (S.sim.counts.get(key) || 0) + st.count);
+                S.sim.lastStep = st; S.sim.ffIdx = i + 1;
+            },
+            onTick: function () {
+                var box = document.getElementById('simFrame');
+                if (box) box.innerHTML = simFrameHtml();
+                else { renderScreen3(); return; }
+                var centerEl = document.getElementById('abCenter');
+                if (centerEl) centerEl.textContent = 'Step ' + S.sim.ffIdx + ' / ' + S.sim.remainingSteps.length;
+            },
+            onDone: function () { S.sim.done = true; S.stage3 = 'counted'; renderScreen3(); }
+        });
+    }
+    window.skipSimulate = function () { if (S.sim && S.sim.token) S.sim.token.requestSkip(); };
+
+    window.createTokenFromSim = function () {
+        var tp = topPairFromCounts(S.sim.counts);
+        if (!tp) return;
+        S.pendingTokenRecord = createTokenEntry(tp);
+        S.stage3 = 'tokenCreated';
+        renderScreen3();
+    };
+
+    function pairCountsTableHtml(counts, opts) {
+        opts = opts || {};
+        var arr = [];
+        counts.forEach(function (v, k) { var p = k.split(',').map(Number); arr.push({ left: p[0], right: p[1], count: v, key: k }); });
+        if (opts.sorted) arr.sort(function (a, b) { return b.count - a.count; });
+        var cap = opts.cap || arr.length;
+        var shown = arr.slice(0, cap);
+        var rows = shown.map(function (p) {
+            var isTop = opts.top && p.left === opts.top.left && p.right === opts.top.right;
+            var isFlash = opts.flashKey && p.key === opts.flashKey;
+            var cls = isTop ? ' class="hl"' : (isFlash ? ' class="match"' : '');
+            var delta = (isFlash && opts.flashDelta) ? ' <span class="mono" style="color:var(--good);">+' + opts.flashDelta + '</span>' : '';
+            return '<tr' + cls + '><td class="mono">(' + p.left + ',' + p.right + ')</td><td>' + cellScroll('<span class="mono">' +
+                escapeHtml(S.vocab[p.left].display) + escapeHtml(S.vocab[p.right].display) + '</span>') + '</td><td class="mono">' + p.count + delta + '</td></tr>';
+        }).join('');
+        var note = arr.length > cap ? '<tr class="expand"><td colspan="3">and ' + (arr.length - cap) + ' more pairs</td></tr>' : '';
+        return '<div class="small-label"><span class="mono">pair_counts</span> dictionary</div><div class="scroll"><table class="fx-table">' + colgroupHtml([25, 50, 25]) + '<thead><tr><th>pair</th><th>text</th><th>count</th></tr></thead><tbody>' + rows + note + '</tbody></table></div>';
+    }
+
+    // Manual mode: the fully-labeled, click-paced view of exactly one step -
+    // the current chunk (text, bytes, occurrence count), how many pairs it
+    // makes, which pair is selected right now (with its two tokens highlighted),
+    // and whether this pair is brand new or already existed in the dictionary.
+    function manualStepFrameHtml() {
+        var st = S.sim.manualSteps[S.sim.appliedCount - 1];
+        if (!st) return '';
+        var header = '' +
+            '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' +
+            '<span class="chip mono">"' + escapeHtml(visibleChars(st.chunk)) + '"</span>' +
+            '<span class="mono" style="font-size:12px;color:var(--ink-soft);">bytes {' + st.tokens.join(',') + '}</span>' +
+            '<span class="count-chip">occurs ' + st.count + '&times;</span>' +
+            '</div>';
+
+        if (st.type === 'skip') {
+            return header +
+                '<div class="msg note" style="margin-top:10px;">Only ' + st.tokens.length + ' byte' + (st.tokens.length === 1 ? '' : 's') + ' \u2014 no adjacent pair possible. Skipped.</div>' +
+                '<div style="margin-top:8px;">' + chunkTokenChipsHtml(st.tokens, []) + '</div>';
+        }
+
+        var beforeCounts = recomputeManualCounts(S.sim.manualSteps, S.sim.appliedCount - 1);
+        var key = st.left + ',' + st.right;
+        var existed = beforeCounts.has(key);
+        var newTotal = (beforeCounts.get(key) || 0) + st.count;
+        var pairText = escapeHtml(S.vocab[st.left].display) + escapeHtml(S.vocab[st.right].display);
+
+        return header +
+            '<div style="margin-top:8px;font-size:13px;">Each pair here adds <b>+' + st.count + '</b> to the count. This chunk makes ' +
+            st.pairsInChunk + ' pair' + (st.pairsInChunk === 1 ? '' : 's') + '.</div>' +
+            '<div style="margin-top:6px;font-size:13px;">Pair ' + st.pairIndexInChunk + ' of ' + st.pairsInChunk + ': <span class="mono">(' +
+            st.left + ',' + st.right + ')</span> = "' + pairText + '"</div>' +
+            '<div style="margin-top:6px;">' + chunkTokenChipsHtml(st.tokens, [st.pos, st.pos + 1]) + '</div>' +
+            '<div class="msg ' + (existed ? 'note' : 'ok') + '" style="margin-top:10px;">' +
+            (existed ? 'Existing entry \u2014 count increases to ' + newTotal + ' (+' + st.count + ').' : 'New entry \u2014 added with count ' + st.count + '.') +
+            '</div>' +
+            pairCountsTableHtml(S.sim.counts, { sorted: false, cap: 50, flashKey: key, flashDelta: st.count });
+    }
+
+    // Fast-forward mode: the same blur + "Fast forwarding" treatment used
+    // elsewhere - this is the "don't dwell on individual steps" phase, entered
+    // only after the manual walkthrough is complete.
+    function simFrameHtml() {
+        var st = S.sim.lastStep;
+        var total = S.sim.remainingSteps.length;
+        var pct = total > 0 ? Math.round(100 * S.sim.ffIdx / total) : 100;
+        var chips = st ? chunkTokenChipsHtml(st.tokens, [st.pos, st.pos + 1]) : '';
+        var caption = st ? ('<span class="mono">' + escapeHtml(visibleChars(st.chunk)) + '</span> &times;' + st.count +
+            ' &rarr; pair (' + st.left + ',' + st.right + ') <b>+' + st.count + '</b>') : '';
+        return '' +
+            '<div class="sim-live blurred">' +
+            '<div><span class="count-chip">Step ' + S.sim.ffIdx + ' / ' + total + '</span></div>' +
+            '<div style="font-size:13px;">' + caption + '</div>' +
+            '<div>' + chips + '</div>' +
+            pairCountsTableHtml(S.sim.counts, { sorted: false, cap: 50 }) +
+            '</div>' +
+            '<div class="ff-overlay">Fast forwarding</div>' +
+            '<div class="progress-outer"><div class="progress-inner" style="width:' + pct + '%;"></div></div>';
+    }
+
+    function renderScreen3() {
+        setChrome(false);
+        var main = '';
+        var footerLeft = '', footerCenter = '', footerRight = '';
+
+        if (S.stage3 === 'idle') {
+            main = '' +
+                pairCountsHeadingHtml() +
+                '<p class="lede">Every adjacent token pair, weighted by how often its chunk occurs.</p>' +
+                uniqueChunksMiniTableHtml() +
+                '<div class="question-box">' +
+                '<label class="field">Show <input type="number" id="slowChunkCountInput" value="' + S.simConfig.slowChunks + '" min="0" max="20" style="width:44px;"> chunks manually, then fast-forward the rest</label>' +
+                '</div>';
+            footerLeft = backButton('goToScreen2Back()');
+            footerRight = '<button class="primary" onclick="startSimulate()">Simulate</button>';
+
+        } else if (S.stage3 === 'simulating' && S.sim.mode === 'manual') {
+            main = pairCountsHeadingHtml() + uniqueChunksMiniBoxHtml() + manualStepFrameHtml();
+            var atEnd = S.sim.appliedCount >= S.sim.manualSteps.length;
+            footerLeft = '<button onclick="backManualStep()"' + (S.sim.appliedCount <= 1 ? ' disabled' : '') + '>&larr; Back</button>';
+            footerCenter = 'Step ' + S.sim.appliedCount + ' / ' + S.sim.manualSteps.length;
+            footerRight = atEnd ?
+                '<button class="primary" onclick="beginFastForward()">Fast forward to finish</button>' :
+                '<button class="primary" onclick="nextManualStep()">Next</button>';
+
+        } else if (S.stage3 === 'simulating' && S.sim.mode === 'fastforward') {
+            main = pairCountsHeadingHtml() + uniqueChunksMiniBoxHtml() + '<div class="sim-frame" id="simFrame">' + simFrameHtml() + '</div>';
+            footerCenter = 'Step ' + S.sim.ffIdx + ' / ' + S.sim.remainingSteps.length;
+            footerRight = '<button onclick="skipSimulate()">Skip to end</button>';
+
+        } else if (S.stage3 === 'counted') {
+            var tp = topPairFromCounts(S.sim.counts);
+            if (tp) {
+                main = '' +
+                    pairCountsHeadingHtml() +
+                    uniqueChunksMiniBoxHtml() +
+                    pairCountsTableHtml(S.sim.counts, { sorted: true, cap: 50, top: tp }) +
+                    '<div class="msg note">Top pair: (' + tp.left + ',' + tp.right + ') = "' + escapeHtml(S.vocab[tp.left].display) + escapeHtml(S.vocab[tp.right].display) + '", count ' + tp.count + '.</div>';
+                footerRight = '<button class="primary accent-outline" onclick="createTokenFromSim()">Create token</button>';
+            } else {
+                main = pairCountsHeadingHtml() + uniqueChunksMiniBoxHtml() + '<div class="msg note">No pairs remain &mdash; every chunk is a single token.</div>';
+            }
+
+        } else if (S.stage3 === 'tokenCreated') {
+            var r = S.pendingTokenRecord;
+            main = '' +
+                pairCountsHeadingHtml() +
+                uniqueChunksMiniBoxHtml() +
+                '<div class="msg ok">Token ' + r.newId + ' = "' + escapeHtml(r.leftDisplay) + '" + "' + escapeHtml(r.rightDisplay) + '" &rarr; "' + escapeHtml(r.newDisplay) + '" (merge ' + r.mergeId + ').</div>' +
+                '<p class="lede">See it in the vocabulary, right.</p>';
+            footerRight = '<button class="primary" onclick="goToScreen4()">Update corpus</button>';
+        }
+
+        setStage('<div class="split"><div class="pane">' + main + '</div><div class="pane-side">' + vocabPaneHtml() + '</div></div>');
+        setFooter(footerLeft, footerCenter, footerRight);
+    }
+
+    /* =========================================================================
+       SCREEN 4: Update corpus (local neighborhood) + configure + auto-train
+       ========================================================================= */
+    window.goToScreen4 = function () {
+        S.corpusUpdateAffected = applyMergeToUniqueChunks(S.pendingTokenRecord);
+        S.stage4 = 'update';
+        S.screen = 4;
+        renderScreen4();
+    };
+    window.goToScreen4Dictionary = function () { S.stage4 = 'dictionary'; renderScreen4(); };
+    window.goToScreen4Configure = function () { S.stage4 = 'configure'; renderScreen4(); };
+
+    // Substep 2: the pair_counts dictionary itself, before vs after the corpus
+    // update - most pairs are untouched; only the ones that actually touched
+    // the merged spot change (the merged pair disappears; its old neighbors'
+    // counts shift), which is the concrete payoff of "local neighborhood" update.
+    function countsBeforeAfterHtml() {
+        var before = S.sim.counts;
+        var after = computeCounts(S.uniqueChunks);
+        var keys = new Set();
+        before.forEach(function (v, k) { keys.add(k); });
+        after.forEach(function (v, k) { keys.add(k); });
+        var arr = [];
+        keys.forEach(function (k) {
+            var p = k.split(',').map(Number);
+            var b = before.get(k) || 0, a = after.get(k) || 0;
+            arr.push({ left: p[0], right: p[1], before: b, after: a, changed: b !== a });
+        });
+        arr.sort(function (x, y) { if (x.changed !== y.changed) return x.changed ? -1 : 1; return y.before - x.before; });
+        var colorIdx = 0;
+        var rows = arr.map(function (p) {
+            var cls = '';
+            if (p.changed) { cls = ' class="' + rowPalette(colorIdx) + '"'; colorIdx++; }
+            return '<tr' + cls + '><td class="mono">(' + p.left + ',' + p.right + ')</td><td>' + cellScroll('<span class="mono">' +
+                escapeHtml(S.vocab[p.left].display) + escapeHtml(S.vocab[p.right].display) + '</span>') + '</td><td class="mono">' + p.before + '</td><td class="mono">' + p.after + '</td></tr>';
+        }).join('');
+        return '<div class="scroll"><table class="fx-table">' + colgroupHtml([22, 40, 19, 19]) + '<thead><tr><th>pair</th><th>text</th><th>before</th><th>after</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+    }
+
+    function renderScreen4() {
+        setChrome(false);
+        var main = ''; var footerRight = '';
+
+        if (S.stage4 === 'update') {
+            var r = S.pendingTokenRecord;
+            var affectedMap = {};
+            S.corpusUpdateAffected.forEach(function (ex) { affectedMap[ex.chunk] = ex; });
+            var colorIdx = 0;
+            var rows = S.uniqueChunks.map(function (uc) {
+                var ex = affectedMap[uc.chunk];
+                var cls = '';
+                if (ex) { cls = ' class="' + rowPalette(colorIdx) + '"'; colorIdx++; }
+                var beforeTok = ex ? ex.before : uc.tokens;
+                var afterTok = ex ? ex.after : uc.tokens;
+                return '<tr' + cls + '><td class="mono">' + escapeHtml(visibleChars(uc.chunk)) + '</td>' +
+                    '<td><div class="cell-scroll">' + chunkTokenChipsHtml(beforeTok, []) + '</div></td>' +
+                    '<td><div class="cell-scroll">' + chunkTokenChipsHtml(afterTok, []) + '</div></td>' +
+                    '<td class="mono">' + uc.count + '</td></tr>';
+            }).join('');
+            main = '' +
+                '<h2 class="stage-title">Update the corpus</h2>' +
+                '<p class="lede"><span class="mono">"L\u2013b1\u2013b2\u2013R"</span> &rarr; <span class="mono">"L\u2013{b1,b2}\u2013R"</span>. Based on the local neighborhood within each chunk, the corpus will be updated. This process also updates the dictionary (which stores the counts) for the next iteration(s).</p>' +
+                '<p class="lede">{' + r.left + ',' + r.right + '} &rarr; token ' + r.newId + '. ' + S.corpusUpdateAffected.length + ' of ' + S.uniqueChunks.length + ' chunks contain this pair.</p>' +
+                '<div class="scroll" style="overflow-x:hidden;"><table class="update-table"><thead><tr><th>chunk</th><th>before</th><th>after</th><th>count</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+                '<div class="mono" style="font-size:11px;color:var(--ink-faint);margin-top:8px;">* Highlighted rows contain the pair (' + r.left + ',' + r.right + ') \u2014 merged into token ' + r.newId + '.</div>';
+            footerRight = '<button class="primary" onclick="goToScreen4Dictionary()">See count changes</button>';
+
+        } else if (S.stage4 === 'dictionary') {
+            var r2 = S.pendingTokenRecord;
+            main = '' +
+                '<h2 class="stage-title">Counts dictionary</h2>' +
+                '<p class="lede">Same idea, applied to <span class="mono">pair_counts</span> itself: most pairs are untouched. Only ones touching (' + r2.left + ',' + r2.right + ') change \u2014 it disappears, and its old neighbors shift.</p>' +
+                countsBeforeAfterHtml() +
+                '<div class="mono" style="font-size:11px;color:var(--ink-faint);margin-top:8px;">* Highlighted rows changed because of this merge.</div>';
+            footerRight = '<button class="primary" onclick="goToScreen4Configure()">Continue to training</button>';
+
+        } else if (S.stage4 === 'configure') {
+            main = '' +
+                '<div class="center-block">' +
+                '<h2 class="stage-title">Train the rest</h2>' +
+                '<p class="lede">Merge 1 is learned. Choose a total (100&ndash;500); the rest run automatically.</p>' +
+                '<label class="field">Total merges <input type="number" id="totalMergesInput" value="' + S.trainConfig.totalMerges + '" min="100" max="500" style="width:70px;"></label>' +
+                '</div>';
+            footerRight = '<button class="primary" onclick="beginAutomatedTraining()">Start</button>';
+
+        } else if (S.stage4 === 'progress') {
+            var total = S.trainConfig.totalMerges;
+            var done = S.merges.length;
+            var pct = Math.min(100, Math.round(100 * done / total));
+            var tp = S.trainProgress || {};
+            main = '' +
+                '<div class="center-block">' +
+                '<h2 class="stage-title">Training</h2>' +
+                '<div class="progress-outer"><div class="progress-inner" style="width:' + pct + '%;"></div></div>' +
+                '<div class="mono" style="font-size:13px;color:var(--ink-soft);">merge ' + done + ' / ' + total + '</div>' +
+                '<div class="spinner"></div>' +
+                (tp.exhaustedEarly ? '<div class="msg note">No pairs left &mdash; stopped early.</div>' : '') +
+                '</div>';
+        }
+
+        setStage('<div class="pane">' + main + '</div>');
+        setFooter('', '', footerRight);
+    }
+
+    window.beginAutomatedTraining = function () {
+        var input = document.getElementById('totalMergesInput');
+        var n = input ? parseInt(input.value, 10) : 100;
+        if (isNaN(n)) n = 100;
+        if (n < 100) n = 100; if (n > 500) n = 500;
+        S.trainConfig.totalMerges = n;
+        var remaining = Math.max(0, n - S.merges.length);
+        S.stage4 = 'progress'; S.trainProgress = { exhaustedEarly: false };
+        renderScreen4();
+        runAutomatedTraining(remaining);
+    };
+    function runAutomatedTraining(remaining) {
+        if (remaining <= 0) { setTimeout(function () { S.screen = 5; renderScreen5(); }, 300); return; }
+        var batchSize = Math.max(1, Math.ceil(remaining / 60));
+        function tick() {
+            var doneThisBatch = 0, exhausted = false;
+            while (doneThisBatch < batchSize && remaining > 0) {
+                var counts = computeCounts(S.uniqueChunks); var tp = topPairFromCounts(counts);
+                if (!tp) { exhausted = true; break; }
+                performOneMerge(tp); doneThisBatch++; remaining--;
+            }
+            if (exhausted) S.trainProgress.exhaustedEarly = true;
+            renderScreen4();
+            if (!exhausted && remaining > 0) setTimeout(tick, 30);
+            else setTimeout(function () { S.screen = 5; renderScreen5(); }, 500);
+        }
+        tick();
+    }
+
+    /* =========================================================================
+       SCREEN 5: Final vocabulary (full, untruncated)
+       ========================================================================= */
+    function renderScreen5() {
+        setChrome(false);
+        var totalBytes = S.uniqueChunks.reduce(function (s, uc) { return s + uc.bytes.length * uc.count; }, 0);
+        var totalTokensNow = S.uniqueChunks.reduce(function (s, uc) { return s + uc.tokens.length * uc.count; }, 0);
+        var ratio = totalTokensNow > 0 ? (totalBytes / totalTokensNow) : 0;
+        var lastMerge = S.merges.length ? S.merges[S.merges.length - 1] : null;
+        var html = '' +
+            '<h2 class="stage-title">Merges learned</h2>' +
+            '<p class="lede">Each row is one training step: the most frequent pair at that point became a new token.</p>' +
+            '<div class="stat-row">' +
+            '<div class="stat"><div class="num">' + S.merges.length + '</div><div class="lbl">merges</div></div>' +
+            '<div class="stat"><div class="num">' + S.vocab.length + '</div><div class="lbl">tokens</div></div>' +
+            '<div class="stat"><div class="num">' + ratio.toFixed(2) + '</div><div class="lbl">bytes / token</div></div>' +
+            '</div>' +
+            '<div class="scroll"><table class="fx-table vocab-table">' + mergeTableHead() + '<tbody>' + renderMergeRows(S.merges, lastMerge ? lastMerge.newId : null) + '</tbody></table></div>';
+        setStage(html);
+        setFooter('', '', '<button class="primary" onclick="goToScreen6()">Try it</button>');
+    }
+
+    /* =========================================================================
+       SCREEN 6: Try it (free-scroll, exempt from the fixed box)
+       ========================================================================= */
+    var S6_MANUAL_MERGES = 3;
+
+    // Reuses the same six pastel hues as the chunk-boundary highlighting on
+    // screens 1-4 (var(--c1) .. var(--c6)) so the "which chunk is active" color
+    // on screen 6 draws from the same palette as the rest of the simulator.
+    var S6_CHUNK_PASTELS = [
+        'var(--c1)',
+        'var(--c2)',
+        'var(--c3)',
+        'var(--c4)',
+        'var(--c5)',
+        'var(--c6)'
+    ];
+
+    window.goToScreen6 = function () {
+        S.screen = 6;
+        S.testResult = null;
+        S.lookupSim = null;
+        renderScreen6();
+    };
+
+    window.onTestInput = function (value) {
+        S.testText = value;
+    };
+
+    window.s6TryAnotherInput = function () {
+        S.testText = '';
+        S.testResult = null;
+        S.lookupSim = null;
+        renderScreen6();
+    };
+
+    window.s6RestartSimulation = function () {
+        tokenizeTestText();
+    };
+
+    function s6StepBlock(title, bodyHtml) {
+        return '<div style="margin-bottom:18px;color:var(--ink);">' +
+            '<div class="pane-title" style="margin-bottom:7px;color:var(--ink);">' +
+            title +
+            '</div>' +
+            bodyHtml +
+            '</div>';
+    }
+
+    function s6CellScroll(valueHtml) {
+        return '<div style="' +
+            'display:block;box-sizing:border-box;min-width:0;width:100%;' +
+            'max-width:100%;overflow-x:auto;overflow-y:hidden;' +
+            'white-space:nowrap;color:var(--ink);">' +
+            valueHtml +
+            '</div>';
+    }
+
+    function s6TableCell(valueHtml) {
+        return '<td style="overflow:hidden;color:var(--ink);">' +
+            s6CellScroll(valueHtml) +
+            '</td>';
+    }
+
+    function s6ArrayText(tokens) {
+        return '[' +
+            escapeHtml((tokens || []).join(', ')) +
+            ']';
+    }
+
+    function s6ChunkColor(state) {
+        return state && state.pastel ?
+            state.pastel :
+            'var(--paper)';
+    }
+
+    function s6ChoosePastel(previous) {
+        var choices = S6_CHUNK_PASTELS.filter(function (color) {
+            return color !== previous;
+        });
+
+        if (!choices.length) {
+            choices = S6_CHUNK_PASTELS.slice();
+        }
+
+        return choices[
+            Math.floor(Math.random() * choices.length)
+            ];
+    }
+
+    function s6Notice(message, state) {
+        return '<div style="' +
+            'box-sizing:border-box;padding:9px 11px;margin-bottom:10px;' +
+            'background:' + s6ChunkColor(state) + ';' +
+            'border-left:4px solid var(--accent);' +
+            'border-radius:5px;color:var(--ink);">' +
+            message +
+            '</div>';
+    }
+
+    function s6ArrayChips(tokens, highlights, pastel) {
+        var highlighted = {};
+
+        (highlights || []).forEach(function (index) {
+            highlighted[index] = true;
+        });
+
+        var values = (tokens || []).map(function (token, index) {
+            var active = highlighted[index];
+
+            return '<span class="mono" style="' +
+                'display:inline-block;padding:3px 6px;margin:2px;' +
+                'border:1px solid var(--line);border-radius:4px;' +
+                'background:' + (active ? pastel : 'var(--card)') + ';' +
+                'color:var(--ink);' +
+                (active ?
+                    'border-color:var(--accent);font-weight:700;' :
+                    '') +
+                '">' +
+                escapeHtml(String(token)) +
+                '</span>' +
+                (index < tokens.length - 1 ?
+                    '<span class="mono" style="color:var(--ink);">, </span>' :
+                    '');
+        }).join('');
+
+        return '<div style="' +
+            'max-width:100%;overflow-x:auto;overflow-y:hidden;' +
+            'white-space:nowrap;padding:2px 0;color:var(--ink);">' +
+            '<span class="mono">[</span>' +
+            values +
+            '<span class="mono">]</span>' +
+            '</div>';
+    }
+
+    function s6PairPosition(tokens, left, right) {
+        for (var i = 0; i < tokens.length - 1; i++) {
+            if (tokens[i] === left && tokens[i + 1] === right) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    function s6PairIndices(tokens, left, right) {
+        var indices = [];
+
+        for (var i = 0; i < tokens.length - 1; i++) {
+            if (tokens[i] === left && tokens[i + 1] === right) {
+                indices.push(i, i + 1);
+                i++;
+            }
+        }
+
+        return indices;
+    }
+
+    function s6MergedIndices(tokens, left, right) {
+        var indices = [];
+        var outputIndex = 0;
+
+        for (var i = 0; i < tokens.length; i++) {
+            if (
+                i < tokens.length - 1 &&
+                tokens[i] === left &&
+                tokens[i + 1] === right
+            ) {
+                indices.push(outputIndex);
+                outputIndex++;
+                i++;
+            } else {
+                outputIndex++;
+            }
+        }
+
+        return indices;
+    }
+
+    function s6MergeAllPairs(tokens, left, right, newId) {
+        var output = [];
+        var matched = false;
+
+        for (var i = 0; i < tokens.length; i++) {
+            if (
+                i < tokens.length - 1 &&
+                tokens[i] === left &&
+                tokens[i + 1] === right
+            ) {
+                output.push(newId);
+                matched = true;
+                i++;
+            } else {
+                output.push(tokens[i]);
+            }
+        }
+
+        return {
+            matched: matched,
+            tokens: output
+        };
+    }
+
+    function s6ApplyRule(state, rule) {
+        var before = state.tokens.slice();
+        var result = s6MergeAllPairs(
+            before,
+            rule.left,
+            rule.right,
+            rule.newId
+        );
+
+        if (result.matched) {
+            state.tokens = result.tokens;
+            state.matchCount++;
+        }
+
+        return {
+            matched: result.matched,
+            before: before,
+            after: state.tokens.slice(),
+            oldHighlight: result.matched ?
+                s6PairIndices(before, rule.left, rule.right) :
+                [],
+            newHighlight: result.matched ?
+                s6MergedIndices(before, rule.left, rule.right) :
+                []
+        };
+    }
+
+    function s6RuleText(rule) {
+        var left = S.vocab[rule.left];
+        var right = S.vocab[rule.right];
+
+        return escapeHtml(
+            (left ? left.display : '') +
+            (right ? right.display : '')
+        );
+    }
+
+    function s6Snapshot() {
+        var sim = S.lookupSim;
+
+        return JSON.parse(JSON.stringify({
+            chunks: sim.chunks,
+            activeChunk: sim.activeChunk,
+            currentMergeId: sim.currentMergeId,
+            done: sim.done,
+            finalized: sim.finalized
+        }));
+    }
+
+    function s6PushHistory() {
+        if (S.lookupSim) {
+            S.lookupSim.history.push(s6Snapshot());
+        }
+    }
+
+    function s6CreateSkipToken() {
+        return {
+            requestSkip: function () {
+                s6AutoEncodeFromHereCore(false);
+            }
+        };
+    }
+
+    function s6CheckMerge(state, mergeIndex, skippedFrom, skippedTo) {
+        var rule = S.merges[mergeIndex];
+        var result = s6ApplyRule(state, rule);
+
+        state.cursor = mergeIndex + 1;
+        state.complete = false;
+        state.last = {
+            type: 'merge',
+            rule: rule,
+            matched: result.matched,
+            before: result.before,
+            after: result.after,
+            oldHighlight: result.oldHighlight,
+            newHighlight: result.newHighlight,
+            skippedFrom: skippedFrom == null ? null : skippedFrom,
+            skippedTo: skippedTo == null ? null : skippedTo
+        };
+
+        S.lookupSim.currentMergeId = rule.mergeId;
+    }
+
+    function s6FinishChunk(state) {
+        var lastRule = S.merges[S.merges.length - 1];
+
+        state.cursor = S.merges.length;
+        state.complete = true;
+        state.last = {
+            type: 'complete',
+            mergeId: lastRule ? lastRule.mergeId : null
+        };
+
+        S.lookupSim.currentMergeId =
+            lastRule ? lastRule.mergeId : null;
+    }
+
+    function s6NextApplicableMerge(state) {
+        var start = state.cursor;
+
+        for (var i = start; i < S.merges.length; i++) {
+            var rule = S.merges[i];
+
+            if (
+                s6PairPosition(
+                    state.tokens,
+                    rule.left,
+                    rule.right
+                ) !== -1
+            ) {
+                s6CheckMerge(
+                    state,
+                    i,
+                    i > start ? S.merges[start].mergeId : null,
+                    i > start ? S.merges[i - 1].mergeId : null
+                );
+                return;
+            }
+        }
+
+        s6FinishChunk(state);
+    }
+
+    function s6SweepChunkFromCursor(state) {
+        while (state.cursor < S.merges.length) {
+            var mergeIndex = state.cursor;
+            var rule = S.merges[mergeIndex];
+
+            s6ApplyRule(state, rule);
+            state.cursor = mergeIndex + 1;
+        }
+
+        s6FinishChunk(state);
+    }
+
+    function s6RebuildFinalOutput() {
+        var sim = S.lookupSim;
+        var stream = [];
+        var decodedBytes = [];
+
+        sim.chunks.forEach(function (state, index) {
+            S.testResult.perChunk[index].tokens =
+                state.tokens.slice();
+
+            stream = stream.concat(state.tokens);
+        });
+
+        stream.forEach(function (tokenId) {
+            if (S.vocab[tokenId]) {
+                decodedBytes = decodedBytes.concat(
+                    S.vocab[tokenId].bytes
+                );
+            }
+        });
+
+        var decoder = new TextDecoder(
+            S.encoding === 'utf-16' ?
+                'utf-16le' :
+                'utf-8',
+            { fatal: false }
+        );
+
+        var decoded = decoder.decode(
+            new Uint8Array(decodedBytes)
+        );
+
+        S.testResult.allTokens = stream;
+        S.testResult.ratio = stream.length ?
+            S.testResult.totalBytes / stream.length :
+            0;
+        S.testResult.roundTripOk =
+            decoded === S.testText;
+    }
+
+    function s6FinalizeResult() {
+        var sim = S.lookupSim;
+
+        if (!sim || sim.finalized) {
+            return;
+        }
+
+        s6RebuildFinalOutput();
+        sim.finalized = true;
+        sim.done = true;
+        sim.currentMergeId = null;
+    }
+
+    // Core implementation, called only by its own distinct name (never through
+    // window.s6AutoEncodeFromHere, which is a separate public wrapper below -
+    // keeping them separate avoids a name collision that previously caused
+    // infinite recursion whenever "Auto encode from here" was clicked).
+    function s6AutoEncodeFromHereCore(recordHistory) {
+        var sim = S.lookupSim;
+
+        if (!sim || sim.done) {
+            return;
+        }
+
+        if (recordHistory) {
+            s6PushHistory();
+        }
+
+        for (
+            var i = sim.activeChunk;
+            i < sim.chunks.length;
+            i++
+        ) {
+            if (!sim.chunks[i].complete) {
+                s6SweepChunkFromCursor(sim.chunks[i]);
+            }
+        }
+
+        s6FinalizeResult();
+        renderScreen6();
+    }
+
+    function s6NextLookupStep() {
+        var sim = S.lookupSim;
+
+        if (!sim || sim.done) {
+            return;
+        }
+
+        s6PushHistory();
+
+        var state = sim.chunks[sim.activeChunk];
+
+        if (state.complete) {
+            if (sim.activeChunk < sim.chunks.length - 1) {
+                sim.activeChunk++;
+                sim.currentMergeId =
+                    S.merges.length ?
+                        S.merges[0].mergeId :
+                        null;
+            } else {
+                s6FinalizeResult();
+            }
+
+            renderScreen6();
+            return;
+        }
+
+        var manualLimit = Math.min(
+            S6_MANUAL_MERGES,
+            S.merges.length
+        );
+
+        if (state.cursor < manualLimit) {
+            s6CheckMerge(
+                state,
+                state.cursor,
+                null,
+                null
+            );
+        } else {
+            s6NextApplicableMerge(state);
+        }
+
+        renderScreen6();
+    }
+
+    function s6BackLookupStep() {
+        var sim = S.lookupSim;
+
+        if (!sim || !sim.history.length) {
+            return;
+        }
+
+        var previous = sim.history.pop();
+
+        previous.history = sim.history;
+        previous.token = s6CreateSkipToken();
+        S.lookupSim = previous;
+
+        renderScreen6();
+    }
+
+    window.s6NextLookupStep = s6NextLookupStep;
+    window.s6BackLookupStep = s6BackLookupStep;
+    // Public entry point for the "Auto encode from here" button. Always records
+    // history (the user explicitly chose to jump ahead, so Back should return
+    // them to where they were).
+    window.s6AutoEncodeFromHere = function () {
+        s6AutoEncodeFromHereCore(true);
+    };
+
+    function s6VocabularyTable(state) {
+        var sim = S.lookupSim;
+        var pastel = s6ChunkColor(state);
+
+        var rows = S.merges.map(function (rule) {
+            var active =
+                rule.mergeId === sim.currentMergeId;
+
+            var rowStyle = active ?
+                'background:' + pastel +
+                ';box-shadow:inset 4px 0 0 var(--accent);' :
+                '';
+
+            return '<tr id="s6-vocab-row-' +
+                rule.mergeId +
+                '" style="' +
+                rowStyle +
+                'color:var(--ink);"' +
+                (active ? ' aria-current="step"' : '') +
+                '>' +
+                s6TableCell(
+                    '<span class="mono">' +
+                    rule.mergeId +
+                    '</span>'
+                ) +
+                s6TableCell(
+                    '<span class="mono">' +
+                    rule.newId +
+                    '</span>'
+                ) +
+                s6TableCell(
+                    '<span class="mono">[' +
+                    rule.left +
+                    ', ' +
+                    rule.right +
+                    ']</span>'
+                ) +
+                s6TableCell(
+                    s6RuleText(rule)
+                ) +
+                '</tr>';
+        }).join('');
+
+        return '<div class="scroll short" id="s6VocabularyBox">' +
+            '<table class="fx-table vocab-table" style="' +
+            'table-layout:fixed;width:100%;color:var(--ink);">' +
+            colgroupHtml([16, 18, 25, 41]) +
+            '<thead><tr>' +
+            '<th>mergeId</th>' +
+            '<th>tokenId</th>' +
+            '<th>pair</th>' +
+            '<th>text</th>' +
+            '</tr></thead>' +
+            '<tbody>' +
+            rows +
+            '</tbody>' +
+            '</table>' +
+            '</div>';
+    }
+
+    function s6ChunkComparison(state) {
+        var message = state.matchCount === 0 ?
+            'We swept through all the learned merges, but no matching pair was found; this chunk remains as its base tokenIds.' :
+            'The learned-merge sweep is complete for this chunk.';
+
+        return s6Notice(message, state) +
+            '<table class="fx-table" style="' +
+            'table-layout:fixed;width:100%;color:var(--ink);">' +
+            colgroupHtml([50, 50]) +
+            '<thead><tr>' +
+            '<th>Original base tokenIds</th>' +
+            '<th>After learned-merge sweep</th>' +
+            '</tr></thead>' +
+            '<tbody><tr>' +
+            s6TableCell(
+                '<span class="mono">' +
+                s6ArrayText(state.baseTokens) +
+                '</span>'
+            ) +
+            s6TableCell(
+                '<span class="mono">' +
+                s6ArrayText(state.tokens) +
+                '</span>'
+            ) +
+            '</tr></tbody>' +
+            '</table>';
+    }
+
+    function s6MergeResult(state) {
+        var last = state.last;
+
+        if (!last || last.type !== 'merge') {
+            return '';
+        }
+
+        if (!last.matched) {
+            return s6Notice(
+                'No match found for mergeId ' +
+                last.rule.mergeId +
+                '.',
+                state
+            );
+        }
+
+        var rule = last.rule;
+        var message;
+
+        if (
+            last.skippedFrom !== null &&
+            last.skippedTo !== null
+        ) {
+            message =
+                'No match found for mergeIds ' +
+                last.skippedFrom +
+                '&ndash;' +
+                last.skippedTo +
+                '; next applicable mergeId is mergeId ' +
+                rule.mergeId +
+                ', so tokenId pair [' +
+                rule.left +
+                ', ' +
+                rule.right +
+                '] &rarr; tokenId ' +
+                rule.newId +
+                '.';
+        } else {
+            message =
+                'tokenId pair [' +
+                rule.left +
+                ', ' +
+                rule.right +
+                '] &rarr; tokenId ' +
+                rule.newId +
+                '.';
+        }
+
+        return s6Notice(message, state) +
+            '<div style="margin-top:8px;color:var(--ink);">' +
+            '<div class="small-label" style="color:var(--ink);">' +
+            'Previous token IDs' +
+            '</div>' +
+            s6ArrayChips(
+                last.before,
+                last.oldHighlight,
+                s6ChunkColor(state)
+            ) +
+            '<div style="margin:3px 0;color:var(--ink);">' +
+            '&darr;' +
+            '</div>' +
+            '<div class="small-label" style="color:var(--ink);">' +
+            'Current token IDs' +
+            '</div>' +
+            s6ArrayChips(
+                last.after,
+                last.newHighlight,
+                s6ChunkColor(state)
+            ) +
+            '</div>';
+    }
+
+    function s6LookupBlock() {
+        var sim = S.lookupSim;
+        var state = sim.chunks[sim.activeChunk];
+
+        if (state.complete) {
+            return s6StepBlock(
+                'Chunk ' +
+                (sim.activeChunk + 1) +
+                ' complete',
+                s6ChunkComparison(state)
+            );
+        }
+
+        return s6StepBlock(
+            'Vocabulary lookup &mdash; chunk ' +
+            (sim.activeChunk + 1),
+
+            '<div class="sim-frame" style="color:var(--ink);">' +
+            '<div style="' +
+            'background:' + s6ChunkColor(state) + ';' +
+            'padding:8px 10px;border-left:4px solid var(--accent);' +
+            'color:var(--ink);">' +
+            '<strong>Selected chunk:</strong> ' +
+            '<span class="mono">&quot;' +
+            escapeHtml(visibleChars(state.chunk)) +
+            '&quot;: ' +
+            s6ArrayText(state.baseTokens) +
+            '</span>' +
+            '</div>' +
+
+            '<p style="margin:10px 0 8px;color:var(--ink);">' +
+            'We iterate through mergeId 1 to ' +
+            S.merges.length +
+            ' for the selected chunk tokenId array.' +
+            '</p>' +
+
+            s6MergeResult(state) +
+
+            '<div style="margin-top:12px;">' +
+            s6VocabularyTable(state) +
+            '</div>' +
+            '</div>'
+        );
+    }
+
+    function s6WordCount(text) {
+        var words = String(text || '').match(/\S+/g);
+        return words ? words.length : 0;
+    }
+
+    function s6MetricCard(label, value, detail) {
+        return '<div style="' +
+            'flex:1 1 145px;min-width:145px;padding:11px;' +
+            'border:1px solid var(--line);background:var(--paper);' +
+            'color:var(--ink);">' +
+            '<div style="font-size:12px;color:var(--ink);">' +
+            label +
+            '</div>' +
+            '<div style="font-size:19px;font-weight:700;' +
+            'margin-top:4px;color:var(--ink);">' +
+            value +
+            '</div>' +
+            '<div style="font-size:11px;margin-top:3px;color:var(--ink);">' +
+            detail +
+            '</div>' +
+            '</div>';
+    }
+
+    function s6Metrics() {
+        var result = S.testResult;
+        var baseCount = result.perChunk.reduce(function (sum, item) {
+            return sum + item.baseTokens.length;
+        }, 0);
+
+        var finalCount = result.allTokens.length;
+        var reduction = baseCount - finalCount;
+        var reductionRate = baseCount ?
+            ((reduction / baseCount) * 100).toFixed(1) :
+            '0.0';
+
+        var words = s6WordCount(S.testText);
+        var bytesPerWord = words ?
+            (result.totalBytes / words).toFixed(1) :
+            '&mdash;';
+
+        return s6StepBlock(
+            'Output metrics',
+
+            '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+            s6MetricCard(
+                'Original base tokenIds',
+                baseCount,
+                'Before learned merges'
+            ) +
+            s6MetricCard(
+                'Final tokenIds',
+                finalCount,
+                'After the merge sweep'
+            ) +
+            s6MetricCard(
+                'Reduction rate',
+                reductionRate + '%',
+                reduction + ' fewer tokenIds'
+            ) +
+            s6MetricCard(
+                'Bytes per word',
+                bytesPerWord,
+                words ?
+                    result.totalBytes + ' bytes / ' + words + ' words' :
+                    'No words detected'
+            ) +
+            '</div>'
+        );
+    }
+
+    function s6FinalBlock() {
+        var sim = S.lookupSim;
+        var result = S.testResult;
+
+        var rows = sim.chunks.map(function (state) {
+            return '<tr>' +
+                s6TableCell(
+                    '<span class="mono">' +
+                    escapeHtml(visibleChars(state.chunk)) +
+                    '</span>'
+                ) +
+                s6TableCell(
+                    '<span class="mono">' +
+                    s6ArrayText(state.baseTokens) +
+                    '</span>'
+                ) +
+                s6TableCell(
+                    '<span class="mono">' +
+                    s6ArrayText(state.tokens) +
+                    '</span>'
+                ) +
+                '</tr>';
+        }).join('');
+
+        return s6StepBlock(
+                'Final tokenization by chunk',
+
+                '<div class="scroll short">' +
+                '<table class="fx-table" style="' +
+                'table-layout:fixed;width:100%;color:var(--ink);">' +
+                colgroupHtml([23, 38, 39]) +
+                '<thead><tr>' +
+                '<th>Chunk</th>' +
+                '<th>Original base tokenIds</th>' +
+                '<th>After learned-merge sweep</th>' +
+                '</tr></thead>' +
+                '<tbody>' +
+                rows +
+                '</tbody>' +
+                '</table>' +
+                '</div>'
+            ) +
+
+            s6StepBlock(
+                'Token-ID stream combined in original input order',
+
+                '<div class="scroll short" style="' +
+                'padding:12px;color:var(--ink);">' +
+                '<span class="mono">' +
+                s6ArrayText(result.allTokens) +
+                '</span>' +
+                '</div>'
+            ) +
+
+            s6Metrics() +
+
+            '<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">' +
+            '<button class="primary" onclick="s6RestartSimulation()">' +
+            'Replay this input' +
+            '</button>' +
+            '<button onclick="s6TryAnotherInput()">' +
+            'Try another example' +
+            '</button>' +
+            '<button class="ghost" onclick="startOver()">' +
+            'Start over' +
+            '</button>' +
+            '</div>';
+    }
+
+    function s6FocusVocabularyRow() {
+        var sim = S.lookupSim;
+
+        if (
+            !sim ||
+            sim.done ||
+            sim.currentMergeId === null
+        ) {
+            return;
+        }
+
+        setTimeout(function () {
+            var row = document.getElementById(
+                's6-vocab-row-' + sim.currentMergeId
+            );
+            var box = document.getElementById(
+                's6VocabularyBox'
+            );
+
+            if (!row || !box) {
+                return;
+            }
+
+            box.scrollTop = Math.max(
+                0,
+                row.offsetTop -
+                box.clientHeight / 2 +
+                row.offsetHeight / 2
+            );
+        }, 0);
+    }
+
+    function s6BaseTokenTable() {
+        var sim = S.lookupSim;
+        var result = S.testResult;
+        var activeChunk =
+            sim && !sim.done ?
+                sim.activeChunk :
+                -1;
+
+        var rows = result.perChunk.map(function (item, index) {
+            var state = sim ? sim.chunks[index] : null;
+            var active = index === activeChunk;
+            var rowStyle = active ?
+                'background:' + s6ChunkColor(state) +
+                ';box-shadow:inset 4px 0 0 var(--accent);' :
+                '';
+
+            return '<tr style="' + rowStyle + '"' +
+                (active ? ' aria-current="step"' : '') +
+                '>' +
+                s6TableCell(
+                    '<span class="mono">' +
+                    escapeHtml(visibleChars(item.chunk)) +
+                    '</span>'
+                ) +
+                s6TableCell(
+                    '<span class="mono">' +
+                    s6ArrayText(item.baseTokens) +
+                    '</span>'
+                ) +
+                '</tr>';
+        }).join('');
+
+        return s6StepBlock(
+            'Base tokenIds by chunk',
+
+            '<div class="scroll short">' +
+            '<table class="fx-table" style="' +
+            'table-layout:fixed;width:100%;color:var(--ink);">' +
+            colgroupHtml([35, 65]) +
+            '<thead><tr>' +
+            '<th>Chunk</th>' +
+            '<th>Base tokenIds</th>' +
+            '</tr></thead>' +
+            '<tbody>' +
+            rows +
+            '</tbody>' +
+            '</table>' +
+            '</div>'
+        );
+    }
+
+    function s6RenderFooter() {
+        var sim = S.lookupSim;
+
+        if (!S.testResult || S.testResult.error || !sim || sim.done) {
+            setFooter('', '', '');
+            return;
+        }
+
+        var state = sim.chunks[sim.activeChunk];
+        var manualLimit = Math.min(
+            S6_MANUAL_MERGES,
+            S.merges.length
+        );
+        var label;
+
+        if (state.complete) {
+            label =
+                sim.activeChunk < sim.chunks.length - 1 ?
+                    'Next chunk' :
+                    'Finish';
+        } else if (state.cursor < manualLimit) {
+            label =
+                'Check mergeId ' +
+                S.merges[state.cursor].mergeId;
+        } else {
+            label = 'Next applicable merge';
+        }
+
+        setFooter(
+            '<button onclick="s6BackLookupStep()"' +
+            (sim.history.length ? '' : ' disabled') +
+            '>&larr; Back</button>',
+
+            'Chunk ' +
+            (sim.activeChunk + 1) +
+            ' / ' +
+            sim.chunks.length,
+
+            '<button class="primary" onclick="s6NextLookupStep()">' +
+            label +
+            '</button>' +
+            '<button onclick="s6AutoEncodeFromHere()">' +
+            'Auto encode from here' +
+            '</button>'
+        );
+    }
+
+    function renderTestResultInto() {
+        var area = document.getElementById(
+            'testResultArea'
+        );
+
+        if (!area) {
+            return;
+        }
+
+        if (!S.testResult) {
+            area.innerHTML = '';
+            s6RenderFooter();
+            return;
+        }
+
+        if (S.testResult.error) {
+            area.innerHTML =
+                '<div class="msg error" style="color:var(--ink);">' +
+                escapeHtml(S.testResult.error) +
+                '</div>';
+
+            s6RenderFooter();
+            return;
+        }
+
+        var sim = S.lookupSim;
+
+        if (sim && sim.done) {
+            area.innerHTML = s6FinalBlock();
+            s6RenderFooter();
+            return;
+        }
+
+        var html = s6BaseTokenTable();
+
+        if (sim) {
+            html += s6LookupBlock();
+        }
+
+        area.innerHTML = html;
+        s6RenderFooter();
+        s6FocusVocabularyRow();
+    }
+
+    function renderScreen6() {
+        setChrome(true);
+
+        if (S.testResult) {
+            setStage(
+                '<div id="testResultArea" style="color:var(--ink);"></div>'
+            );
+            renderTestResultInto();
+            return;
+        }
+
+        setStage(
+            '<div style="color:var(--ink);">' +
+            '<h2 class="stage-title">Try it</h2>' +
+            '<textarea id="testBox" rows="3" ' +
+            'oninput="onTestInput(this.value)">' +
+            escapeHtml(S.testText || '') +
+            '</textarea>' +
+            '<div style="margin-top:10px;">' +
+            '<button class="primary" onclick="tokenizeTestText()">' +
+            'Tokenize' +
+            '</button>' +
+            '</div>' +
+            '<div id="testResultArea" style="margin-top:18px;"></div>' +
+            '</div>'
+        );
+
+        renderTestResultInto();
+    }
+
+    window.tokenizeTestText = function () {
+        var text = String(S.testText || '');
+
+        if (S.encoding === 'ascii') {
+            var check = canEncodeAscii(text);
+
+            if (!check.ok) {
+                var shown = check.badChars.slice(0, 6);
+                var quoted = shown.map(function (character) {
+                    return '"' + character + '"';
+                }).join(', ');
+
+                S.testResult = {
+                    error:
+                        'Non-ASCII character(s) detected: {' +
+                        quoted +
+                        (check.badChars.length > shown.length ? ', …' : '') +
+                        '}. Requires UTF-8 or UTF-16 encoding.'
+                };
+
+                S.lookupSim = null;
+                renderScreen6();
+                return;
+            }
+        }
+
+        var chunks = chunkify(text);
+        var previousPastel = null;
+
+        var perChunk = chunks.map(function (chunk) {
+            var bytes = encodeString(chunk, S.encoding);
+            var baseTokens = bytes.map(function (byte) {
+                return S.byteToTokenId[byte];
+            });
+            var pastel = s6ChoosePastel(previousPastel);
+
+            previousPastel = pastel;
+
+            return {
+                chunk: chunk,
+                bytes: bytes,
+                baseTokens: baseTokens,
+                tokens: baseTokens.slice(),
+                pastel: pastel
+            };
+        });
+
+        var totalBytes = perChunk.reduce(function (sum, item) {
+            return sum + item.bytes.length;
+        }, 0);
+
+        S.testResult = {
+            chunks: chunks,
+            perChunk: perChunk,
+            allTokens: [],
+            totalBytes: totalBytes,
+            ratio: 0,
+            roundTripOk: false
+        };
+
+        S.lookupSim = {
+            chunks: perChunk.map(function (item) {
+                return {
+                    chunk: item.chunk,
+                    baseTokens: item.baseTokens.slice(),
+                    tokens: item.baseTokens.slice(),
+                    pastel: item.pastel,
+                    cursor: 0,
+                    matchCount: 0,
+                    complete: false,
+                    last: null
+                };
+            }),
+            activeChunk: 0,
+            currentMergeId:
+                S.merges.length ?
+                    S.merges[0].mergeId :
+                    null,
+            done: false,
+            finalized: false,
+            history: [],
+            token: null
+        };
+
+        S.lookupSim.token = s6CreateSkipToken();
+
+        if (!S.lookupSim.chunks.length || !S.merges.length) {
+            S.lookupSim.chunks.forEach(function (state) {
+                s6FinishChunk(state);
+            });
+
+            s6FinalizeResult();
+        }
+
+        renderScreen6();
+    };
+
+    window.skipLookupSim = function () { if (S.lookupSim && S.lookupSim.token) S.lookupSim.token.requestSkip(); };
+
+    window.startOver = function () { S = freshState(); renderScreen1(); };
+
+    /* =========================================================================
+       INFO POPOVERS (generic - used by the chunking regex explainer, the pair
+       counts method explainer, and the vocabulary-permutation explainer). Each
+       info button carries data-pop="<id-of-its-popover>"; toggling one closes
+       any other that's open.
+       ========================================================================= */
+    window.toggleInfoPop = function (e, popId) {
+        if (e) e.stopPropagation();
+        var pop = document.getElementById(popId);
+        if (!pop) return;
+        var opening = (pop.style.display === 'none' || !pop.style.display);
+        document.querySelectorAll('.info-pop').forEach(function (p) {
+            if (p !== pop) {
+                p.style.display = 'none';
+                var otherBtn = document.querySelector('[data-pop="' + p.id + '"]');
+                if (otherBtn) otherBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+        pop.style.display = opening ? 'block' : 'none';
+        var btn = document.querySelector('[data-pop="' + popId + '"]');
+        if (btn) btn.setAttribute('aria-expanded', opening ? 'true' : 'false');
+    };
+    document.addEventListener('click', function (e) {
+        document.querySelectorAll('.info-pop').forEach(function (pop) {
+            if (pop.style.display === 'none' || !pop.style.display) return;
+            if (pop.contains(e.target)) return;
+            var btn = document.querySelector('[data-pop="' + pop.id + '"]');
+            if (btn && (e.target === btn || btn.contains(e.target))) return;
+            pop.style.display = 'none';
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+        });
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        document.querySelectorAll('.info-pop').forEach(function (pop) {
+            pop.style.display = 'none';
+            var btn = document.querySelector('[data-pop="' + pop.id + '"]');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+        });
+    });
+
+    /* =========================================================================
+       BOOT
+       ========================================================================= */
+    renderScreen1();
+</script>
+</body>
+</html>
