@@ -27,7 +27,7 @@
     "groups": [
       {
         "heading": "CCAR-F Study Series",
-        "description": "Study notes toward 'Claude Certified Architect - Foundations', worked through domain by domain.",
+        "description": "References and Guide for 'Claude Certified Architect - Foundations'.",
         "links": [
           { "text": "Claude 101: The Foundation to CCA-F", "url": "https://medium.com/@akshat.mistry/claude-101-the-foundation-to-cca-f-7d4243e42d45" },
           { "text": "Part-II | The Seven 'stop_reason' Values", "url": "https://medium.com/@akshat.mistry/part-ii-the-seven-stop-reason-values-b0626f486d1b" },
@@ -40,12 +40,20 @@
         ]
       },
       {
-        "heading": "Machine Learning Foundations",
-        "description": "How machines come to represent meaning - from raw text, to tokens, to vectors.",
+        "heading": "Machine Learning Units",
+        "description": "The Basic Units of an Artificial Model.",
         "links": [
-          { "text": "ELMo, Functionally Explained", "url": "https://medium.com/@akshat.mistry/elmo-functionally-explained-0becc59ff40d" },
-          { "text": "The Artificial Neuron: A Field Guide", "url": "https://medium.com/@akshat.mistry/the-artificial-neuron-a-field-guide-354a45612744" },
-          { "text": "From Words to Vectors", "url": "https://medium.com/@akshat.mistry/from-words-to-vectors-a905d8ff07f5" }
+          { "text": "The Artificial Neuron: A Field Guide", "url": "https://medium.com/@akshat.mistry/the-artificial-neuron-a-field-guide-354a45612744" }
+        ]
+      },
+      {
+        "heading": "From Text to Learned Representations",
+        "description": "Following the path form free-text to model-input.",
+        "links": [
+          { "text": "Overview | Part-1 | From Words to Vectors", "url": "https://medium.com/@akshat.mistry/from-words-to-vectors-a905d8ff07f5" },
+          { "text": "Overview | Part-2 | ELMo, Functionally Explained", "url": "https://medium.com/@akshat.mistry/elmo-functionally-explained-0becc59ff40d" },
+          { "text": "DeepDive | Part-3 | Byte-Pair Encoding (BPE) Tokenizers", "url": "https://medium.com/@akshat.mistry/byte-pair-encoding-bpe-tokenizers-c6f0813e6a61" },
+          { "text": "DeepDive | Part-4 | Token IDs Are Labels: Why One-Hot Encoding Removes False Geometry", "url": "https://medium.com/@akshat.mistry/token-ids-are-labels-why-one-hot-encoding-removes-false-geometry-855f7e78072e" }
         ]
       }
     ]
