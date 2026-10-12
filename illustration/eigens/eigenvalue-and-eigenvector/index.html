@@ -1,0 +1,1135 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Eigenvectors and Eigenvalues: Article and Simulations</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/FontLoader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/geometries/TextGeometry.js"></script>
+    <style>
+        :root{--u:1px;--ink:#3f4756;--mute:#9aa3b2;--faint:#e8ecf2;--green:#8fd0a8;--bg:#f7f9fc;--line:#dce3ee}
+        *{box-sizing:border-box}
+        html{font-size:calc(16*var(--u))}
+        body{margin:0;background:var(--bg);color:var(--ink);font:.875rem/1.5 -apple-system,"Segoe UI",Arial,sans-serif}
+        [hidden]{display:none!important}
+
+        .article{max-width:47.5rem;margin:0 auto;padding:4.5rem 1.5rem 5rem;font-size:1rem;line-height:1.75}
+        .article.wide{max-width:62rem}
+        .article .eyebrow{font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:.9rem}
+        .article h1{font-size:2.15rem;line-height:1.2;font-weight:600;margin:0 0 1.2rem}
+        .article h2{font-size:1.3rem;font-weight:600;margin:5.5rem 0 .8rem;text-decoration:underline;text-decoration-color:#8fd0a8;text-decoration-thickness:2px;text-underline-offset:.45rem}
+        .article h3{font-size:1.1rem;font-weight:600;margin:1.9rem 0 .4rem}
+        .article p{margin:0 0 .9rem}
+        .article .intro{color:#6b7384}
+        .article ul{padding-left:1.4rem;margin:0 0 .9rem}
+        .article li{margin-bottom:.35rem}
+        .article .katex{font-size:1.04em}
+        .article .fx{border-radius:.75rem;padding:.65rem 1.1rem;margin:.8rem 0;overflow-x:auto}
+        .article .fx .katex-display{margin:0}
+        .article .fx.res{background:#e0f5ea!important;border:2px solid #8fd0a8;box-shadow:0 2px 10px #8fd0a840}
+        .article .fx.res .katex{font-size:1.3em}
+        .article table.sum{width:100%;border-collapse:collapse;margin:1rem 0 1.2rem;font-size:.95rem}
+        .article table.sum th,.article table.sum td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid var(--faint);vertical-align:top}
+        .article table.sum th{color:var(--mute);font-weight:600}
+        .btn{display:inline-block;padding:.75rem 1.6rem;border-radius:.75rem;background:#d7f0e2;color:#2f5f49;font-weight:600;font-size:.95rem;text-decoration:none;box-shadow:0 1px 2px #2f5f4922;transition:background .15s,box-shadow .15s}
+        .btn:hover{background:#c5e8d6;box-shadow:0 2px 8px #2f5f4933}
+        .article>.btn:last-child{margin-top:1.2rem}
+        .back{display:inline-block;margin-bottom:1.2rem;font-size:.85rem;color:var(--mute);text-decoration:none}
+        .back:hover{color:var(--ink)}
+
+        .simbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;padding:.7rem 0;margin:1rem 0 .5rem;background:var(--bg);border-bottom:1px solid var(--faint);font-size:.85rem;line-height:1.4}
+        .simbar .lab{color:var(--mute);margin-right:.3rem}
+        .pill{all:unset;cursor:pointer;padding:.35rem .85rem;border-radius:999px;font-size:.8rem;color:var(--mute);background:#fff;border:1px solid var(--line)}
+        .pill:hover{color:var(--ink)}
+        .pill.on{background:#d7f0e2;color:#2f5f49;border-color:#d7f0e2;font-weight:600}
+        .sbtn{all:unset;cursor:pointer;padding:.4rem .9rem;border-radius:.65rem;background:#d7f0e2;color:#2f5f49;font-weight:600;font-size:.8rem}
+        .sbtn:hover{background:#c5e8d6}
+
+        .fig{margin:1.4rem 0 1.8rem}
+        .figrow{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
+        .figrow.single{grid-template-columns:minmax(0,34rem);justify-content:center}
+        .panel{background:#fff;border:1px solid var(--line);border-radius:.75rem;padding:.4rem;min-width:0}
+        .plot{height:23rem;width:100%}
+        .fig figcaption{text-align:center;color:var(--mute);font-size:.82rem;line-height:1.5;margin-top:.55rem}
+        .simcards{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin:1.6rem 0 0}
+        .simcard{display:flex;flex-direction:column;gap:.35rem;padding:1.4rem 1.5rem;border-radius:1rem;text-decoration:none;transition:transform .15s,box-shadow .15s}
+        .simcard:hover{transform:translateY(-.15rem);box-shadow:0 .5rem 1.4rem #00000018}
+        .simcard .k{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
+        .simcard .t{font-size:1.25rem;font-weight:600;line-height:1.3}
+        .simcard .d{font-size:.9rem;line-height:1.5;opacity:.85}
+        .simcard .go{margin-top:.5rem;font-weight:600}
+        .s1{background:#d7f0e2;color:#2f5f49}
+        .s2{background:#e3defa;color:#463d85}
+        a.btn.s1{background:#d7f0e2;color:#2f5f49}a.btn.s1:hover{background:#c5e8d6}
+        a.btn.s2{background:#e3defa;color:#463d85}a.btn.s2:hover{background:#d5cef5}
+        @media(max-width:700px){.simcards{grid-template-columns:1fr}}
+        .hl{background:#e3defa;color:#463d85;font-weight:600;padding:.05rem .4rem;border-radius:.35rem}
+        .simcards.end{margin-top:6rem;padding-top:2.2rem;border-top:1px solid var(--line)}
+        .cta.end{margin-top:6rem;padding-top:2.2rem;border-top:1px solid var(--line)}
+        .s0{background:#dcebfb;color:#2f4f7a}
+        .refs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.6rem;margin-top:1rem}
+        @media(max-width:700px){.refs{grid-template-columns:1fr}}
+        .ref .vid{position:relative;padding-top:56.25%;border-radius:.75rem;overflow:hidden;background:#e8ecf2;border:1px solid var(--line)}
+        .ref .vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+        .ref .vid a.thumb{position:absolute;inset:0;display:block}
+        .ref .vid a.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+        .ref .vid a.thumb span{position:absolute;left:50%;top:50%;width:3.6rem;height:2.5rem;margin:-1.25rem 0 0 -1.8rem;border-radius:.7rem;background:#ff0033cc;color:#fff;font-size:1.3rem;line-height:2.5rem;text-align:center}
+        .ref .rt{font-weight:600;margin:.7rem 0 .15rem;line-height:1.4}
+        .ref .rd{color:#6b7384;font-size:.9rem;line-height:1.5;margin:0}
+        .ref a{color:#2f7d5b}
+        .cta{display:flex;gap:.8rem;flex-wrap:wrap;margin-top:2.4rem}
+        .article a.lnk{color:#2f7d5b;text-decoration:underline;text-decoration-color:#8fd0a8;text-underline-offset:.2rem}
+        .article a.lnk:hover{color:#2f5f49}
+        .article input[type=range]{accent-color:#8fd0a8}
+        .simbox{display:flex;height:34rem;background:#fff;border:1px solid var(--line);border-radius:.75rem;overflow:hidden}
+        .simbox .controls{width:19rem;flex:none;padding:1rem;display:flex;flex-direction:column;gap:.9rem;overflow-y:auto;border-right:1px solid var(--line);font-size:.9rem;line-height:1.5}
+        .simbox .cv{flex:1;min-width:0;height:100%;position:relative}
+        .simbox canvas{display:block;width:100%;height:100%}
+        .card2{background:var(--bg);border:1px solid var(--faint);border-radius:.65rem;padding:.7rem .85rem}
+        .card2 .ct{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-bottom:.4rem}
+        .card2 .katex{font-size:1em}
+        .presets{display:flex;gap:.4rem;flex-wrap:wrap}
+        .erow{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.35rem}
+        .val{display:inline-block;padding:.05rem .5rem;border-radius:.4rem;font-weight:600}
+        .val.mx{background:#d7f0e2;color:#2f5f49}
+        .val.mn{background:#fde6d3;color:#9a5a1f}
+        .slide{display:flex;align-items:center;gap:1rem;margin:.8rem 0}
+        .slide input{flex:1;cursor:pointer}
+        .slide span{width:3.2rem;font-weight:600}
+        @media(max-width:900px){.simbox{flex-direction:column;height:auto}.simbox .controls{width:auto;border-right:0;border-bottom:1px solid var(--line)}.simbox .cv{height:24rem}}
+        .selbar{background:#fff;border:1px solid var(--line);border-radius:.75rem;padding:.9rem 1.1rem;display:flex;align-items:center;gap:1.4rem;flex-wrap:wrap;margin-bottom:1.1rem}
+        .selbar .ct{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-bottom:.3rem}
+        .selbar .katex{font-size:1.05em}
+        .plots2{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
+        .pv{position:relative;background:#fff;border:1px solid var(--line);border-radius:.75rem;height:24rem;overflow:hidden}
+        .pv canvas{display:block;width:100%;height:100%}
+        .pv .ptitle{position:absolute;top:.55rem;left:.8rem;font-size:.78rem;color:var(--mute);pointer-events:none}
+        .eigbar{background:#fff;border:1px solid var(--line);border-radius:.75rem;padding:.9rem 1.1rem;margin-top:1.1rem;display:flex;gap:2rem;flex-wrap:wrap;align-items:center}
+        .eigbar .ct{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+        @media(max-width:900px){.plots2{grid-template-columns:1fr}}
+        #err{display:none;margin:0 0 1rem;padding:.5rem .8rem;background:#fdecea;color:#a1241a;font:.75rem monospace}
+        @media(max-width:900px){.figrow{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+<div id="err"></div>
+<article class="article wide" id="article">
+    <div class="eyebrow">Article</div>
+    <h1>Eigenvectors and Eigenvalues</h1>
+    <div class="simcards">
+        <a class="simcard s1" href="#simulation"><span class="k">Simulation 1</span><span class="t">Projection matrix</span><span class="d">Eigenvalues 0 and 1 of a projection onto a plane. Applies Sections 1 to 3.</span><span class="go">Open &rarr;</span></a>
+        <a class="simcard s2" href="#simulation2"><span class="k">Simulation 2</span><span class="t">Quadratic form on the unit circle</span><span class="d">Extreme values of x&#7488;Ax for a symmetric matrix. Applies Sections 1 and 6.4.</span><span class="go">Open &rarr;</span></a>
+    </div>
+
+    <h2>1. Eigenvectors And Eigenvalues</h2>
+    <p>Multiplying a matrix <span class="tx" data-t="A\in\mathbb{R}^{d\times d}"></span> by a vector <span class="tx" data-t="x\in\mathbb{R}^{d}"></span> is called a <em>linear transformation</em> of <span class="tx" data-t="x"></span> by <span class="tx" data-t="A"></span>: it maps <span class="tx" data-t="x"></span> to a new vector <span class="tx" data-t="Ax"></span> in the same <span class="tx" data-t="d"></span>-dimensional space. In general, <span class="tx" data-t="Ax"></span> is a rotated and stretched version of <span class="tx" data-t="x"></span>.</p>
+    <p>Eigenvectors are the special vectors that keep their original direction under the transformation. A non-zero vector <span class="tx" data-t="x"></span> is an <em>eigenvector</em> of <span class="tx" data-t="A"></span> when the resulting (or transformed) vector <span class="tx" data-t="Ax"></span> is parallel to <span class="tx" data-t="x"></span>.</p>
+    <p>By the standard property of vectors, if <span class="tx" data-t="Ax"></span> is parallel to <span class="tx" data-t="x"></span>, then <span class="tx" data-t="Ax"></span> is a direct multiple of <span class="tx" data-t="x"></span>: the two vectors can differ only in length, and possibly in sign. Hence <span class="tx" data-t="Ax"></span> is some constant times <span class="tx" data-t="x"></span>. With standard notations, this is equivalent to:</p>
+    <div class="fx tx d" data-t="Ax=\lambda x,\qquad x\neq0"></div>
+    <p>The scalar <span class="tx" data-t="\lambda"></span> is the <em>eigenvalue</em> that corresponds to <span class="tx" data-t="x"></span>. It can be negative: <span class="tx" data-t="\lambda>0"></span> keeps the direction of <span class="tx" data-t="x"></span>, <span class="tx" data-t="\lambda<0"></span> reverses it, and <span class="tx" data-t="\lambda=0"></span> maps <span class="tx" data-t="x"></span> to the zero vector.</p>
+    <p>When the eigenvalue is zero, <span class="tx" data-t="\lambda=0"></span>, the matrix compresses space along the direction of the corresponding eigenvector, completely flattening it into the origin.</p>
+    <p>By definition, an eigenvector cannot be the zero vector (<span class="tx" data-t="x\neq0"></span>). The reason is that the equation holds trivially for it, for every matrix and every scalar:</p>
+    <div class="fx tx d" data-t="A\,0=0=\lambda\,0\qquad\text{for every }\lambda"></div>
+    <p>The zero vector has no direction to preserve, and if it were allowed, every number would be an eigenvalue of every matrix, so the eigenvalues would carry no information about <span class="tx" data-t="A"></span>. With the requirement <span class="tx" data-t="x\neq0"></span>, if <span class="tx" data-t="\lambda=0"></span>:</p>
+    <ul>
+        <li>the eigenvector <span class="tx" data-t="x"></span> lies in the null space (or kernel) of the matrix <span class="tx" data-t="A"></span>;</li>
+        <li>every non-zero vector in the null space of <span class="tx" data-t="A"></span> acts as an eigenvector for <span class="tx" data-t="\lambda=0"></span>;</li>
+        <li>to find the specific eigenvectors, solve the system of linear equations <span class="tx" data-t="Ax=0"></span> (usually by row reduction, or Gaussian elimination).</li>
+    </ul>
+    <p>Consequently, given <span class="tx" data-t="\lambda=0"></span>, the matrix <span class="tx" data-t="A"></span> is <em>singular</em> (non-invertible) and <span class="tx" data-t="\det(A)=0"></span>, as Section 3 explains.</p>
+    <p>Not every vector is an eigenvector of a given matrix; most are not. In the equation, the matrix <span class="tx" data-t="A"></span> is known, while <span class="tx" data-t="x"></span> and <span class="tx" data-t="\lambda"></span> are the unknowns: finding the eigenvectors means finding the vectors <span class="tx" data-t="x"></span> (and scalars <span class="tx" data-t="\lambda"></span>) for which the equation holds.</p>
+
+    <h2>2. Eigenvectors As Directions</h2>
+    <p>For a given eigenvalue <span class="tx" data-t="\lambda"></span>, the equation <span class="tx" data-t="Ax=\lambda x"></span> usually has many solutions, not just one. If <span class="tx" data-t="v"></span> is a solution, so is every non-zero multiple <span class="tx" data-t="tv"></span>:</p>
+    <div class="fx tx d" data-t="A(tv)=t\,Av=t\lambda v=\lambda\,(tv)"></div>
+    <p>All these vectors lie on one line through the origin, so they share a single direction. It is therefore usual to <em>normalise</em> an eigenvector, that is, to divide it by its length:</p>
+    <div class="fx tx d" data-t="\hat v=\frac{v}{\lVert v\rVert},\qquad \lVert\hat v\rVert=1"></div>
+    <p>The unit vector <span class="tx" data-t="\hat v"></span> points exactly along the direction, and its span, <span class="tx" data-t="\{t\hat v:\ t\in\mathbb{R}\}"></span>, covers every other solution on that line. If an eigenvalue has several independent eigenvectors (Section 5.3), its solutions fill a plane or a higher-dimensional space, spanned by one unit vector for each independent direction.</p>
+    <p>Hence every non-zero vector in the span is a solution of <span class="tx" data-t="Ax=\lambda x"></span>. After the transformation, it keeps its original direction and is only scaled by <span class="tx" data-t="\lambda"></span>: reversed if <span class="tx" data-t="\lambda<0"></span>, and flattened to the origin if <span class="tx" data-t="\lambda=0"></span> (Section 1).</p>
+    <p>In summary, the eigenvectors are directions: they describe the possible inputs for which the equation <span class="tx" data-t="Ax=\lambda x"></span> holds. The eigenvalues are scalars, and their meaning depends on the context, as the sections below and the simulations show.</p>
+
+    <h2>3. Fundamental Properties Of Eigenvalues</h2>
+    <p>Consider an arbitrary square matrix <span class="tx" data-t="A\in\mathbb{R}^{d\times d}"></span>, with no special shape. The following properties hold for every such matrix.</p>
+    <h3>3.1 The count</h3>
+    <p>A <span class="tx" data-t="d\times d"></span> matrix has exactly <span class="tx" data-t="d"></span> eigenvalues. The eigenvalues are the roots of a polynomial of degree <span class="tx" data-t="d"></span> (Section 4), and by the standard rules for polynomials, <span class="tx" data-t="d"></span> solutions are always expected, counted with multiplicity. These roots are not required to be distinct, so the eigenvalues can</p>
+    <ul>
+        <li>repeat, which creates a complication discussed in Section 5.3;</li>
+        <li>be complex;</li>
+        <li>be zero, for one or more of them.</li>
+    </ul>
+    <p>In short, an eigenvalue can be any solution of a polynomial of degree <span class="tx" data-t="d"></span>.</p>
+    <h3>3.2 The trace</h3>
+    <p>The trace of <span class="tx" data-t="A"></span>, the sum of its diagonal entries, equals the sum of its eigenvalues:</p>
+    <div class="fx tx d" data-t="\operatorname{tr}(A)=\sum_{i=1}^{d}a_{ii}=\sum_{i=1}^{d}\lambda_i"></div>
+    <h3>3.3 The determinant</h3>
+    <p>The determinant of <span class="tx" data-t="A"></span>, the factor by which the matrix scales volume, equals the product of its eigenvalues:</p>
+    <div class="fx tx d" data-t="\det(A)=\prod_{i=1}^{d}\lambda_i"></div>
+    <p>In particular, <span class="tx" data-t="\det(A)=0"></span> exactly when at least one eigenvalue is zero. This is the singular case of Section 1: such a matrix flattens a direction into the origin, so it has no inverse. <a class="lnk" href="#simulation">Simulation 1</a> shows this for a projection matrix, which flattens one direction and therefore has the eigenvalue <span class="tx" data-t="0"></span>.</p>
+
+    <h2>4. Finding <span class="tx" data-t="\lambda"></span> And <span class="tx" data-t="x"></span></h2>
+    <h3>4.1 The characteristic equation</h3>
+    <p>In <span class="tx" data-t="Ax=\lambda x"></span> both <span class="tx" data-t="\lambda"></span> and <span class="tx" data-t="x"></span> are unknown, so we solve in two steps: first the eigenvalues, then, for each eigenvalue, the eigenvectors. Moving everything to one side and using the identity matrix <span class="tx" data-t="I"></span> gives</p>
+    <div class="fx tx d" data-t="(A-\lambda I)\,x=0"></div>
+    <p>A non-zero vector <span class="tx" data-t="x"></span> can satisfy this only if <span class="tx" data-t="A-\lambda I"></span> is singular, that is, if its determinant is zero; otherwise only <span class="tx" data-t="x=0"></span> would solve it. This is the <em>characteristic equation</em>:</p>
+    <div class="fx tx d" data-t="\det(A-\lambda I)=0"></div>
+    <p>Its left side is a polynomial of degree <span class="tx" data-t="d"></span> in <span class="tx" data-t="\lambda"></span>, so it has <span class="tx" data-t="d"></span> roots, counted with multiplicity (Section 3.1). These roots are the eigenvalues. For each eigenvalue, the eigenvectors are the non-zero solutions of <span class="tx" data-t="(A-\lambda I)x=0"></span>, that is, the non-zero vectors of the null space of <span class="tx" data-t="A-\lambda I"></span>. As Section 2 explains, these solutions are described by a direction and its span.</p>
+    <h3>4.2 Example: the eigenvalues</h3>
+    <p>Take the matrix</p>
+    <div class="fx tx d" data-t="A=\begin{bmatrix}4&1\\2&3\end{bmatrix}"></div>
+    <p>Set the determinant of <span class="tx" data-t="A-\lambda I"></span> to zero and solve the resulting quadratic equation:</p>
+    <div class="fx tx d" data-t="\det\begin{bmatrix}4-\lambda&1\\2&3-\lambda\end{bmatrix}=(4-\lambda)(3-\lambda)-2=\lambda^{2}-7\lambda+10=(\lambda-5)(\lambda-2)=0"></div>
+    <p>So <span class="tx" data-t="\lambda_1=5"></span> and <span class="tx" data-t="\lambda_2=2"></span>, the two roots expected for <span class="tx" data-t="d=2"></span>. Section 3 gives a check: the trace is <span class="tx" data-t="4+3=7=5+2"></span> and the determinant is <span class="tx" data-t="4\cdot3-1\cdot2=10=5\cdot2"></span>.</p>
+    <h3>4.3 Example: the eigenvectors</h3>
+    <p>For each eigenvalue, solve <span class="tx" data-t="(A-\lambda I)x=0"></span> (Section 4.1). For <span class="tx" data-t="\lambda_1=5"></span>:</p>
+    <div class="fx tx d" data-t="\begin{bmatrix}-1&1\\2&-2\end{bmatrix}x=0\ \Longrightarrow\ x_1=x_2\ \Longrightarrow\ x=c\begin{bmatrix}1\\1\end{bmatrix}"></div>
+    <p>For <span class="tx" data-t="\lambda_2=2"></span>:</p>
+    <div class="fx tx d" data-t="\begin{bmatrix}2&1\\2&1\end{bmatrix}x=0\ \Longrightarrow\ 2x_1+x_2=0\ \Longrightarrow\ x=c\begin{bmatrix}1\\-2\end{bmatrix}"></div>
+    <p>The two rows of each matrix are multiples of each other, because <span class="tx" data-t="A-\lambda I"></span> is singular, so each system has a whole line of solutions: every non-zero multiple <span class="tx" data-t="c"></span> of the vector is an eigenvector. Normalising, as in Section 2, gives the unit directions <span class="tx" data-t="\tfrac{1}{\sqrt2}(1,1)^{\top}"></span> and <span class="tx" data-t="\tfrac{1}{\sqrt5}(1,-2)^{\top}"></span>. Multiplying by <span class="tx" data-t="A"></span> confirms the result:</p>
+    <div class="fx tx d" data-t="A\begin{bmatrix}1\\1\end{bmatrix}=\begin{bmatrix}5\\5\end{bmatrix}=5\begin{bmatrix}1\\1\end{bmatrix},\qquad A\begin{bmatrix}1\\-2\end{bmatrix}=\begin{bmatrix}2\\-4\end{bmatrix}=2\begin{bmatrix}1\\-2\end{bmatrix}"></div>
+
+    <h2>5. Shortcuts And Special Cases</h2>
+    <h3>5.1 The shift property</h3>
+    <p>Adding a multiple of the identity matrix to <span class="tx" data-t="A"></span> shifts its eigenvalues only; eigen directions remain constant. If <span class="tx" data-t="A"></span> has eigenvalue <span class="tx" data-t="\lambda"></span> with eigenvector <span class="tx" data-t="x"></span>, then <span class="tx" data-t="A+cI"></span> has eigenvalue <span class="tx" data-t="\lambda+c"></span> with the same eigenvector:</p>
+    <div class="fx tx d" data-t="(A+cI)\,x=\lambda x+c\,x=(\lambda+c)\,x"></div>
+    <p>The eigenvectors do not change, and every eigenvalue shifts by exactly <span class="tx" data-t="c"></span>. This holds only for multiples of the identity. For two general matrices <span class="tx" data-t="A"></span> and <span class="tx" data-t="B"></span>, the eigenvalues of <span class="tx" data-t="A+B"></span> are not, in general, the sums of the eigenvalues of <span class="tx" data-t="A"></span> and <span class="tx" data-t="B"></span>.</p>
+    <h3>5.2 Triangular matrices</h3>
+    <p>For any triangular matrix, upper or lower, the eigenvalues are exactly the entries on the main diagonal, so no equation has to be solved. Let <span class="tx" data-t="A"></span> be an upper triangular matrix:</p>
+    <div class="fx tx d" data-t="A=\begin{bmatrix}\textcolor{#3271EA}{a_{11}}&a_{12}&a_{13}\\0&\textcolor{#3271EA}{a_{22}}&a_{23}\\0&0&\textcolor{#3271EA}{a_{33}}\end{bmatrix}"></div>
+    <p>Then <span class="tx" data-t="A-\lambda I"></span> is also triangular, with diagonal entries <span class="tx" data-t="a_{ii}-\lambda"></span>, and the determinant of a triangular matrix is the product of its diagonal entries. The characteristic equation <span class="tx" data-t="\det(A-\lambda I)=0"></span> therefore becomes the product of the diagonal terms:</p>
+    <div class="fx tx d" data-t="(\textcolor{#3271EA}{a_{11}}-\lambda)\,(\textcolor{#3271EA}{a_{22}}-\lambda)\,(\textcolor{#3271EA}{a_{33}}-\lambda)=0"></div>
+    <p>Thus the eigenvalues are simply the diagonal entries:</p>
+    <div class="fx tx d" data-t="\lambda=\{\textcolor{#3271EA}{a_{11}},\ \textcolor{#3271EA}{a_{22}},\ \textcolor{#3271EA}{a_{33}}\}"></div>
+    <p>If a diagonal entry repeats, the eigenvalue repeats, which leads to the next case.</p>
+    <h3>5.3 Degeneracy (repeated eigenvalues)</h3>
+    <p>Degeneracy can occur when an eigenvalue is repeated (Section 3.1). If all <span class="tx" data-t="d"></span> eigenvalues are distinct, such as <span class="tx" data-t="\lambda=1,3,5"></span>, the matrix is guaranteed to have <span class="tx" data-t="d"></span> independent eigenvectors. When an eigenvalue appears more than once, such as <span class="tx" data-t="\lambda=2,2"></span>, there is a risk of degeneracy.</p>
+    <p><strong>Definition.</strong> A matrix is <em>degenerate</em> (or <em>defective</em>) if it does not have enough independent eigenvectors to span the full vector space, that is, fewer than <span class="tx" data-t="d"></span>.</p>
+    <p>A repeated eigenvalue does not always cause degeneracy; it depends on the matrix. Take <span class="tx" data-t="A=2I"></span>, which has <span class="tx" data-t="\lambda=2,2"></span>. Then <span class="tx" data-t="A-2I=0"></span>, the zero matrix, so <span class="tx" data-t="(A-2I)x=0"></span> holds for every vector <span class="tx" data-t="x"></span>. Every vector is an eigenvector, so there are two independent eigenvectors and the matrix is not degenerate. A degenerate matrix still has some eigenvectors, but fewer than <span class="tx" data-t="d"></span>.</p>
+    <p><strong>Example: a shear matrix.</strong> Consider the classic example, which is triangular:</p>
+    <div class="fx tx d" data-t="A=\begin{bmatrix}2&1\\0&2\end{bmatrix}"></div>
+    <p><em>Step 1: read the eigenvalues.</em> By the rule for triangular matrices, <span class="tx" data-t="\lambda=2"></span> and <span class="tx" data-t="\lambda=2"></span>. The <em>algebraic multiplicity</em> of the eigenvalue 2 is 2.</p>
+    <p><em>Step 2: find the eigenvectors.</em> Solve <span class="tx" data-t="(A-2I)x=0"></span>:</p>
+    <div class="fx tx d" data-t="\begin{bmatrix}2-2&1\\0&2-2\end{bmatrix}\begin{bmatrix}x_1\\x_2\end{bmatrix}=\begin{bmatrix}0\\0\end{bmatrix}\ \Longrightarrow\ \begin{bmatrix}0&1\\0&0\end{bmatrix}\begin{bmatrix}x_1\\x_2\end{bmatrix}=\begin{bmatrix}0\\0\end{bmatrix}"></div>
+    <p>This gives <span class="tx" data-t="1\cdot x_2=0"></span>, so <span class="tx" data-t="x_2"></span> must be 0, while <span class="tx" data-t="x_1"></span> is free. The solutions form a single line, one direction (Section 2): the eigenvectors are the non-zero multiples of</p>
+    <div class="fx tx d" data-t="x=c\begin{bmatrix}1\\0\end{bmatrix}"></div>
+    <p><em>The result.</em> Although the list of eigenvalues has size 2 (<span class="tx" data-t="\lambda=2,2"></span>), only one independent eigenvector exists: the number of independent eigenvectors, called the <em>geometric multiplicity</em>, is 1, which is smaller than the algebraic multiplicity 2. This shortage makes the matrix degenerate and prevents it from being diagonalised (Section 6).</p>
+
+    <h2>6. Diagonalisation</h2>
+    <h3>6.1 The setup</h3>
+    <p>Diagonalisation rewrites a matrix in terms of its eigenvectors and eigenvalues. It requires <span class="tx" data-t="d"></span> independent eigenvectors of <span class="tx" data-t="A"></span> (see Section 5.3 for when they are missing). They are collected as the columns of the eigenvector matrix <span class="tx" data-t="S"></span>, and the eigenvalues are placed on the diagonal of the eigenvalue matrix <span class="tx" data-t="\Lambda"></span>, in the same order: the <span class="tx" data-t="j"></span>-th eigenvalue belongs to the <span class="tx" data-t="j"></span>-th eigenvector. Since an eigenvector is only a direction (Section 2), any non-zero multiple of it can be used as a column. We first see the construction in two dimensions and then generalise.</p>
+    <p>Let <span class="tx" data-t="S"></span> be composed of two column vectors, <span class="tx" data-t="x_1"></span> and <span class="tx" data-t="x_2"></span>, and let <span class="tx" data-t="\Lambda"></span> be the diagonal matrix of the eigenvalues:</p>
+    <div class="fx tx d" data-t="x_1=\begin{bmatrix}a\\c\end{bmatrix},\ \ x_2=\begin{bmatrix}b\\d\end{bmatrix}\ \Longrightarrow\ S=\begin{bmatrix}a&b\\c&d\end{bmatrix},\qquad \Lambda=\begin{bmatrix}\lambda_1&0\\0&\lambda_2\end{bmatrix}"></div>
+    <p>In <span class="tx" data-t="d"></span> dimensions, the same construction uses <span class="tx" data-t="d"></span> eigenvectors and <span class="tx" data-t="d"></span> eigenvalues:</p>
+    <div class="fx tx d" data-t="S=\left[\begin{array}{c|c|c}&&\\x_1&\cdots&x_d\\&&\end{array}\right],\qquad \Lambda=\begin{bmatrix}\lambda_1&&\\&\ddots&\\&&\lambda_d\end{bmatrix}"></div>
+    <h3>6.2 The derivation</h3>
+    <p>First, <span class="tx" data-t="AS"></span>. In two dimensions, with <span class="tx" data-t="x_1=(a,c)^{\top}"></span> and <span class="tx" data-t="x_2=(b,d)^{\top}"></span> as the columns of <span class="tx" data-t="S"></span>:</p>
+    <div class="fx tx d" data-t="AS=\begin{bmatrix}a_{11}&a_{12}\\a_{21}&a_{22}\end{bmatrix}\begin{bmatrix}a&b\\c&d\end{bmatrix}=\begin{bmatrix}a_{11}a+a_{12}c&a_{11}b+a_{12}d\\a_{21}a+a_{22}c&a_{21}b+a_{22}d\end{bmatrix}"></div>
+    <p>The first column is <span class="tx" data-t="\begin{bmatrix}a_{11}a+a_{12}c\\a_{21}a+a_{22}c\end{bmatrix}=A\begin{bmatrix}a\\c\end{bmatrix}=Ax_1"></span>, and the second column is <span class="tx" data-t="Ax_2"></span> in the same way: each column of <span class="tx" data-t="S"></span> is multiplied by <span class="tx" data-t="A"></span> separately. In <span class="tx" data-t="d"></span> dimensions, entry <span class="tx" data-t="i"></span> of column <span class="tx" data-t="j"></span> of <span class="tx" data-t="AS"></span> is <span class="tx" data-t="\sum_k a_{ik}(x_j)_k=(Ax_j)_i"></span>. For eigenvectors, <span class="tx" data-t="Ax_j=\lambda_jx_j"></span>, so</p>
+    <div class="fx tx d" data-t="AS=\left[\begin{array}{c|c|c}&&\\Ax_1&\cdots&Ax_d\\&&\end{array}\right]=\left[\begin{array}{c|c|c}&&\\\lambda_1x_1&\cdots&\lambda_dx_d\\&&\end{array}\right]"></div>
+    <p>Now <span class="tx" data-t="S\Lambda"></span>. In two dimensions:</p>
+    <div class="fx tx d" data-t="S\Lambda=\begin{bmatrix}a&b\\c&d\end{bmatrix}\begin{bmatrix}\lambda_1&0\\0&\lambda_2\end{bmatrix}=\begin{bmatrix}a\lambda_1&b\lambda_2\\c\lambda_1&d\lambda_2\end{bmatrix}"></div>
+    <p>The first column is <span class="tx" data-t="(a\lambda_1,\,c\lambda_1)^{\top}=\lambda_1x_1"></span> and the second is <span class="tx" data-t="\lambda_2x_2"></span>. In general:</p>
+    <div class="fx tx d" data-t="S\Lambda=\left[\begin{array}{c|c|c}&&\\x_1&\cdots&x_d\\&&\end{array}\right]\Lambda=\left[\begin{array}{c|c|c}&&\\\lambda_1x_1&\cdots&\lambda_dx_d\\&&\end{array}\right]"></div>
+    <p><strong>Result.</strong> Comparing the two expansions gives the primary result of diagonalisation:</p>
+    <div class="fx tx d res" data-t="AS=S\Lambda"></div>
+    <p>This is the eigenvalue equation <span class="tx" data-t="Ax=\lambda x"></span> written for all eigenvectors at once, and it holds whenever the columns of <span class="tx" data-t="S"></span> are eigenvectors of <span class="tx" data-t="A"></span>. If, in addition, <span class="tx" data-t="S"></span> is invertible, multiplying both sides by <span class="tx" data-t="S^{-1}"></span> gives two equivalent forms. On the right, it isolates <span class="tx" data-t="A"></span>; on the left, it defines <span class="tx" data-t="\Lambda"></span>:</p>
+    <div class="fx tx d" data-t="A=S\Lambda S^{-1},\qquad \Lambda=S^{-1}AS"></div>
+    <p>Both are important. The first factorises <span class="tx" data-t="A"></span> into its eigenvectors and eigenvalues. The second says that <span class="tx" data-t="S^{-1}AS"></span> is the diagonal matrix <span class="tx" data-t="\Lambda"></span> of the eigenvalues, which is why the process is called diagonalisation.</p>
+    <h3>6.3 When is <span class="tx" data-t="S"></span> invertible?</h3>
+    <p>The matrix <span class="tx" data-t="S"></span> is invertible when its columns, the eigenvectors, are linearly independent. There are three cases, and in each of the first two <span class="tx" data-t="S"></span> is guaranteed to be invertible:</p>
+    <ul>
+        <li>If all eigenvalues are distinct, the eigenvectors are independent, so <span class="tx" data-t="S"></span> is invertible.</li>
+        <li>If <span class="tx" data-t="A"></span> is symmetric, <span class="tx" data-t="A=A^{\top}"></span>, then <span class="tx" data-t="S"></span> is invertible, and the eigenvectors can be chosen orthonormal (Section 6.4).</li>
+        <li>If eigenvalues repeat, a check is required, because the matrix may be defective (Section 5.3): <span class="tx" data-t="S"></span> is invertible only if there are <span class="tx" data-t="d"></span> independent eigenvectors.</li>
+    </ul>
+
+    <h3>6.4 Special case: symmetric <span class="tx" data-t="A"></span></h3>
+    <p>When <span class="tx" data-t="A"></span> is symmetric, <span class="tx" data-t="A=A^{\top}"></span> (the second case above), <span class="tx" data-t="S"></span> is called <span class="tx" data-t="Q"></span> and its inverse is its transpose, <span class="tx" data-t="Q^{-1}=Q^{\top}"></span>. Both forms of the diagonalisation then become</p>
+    <div class="fx tx d" data-t="A=Q\Lambda Q^{-1}=Q\Lambda Q^{\top},\qquad \Lambda=Q^{-1}AQ=Q^{\top}AQ"></div>
+    <p>In this case the eigenvectors are <em>orthonormal</em>: each is normalised to unit length (Section 2) and any two are orthogonal. For a symmetric matrix, eigenvectors of different eigenvalues are automatically orthogonal, and within a repeated eigenvalue an orthogonal set can be chosen. The columns <span class="tx" data-t="q_j"></span> of <span class="tx" data-t="Q"></span> therefore satisfy <span class="tx" data-t="q_i^{\top}q_j=1"></span> if <span class="tx" data-t="i=j"></span> and <span class="tx" data-t="q_i^{\top}q_j=0"></span> if <span class="tx" data-t="i\neq j"></span>. These products are exactly the entries of <span class="tx" data-t="Q^{\top}Q"></span>, so <span class="tx" data-t="Q^{\top}Q=I"></span>, which is why <span class="tx" data-t="Q^{-1}=Q^{\top}"></span>. <a class="lnk" href="#simulation2">Simulation 2</a> uses this case: on unit vectors, the maximum and minimum of <span class="tx" data-t="x^{\top}Ax"></span> are the extreme eigenvalues of a symmetric matrix.</p>
+
+    <h2>7. Matrix Powers</h2>
+    <p>Diagonalisation makes powers of a matrix easy to compute, provided <span class="tx" data-t="A"></span> is diagonalisable, <span class="tx" data-t="A=S\Lambda S^{-1}"></span> (Section 6.3). In the product of two factors, the inner <span class="tx" data-t="S^{-1}S"></span> cancels:</p>
+    <div class="fx tx d" data-t="A^{2}=(S\Lambda S^{-1})(S\Lambda S^{-1})=S\Lambda\,(S^{-1}S)\,\Lambda S^{-1}=S\Lambda^{2}S^{-1}"></div>
+    <p>The same holds for any positive integer power <span class="tx" data-t="m"></span>:</p>
+    <div class="fx tx d" data-t="A^{m}=S\Lambda^{m}S^{-1}"></div>
+    <p>Only the diagonal matrix <span class="tx" data-t="\Lambda"></span> is raised to a power, and for a diagonal matrix this means raising each entry separately:</p>
+    <div class="fx tx d" data-t="\Lambda^{m}=\begin{bmatrix}\lambda_1^{m}&&\\&\ddots&\\&&\lambda_d^{m}\end{bmatrix}"></div>
+    <p>The eigenvectors stay unchanged, because <span class="tx" data-t="S"></span> is constant, and the eigenvalues are raised to the power <span class="tx" data-t="m"></span>: if <span class="tx" data-t="Ax=\lambda x"></span>, then <span class="tx" data-t="A^{m}x=\lambda^{m}x"></span>.</p>
+    <p>For example, the matrix of Section 4.2 has the eigenvalues <span class="tx" data-t="5"></span> and <span class="tx" data-t="2"></span>, with the eigenvectors <span class="tx" data-t="(1,1)^{\top}"></span> and <span class="tx" data-t="(1,-2)^{\top}"></span> (Section 4.3). Hence</p>
+    <div class="fx tx d" data-t="A^{m}=\begin{bmatrix}1&1\\1&-2\end{bmatrix}\begin{bmatrix}5^{m}&0\\0&2^{m}\end{bmatrix}\begin{bmatrix}1&1\\1&-2\end{bmatrix}^{-1}"></div>
+    <p>For <span class="tx" data-t="m=2"></span> this gives the result below, which agrees with multiplying <span class="tx" data-t="A"></span> by itself:</p>
+    <div class="fx tx d" data-t="A^{2}=\begin{bmatrix}18&7\\14&11\end{bmatrix}"></div>
+    <h2>8. References</h2>
+    <p>The following videos cover the same material.</p>
+    <div class="refs">
+        <div class="ref"><div class="vid" data-id="PFDu9oVAE-g"><iframe src="https://www.youtube-nocookie.com/embed/PFDu9oVAE-g" title="Eigenvectors and eigenvalues | Chapter 14, Essence of linear algebra" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+            <div class="rt">Eigenvectors and eigenvalues | Chapter 14, Essence of linear algebra</div>
+            <p class="rd">Related to Sections 1 and 2: a visual introduction to eigenvectors as directions that keep their direction. <a href="https://youtu.be/PFDu9oVAE-g" target="_blank" rel="noopener">Watch on YouTube</a></p></div>
+        <div class="ref"><div class="vid" data-id="cdZnhQjJu4I"><iframe src="https://www.youtube-nocookie.com/embed/cdZnhQjJu4I" title="21. Eigenvalues and Eigenvectors" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+            <div class="rt">21. Eigenvalues and Eigenvectors</div>
+            <p class="rd">Related to Sections 1 to 5: eigenvectors, eigenvalues and how to find them. <a href="https://youtu.be/cdZnhQjJu4I" target="_blank" rel="noopener">Watch on YouTube</a></p></div>
+        <div class="ref"><div class="vid" data-id="13r9QY6cmjc"><iframe src="https://www.youtube-nocookie.com/embed/13r9QY6cmjc" title="22. Diagonalization and Powers of A" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+            <div class="rt">22. Diagonalization and Powers of A</div>
+            <p class="rd">Related to Sections 6 and 7: diagonalisation and matrix powers. <a href="https://youtu.be/13r9QY6cmjc" target="_blank" rel="noopener">Watch on YouTube</a></p></div>
+        <div class="ref"><div class="vid" data-id="w3gccS9QS6k"><iframe src="https://www.youtube-nocookie.com/embed/w3gccS9QS6k" title="13.2 Rayleigh Quotient: A Geometric View on the Unit Circle and Unit Sphere" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+            <div class="rt">13.2 Rayleigh Quotient: A Geometric View on the Unit Circle and Unit Sphere</div>
+            <p class="rd">Related to Simulation 2: the Rayleigh quotient on the unit circle. <a href="https://youtu.be/w3gccS9QS6k" target="_blank" rel="noopener">Watch on YouTube</a></p></div>
+    </div>
+    <div class="cta end"><a class="btn s1" href="#simulation">Simulation 1: projection matrix <span aria-hidden="true">→</span></a><a class="btn s2" href="#simulation2">Simulation 2: quadratic form <span aria-hidden="true">→</span></a></div>
+</article>
+
+<article class="article wide" id="sim" hidden>
+    <a class="back" href="#article">&larr; Article</a>
+    <div class="eyebrow">Simulation 1</div>
+    <h1>Eigenvectors of a Projection Matrix</h1>
+    <p class="intro">This page applies the definitions of the article to a projection matrix. Scroll down for the explanations and the interactive plots, and drag any plot to rotate it. Choose the projection plane below; the matrices and examples in the text follow your choice.</p>
+    <div class="simbar" id="simbar"><span class="lab">Plane in the plots</span><button class="pill on" data-plane="xy">xy-plane</button><button class="pill" data-plane="random">Random plane</button></div>
+    <h2>1. The Projection Matrix And Its Eigenvectors</h2>
+    <p class="pl-xy">Consider the projection matrix onto the <span class="tx" data-t="xy"></span>-plane in <span class="tx" data-t="\mathbb{R}^{d}"></span> with <span class="tx" data-t="d=3"></span> features:</p>
+    <p class="pl-rd" hidden>Consider the projection matrix onto a plane through the origin in <span class="tx" data-t="\mathbb{R}^{d}"></span> with <span class="tx" data-t="d=3"></span> features. The plane has the unit normal <span class="dyn" data-dyn="n"></span>, and the projection matrix is <span class="tx" data-t="P=I-nn^{\top}"></span>:</p>
+    <div class="fx tx d pl-xy" data-t="P=\begin{bmatrix}1&0&0\\0&1&0\\0&0&0\end{bmatrix}"></div>
+    <div class="fx d dyn pl-rd" data-dyn="Pmat" hidden></div>
+    <p>A general vector <span class="tx" data-t="b=(x,y,z)^{\top}"></span> is projected onto the plane as follows:</p>
+    <div class="fx tx d pl-xy" data-t="Pb=\begin{bmatrix}1&0&0\\0&1&0\\0&0&0\end{bmatrix}\begin{bmatrix}x\\y\\z\end{bmatrix}=\begin{bmatrix}x\\y\\0\end{bmatrix}"></div>
+    <div class="fx tx d pl-rd" data-t="Pb=b-(n^{\top}b)\,n" hidden></div>
+    <figure class="fig" id="fig1"><div class="figrow"><div class="panel"><div id="f1a" class="plot"></div></div><div class="panel"><div id="f1b" class="plot"></div></div></div><figcaption>Left: vectors <i>b</i>. Right: their projections <i>Pb</i>, all on the plane. Drag a plot to rotate it; the two plots rotate together.</figcaption></figure>
+    <p>The vector <span class="tx" data-t="Pb"></span> is the <em>projection</em> (or <em>proxy</em>) of <span class="tx" data-t="b"></span> on the plane defined by <span class="tx" data-t="P"></span>. The projection also leaves an <em>error vector</em>, which is orthogonal to the plane:</p>
+    <div class="fx tx d" data-t="e=b-Pb\ \perp\ \operatorname{range}(P)"></div>
+    <p>An important property is that projecting twice changes nothing. The first projection gives a point on the plane itself, and projecting that point once more does not move it. Hence, for every vector <span class="tx" data-t="b"></span>,</p>
+    <div class="fx tx d" data-t="P(Pb)=Pb\quad\text{that is,}\quad P^{2}=P"></div>
+    <p>A matrix with this property is called <em>idempotent</em>. A projection matrix is also symmetric, <span class="tx" data-t="P^{\top}=P"></span>; together, the two properties characterise an orthogonal projection.</p>
+    <p>As the next sections show, this setup has two eigenvalues, <span class="tx" data-t="1"></span> and <span class="tx" data-t="0"></span>. To find the eigenvectors of <span class="tx" data-t="P"></span>, we look for vectors <span class="tx" data-t="v"></span> for which <span class="tx" data-t="Pv"></span> is parallel to <span class="tx" data-t="v"></span>, as in Section 1 of the article. A general vector <span class="tx" data-t="b"></span> does not qualify: its projection <span class="tx" data-t="Pb"></span> points in a different direction, at an angle <span class="tx" data-t="\theta\neq0"></span> to <span class="tx" data-t="b"></span>, so <span class="tx" data-t="Pb"></span> is not a multiple of <span class="tx" data-t="b"></span>. Two situations remain: vectors that retain their original direction post projection, and vectors that are flattened to zero.</p>
+
+    <figure class="fig" id="fig2"><div class="figrow"><div class="panel"><div id="f2a" class="plot"></div></div><div class="panel"><div id="f2b" class="plot"></div></div></div><figcaption>Left: <i>b</i>, its projection <i>Pb</i> and the error <i>e</i> = <i>b</i> &minus; <i>Pb</i>. Right: the angle <i>&theta;</i> between <i>b</i> and <i>Pb</i>. Since <i>&theta;</i> &ne; 0, <i>b</i> is not an eigenvector.</figcaption></figure>
+
+    <h2>2. Eigenvalue 1: Vectors In The Plane</h2>
+    <h3>2.1 Intuition</h3>
+    <p>One clear possibility of retaining the original direction post projection is a vector that already lies in the plane. The projection cannot change it, so the result is the original vector itself. To produce the resultant (the same vector itself) from <span class="tx" data-t="v"></span>, we would need to multiply it by exactly <span class="tx" data-t="1"></span>:</p>
+    <div class="fx tx d" data-t="Pv=v=1\cdot v"></div>
+    <p>Comparing with <span class="tx" data-t="Pv=\lambda v"></span> gives <span class="tx" data-t="\lambda=1"></span>. To verify, take a vector in the plane and multiply it by <span class="tx" data-t="P"></span>.</p>
+    <h3>2.2 Example: checking a vector in the plane</h3>
+    <p class="pl-xy">For example, <span class="tx" data-t="v=(4,5,0)^{\top}"></span> lies in the <span class="tx" data-t="xy"></span>-plane:</p>
+    <div class="fx tx d pl-xy" data-t="Pv=\begin{bmatrix}1&0&0\\0&1&0\\0&0&0\end{bmatrix}\begin{bmatrix}4\\5\\0\end{bmatrix}=\begin{bmatrix}1\cdot4+0\cdot5+0\cdot0\\0\cdot4+1\cdot5+0\cdot0\\0\cdot4+0\cdot5+0\cdot0\end{bmatrix}=\begin{bmatrix}4\\5\\0\end{bmatrix}=1\cdot v"></div>
+    <p class="pl-rd" hidden>For example, take the vector <span class="tx" data-t="v=4e_1+5e_2"></span> in the plane, where <span class="tx" data-t="e_1"></span> and <span class="tx" data-t="e_2"></span> are the two orthonormal basis vectors of the plane (the axes used in the plots). A vector lies in the plane exactly when <span class="tx" data-t="n^{\top}v=0"></span>:</p>
+    <div class="fx d dyn pl-rd" data-dyn="exv" hidden></div>
+    <div class="fx d dyn pl-rd" data-dyn="ex" hidden></div>
+    <p>The result is the original vector, so <span class="tx" data-t="v"></span> is an eigenvector corresponding to <span class="tx" data-t="\lambda=1"></span>.</p>
+    <figure class="fig" id="fig3"><div class="figrow single"><div class="panel"><div id="f3" class="plot"></div></div></div><figcaption>A vector <i>v</i> in the plane. The orange ring marks <i>Pv</i>, which coincides with <i>v</i>.</figcaption></figure>
+    <h3>2.3 The general form of the eigenvectors</h3>
+    <p class="pl-xy">More generally, every eigenvector for <span class="tx" data-t="\lambda=1"></span> has the form <span class="tx" data-t="(x,y,0)^{\top}"></span>, with <span class="tx" data-t="x"></span> and <span class="tx" data-t="y"></span> not both zero.</p>
+    <p class="pl-rd" hidden>More generally, every eigenvector for <span class="tx" data-t="\lambda=1"></span> is a non-zero vector <span class="tx" data-t="v"></span> with <span class="tx" data-t="n^{\top}v=0"></span>, that is, a non-zero vector of the plane.</p>
+    <h3>2.4 Finding the eigenvalues</h3>
+    <p>To find the eigenvalues, we use the singularity condition <span class="tx" data-t="\det(P-\lambda I)=0"></span> (Section 4 of the article).</p>
+    <p class="pl-xy">Here <span class="tx" data-t="P"></span> is diagonal, hence both symmetric and triangular, so its eigenvalues are equal to its diagonal entries (Section 5.2 of the article):</p>
+    <div class="fx tx d pl-xy" data-t="\det(P-\lambda I)=(1-\lambda)(1-\lambda)(0-\lambda)=0\ \Longrightarrow\ \lambda=1,\ 1,\ 0"></div>
+    <p class="pl-rd" hidden>This <span class="tx" data-t="P"></span> is symmetric but not diagonal. Solving the equation still gives the same roots:</p>
+    <div class="fx tx d pl-rd" hidden data-x="" data-t="\det(P-\lambda I)=(1-\lambda)(1-\lambda)(0-\lambda)=0\ \Longrightarrow\ \lambda=1,\ 1,\ 0"></div>
+    <h3>2.5 A repeated eigenvalue and degeneracy</h3>
+    <p>The eigenvalue <span class="tx" data-t="1"></span> is repeated, so degeneracy is possible (Section 5.3 of the article): a repeated eigenvalue does not always yield as many independent eigenvectors as its multiplicity. We therefore solve <span class="tx" data-t="(P-I)v=0"></span> directly.</p>
+    <p class="pl-xy">For the <span class="tx" data-t="xy"></span>-plane, write out <span class="tx" data-t="(P-I)v=0"></span> with <span class="tx" data-t="v=(x,y,z)^{\top}"></span>:</p>
+    <div class="fx tx d pl-xy" data-t="\left(\begin{bmatrix}1&0&0\\0&1&0\\0&0&0\end{bmatrix}-\begin{bmatrix}1&0&0\\0&1&0\\0&0&1\end{bmatrix}\right)\begin{bmatrix}x\\y\\z\end{bmatrix}=\begin{bmatrix}0&0&0\\0&0&0\\0&0&-1\end{bmatrix}\begin{bmatrix}x\\y\\z\end{bmatrix}=\begin{bmatrix}0\cdot x+0\cdot y+0\cdot z\\0\cdot x+0\cdot y+0\cdot z\\0\cdot x+0\cdot y-1\cdot z\end{bmatrix}=\begin{bmatrix}0\\0\\0\end{bmatrix}"></div>
+    <p class="pl-xy">The first two rows read <span class="tx" data-t="0=0"></span>, which every <span class="tx" data-t="x"></span> and <span class="tx" data-t="y"></span> satisfy. Only the third row restricts the solution:</p>
+    <div class="fx tx d pl-xy" data-t="0=0,\qquad 0=0,\qquad -z=0\ \Longrightarrow\ z=0,\quad x\text{ and }y\text{ free}"></div>
+    <p class="pl-rd" hidden>For the chosen plane, <span class="tx" data-t="P=I-nn^{\top}"></span>, so <span class="tx" data-t="P-I=-nn^{\top}"></span> and the system reads:</p>
+    <div class="fx tx d pl-rd" hidden data-x="" data-t="(P-I)v=-nn^{\top}v=-(n^{\top}v)\,n=0\ \Longrightarrow\ n^{\top}v=0"></div>
+    <p class="pl-rd" hidden>This holds because <span class="tx" data-t="n\neq0"></span>. It is a single condition on <span class="tx" data-t="v"></span>, so it leaves two independent directions within the plane.</p>
+    <p>Two variables remain free, so the single eigenvalue <span class="tx" data-t="1"></span> provides two independent directions in one eigenspace, and the matrix is not degenerate. For the xy-plane, one eigenvalue accounts for both the x and the y directions.</p>
+    <h3>2.6 The two eigenvector directions</h3>
+    <p>The two eigenvector directions are the unit vectors</p>
+    <div class="fx tx d pl-xy" data-t="u_1=\begin{bmatrix}1\\0\\0\end{bmatrix},\qquad u_2=\begin{bmatrix}0\\1\\0\end{bmatrix}"></div>
+    <p class="pl-rd" hidden>The two directions can be taken as the orthonormal basis vectors <span class="tx" data-t="u_1=e_1"></span> and <span class="tx" data-t="u_2=e_2"></span> of the plane, <span class="dyn" data-dyn="e1"></span> and <span class="dyn" data-dyn="e2"></span>.</p>
+    <p>Any linear combination of them, other than the zero vector, is a solution with <span class="tx" data-t="\lambda=1"></span>:</p>
+    <div class="fx tx d" data-t="v=a\,u_1+b\,u_2,\qquad a\text{ and }b\text{ not both zero}"></div>
+    <h3>2.7 The eigenspace of <span class="tx" data-t="\lambda=1"></span></h3>
+    <p class="pl-xy">Together with the zero vector (<span class="tx" data-t="a=b=0"></span>), all these combinations form the first eigenspace, <span class="tx" data-t="E_1"></span>, the set of all solutions of <span class="tx" data-t="Pv=v"></span>. It is the span of the two eigenvectors <span class="tx" data-t="u_1"></span> and <span class="tx" data-t="u_2"></span> given above, and its vectors are exactly the vectors of the <span class="tx" data-t="xy"></span>-plane:</p>
+    <p class="pl-rd" hidden>Together with the zero vector (<span class="tx" data-t="a=b=0"></span>), all these combinations form the first eigenspace, <span class="tx" data-t="E_1"></span>, the set of all solutions of <span class="tx" data-t="Pv=v"></span>. It is the span of the two eigenvectors <span class="tx" data-t="u_1"></span> and <span class="tx" data-t="u_2"></span> given above, and its vectors are exactly the vectors of the plane, that is, those with <span class="tx" data-t="n^{\top}v=0"></span>:</p>
+    <div class="fx tx d pl-xy" data-t="E_1=\{v:\ Pv=v\}=\operatorname{span}\left\{\begin{bmatrix}1\\0\\0\end{bmatrix},\ \begin{bmatrix}0\\1\\0\end{bmatrix}\right\}"></div>
+    <div class="fx tx d pl-xy" data-t="=\left\{a\begin{bmatrix}1\\0\\0\end{bmatrix}+b\begin{bmatrix}0\\1\\0\end{bmatrix}:\ a,b\in\mathbb{R}\right\}=\left\{\begin{bmatrix}a\\b\\0\end{bmatrix}:\ a,b\in\mathbb{R}\right\}"></div>
+    <div class="fx d dyn pl-rd" data-dyn="sp" hidden></div>
+    <div class="fx tx d pl-rd" hidden data-x="" data-t="=\{a\,u_1+b\,u_2:\ a,b\in\mathbb{R}\}=\{v:\ n^{\top}v=0\}"></div>
+    <p>The dimension of <span class="tx" data-t="E_1"></span> is the number of independent eigenvectors it contains, here the two directions <span class="tx" data-t="u_1"></span> and <span class="tx" data-t="u_2"></span>, so <span class="tx" data-t="\dim E_1=2"></span>. In the language of the projection, <span class="tx" data-t="E_1"></span> is the range of <span class="tx" data-t="P"></span>, and <span class="tx" data-t="2"></span> is the dimension <span class="tx" data-t="k"></span> of the plane.</p>
+
+    <h2>3. Eigenvalue 0: Vectors Perpendicular To The Plane</h2>
+    <h3>3.1 Intuition</h3>
+    <p>Now consider the direction perpendicular to the plane. The projection of any vector perpendicular to the plane is the zero vector, because the closest point of the plane to such a vector is the origin:</p>
+    <div class="fx tx d" data-t="Pv=0"></div>
+    <p>We now ask: what is the direction of the resultant, and is it still the direction of the original vector, which is perpendicular to the plane? The zero vector is special. Strictly speaking it has no direction of its own, but it is the zero multiple of every vector, <span class="tx" data-t="0=0\cdot w"></span> for any <span class="tx" data-t="w"></span>, so it counts as parallel to every vector; informally, it lies along every direction. Hence the direction condition holds, and the resultant retains the original direction post projection.</p>
+    <p>The resultant is obtained by multiplying the original vector <span class="tx" data-t="v"></span> by exactly <span class="tx" data-t="0"></span>:</p>
+    <div class="fx tx d" data-t="Pv=0=0\cdot v"></div>
+    <p>Comparing with <span class="tx" data-t="Pv=\lambda v"></span> gives <span class="tx" data-t="\lambda=0"></span>. As noted in Section 1 of the article, a zero eigenvalue means that <span class="tx" data-t="P"></span> flattens the direction of <span class="tx" data-t="v"></span> into the origin.</p>
+    <h3>3.2 Example: checking a vector perpendicular to the plane</h3>
+    <p class="pl-xy">For example, <span class="tx" data-t="v=(0,0,7)^{\top}"></span> is perpendicular to the <span class="tx" data-t="xy"></span>-plane:</p>
+    <div class="fx tx d pl-xy" data-t="Pv=\begin{bmatrix}1&0&0\\0&1&0\\0&0&0\end{bmatrix}\begin{bmatrix}0\\0\\7\end{bmatrix}=\begin{bmatrix}1\cdot0+0\cdot0+0\cdot7\\0\cdot0+1\cdot0+0\cdot7\\0\cdot0+0\cdot0+0\cdot7\end{bmatrix}=\begin{bmatrix}0\\0\\0\end{bmatrix}=0\cdot v"></div>
+    <p class="pl-rd" hidden>For example, take the vector <span class="tx" data-t="v=7n"></span>, perpendicular to the plane, where <span class="tx" data-t="n"></span> is the unit normal of the plane:</p>
+    <div class="fx d dyn pl-rd" data-dyn="ex0v" hidden></div>
+    <div class="fx d dyn pl-rd" data-dyn="ex0" hidden></div>
+    <p>The result is the zero vector, which equals <span class="tx" data-t="0\cdot v"></span>, so <span class="tx" data-t="v"></span> is an eigenvector corresponding to <span class="tx" data-t="\lambda=0"></span>.</p>
+    <figure class="fig" id="fig4"><div class="figrow single"><div class="panel"><div id="f4" class="plot"></div></div></div><figcaption>A vector <i>v</i> perpendicular to the plane. Its projection <i>Pv</i> is the red dot, the zero vector.</figcaption></figure>
+    <h3>3.3 The general form of the eigenvectors</h3>
+    <p class="pl-xy">Every eigenvector for <span class="tx" data-t="\lambda=0"></span> has the form <span class="tx" data-t="(0,0,z)^{\top}"></span>, with <span class="tx" data-t="z\neq0"></span>.</p>
+    <p class="pl-rd" hidden>Every eigenvector for <span class="tx" data-t="\lambda=0"></span> is a non-zero multiple of the unit normal <span class="tx" data-t="n"></span> of the plane.</p>
+    <h3>3.4 Finding the eigenvector</h3>
+    <p>Section 2 gave the roots <span class="tx" data-t="1"></span>, <span class="tx" data-t="1"></span> and <span class="tx" data-t="0"></span>. The root <span class="tx" data-t="0"></span> appears only once, so there is no question of degeneracy: it brings exactly one independent direction. As noted in Section 1 of the article, the eigenvectors for <span class="tx" data-t="\lambda=0"></span> are the non-zero vectors of the null space of <span class="tx" data-t="P"></span>, so we solve <span class="tx" data-t="Pv=0"></span>.</p>
+    <p class="pl-xy">For the <span class="tx" data-t="xy"></span>-plane, write out <span class="tx" data-t="Pv=0"></span> with <span class="tx" data-t="v=(x,y,z)^{\top}"></span>:</p>
+    <div class="fx tx d pl-xy" data-t="\begin{bmatrix}1&0&0\\0&1&0\\0&0&0\end{bmatrix}\begin{bmatrix}x\\y\\z\end{bmatrix}=\begin{bmatrix}1\cdot x+0\cdot y+0\cdot z\\0\cdot x+1\cdot y+0\cdot z\\0\cdot x+0\cdot y+0\cdot z\end{bmatrix}=\begin{bmatrix}x\\y\\0\end{bmatrix}=\begin{bmatrix}0\\0\\0\end{bmatrix}"></div>
+    <p class="pl-xy">The first two rows give <span class="tx" data-t="x=0"></span> and <span class="tx" data-t="y=0"></span>. The third row reads <span class="tx" data-t="0=0"></span>, which every <span class="tx" data-t="z"></span> satisfies:</p>
+    <div class="fx tx d pl-xy" data-t="x=0,\qquad y=0,\qquad 0=0\ \Longrightarrow\ x=y=0,\quad z\text{ free}"></div>
+    <p class="pl-xy">Only one variable is free, so there is one independent direction.</p>
+    <p class="pl-rd" hidden>For the chosen plane, <span class="tx" data-t="Pv=0"></span> reads:</p>
+    <div class="fx tx d pl-rd" hidden data-x="" data-t="Pv=v-(n^{\top}v)\,n=0\ \Longrightarrow\ v=(n^{\top}v)\,n"></div>
+    <p class="pl-rd" hidden>So every solution is a multiple of <span class="tx" data-t="n"></span>. Only one direction is possible.</p>
+    <h3>3.5 The eigenvector direction</h3>
+    <p class="pl-xy">The direction is the unit vector</p>
+    <div class="fx tx d pl-xy" data-t="u_3=\begin{bmatrix}0\\0\\1\end{bmatrix}"></div>
+    <p class="pl-rd" hidden>The direction is the unit normal, <span class="dyn" data-dyn="n"></span>, which we call <span class="tx" data-t="u_3"></span>.</p>
+    <p>Any non-zero multiple of it is a solution with <span class="tx" data-t="\lambda=0"></span>:</p>
+    <div class="fx tx d" data-t="v=c\,u_3,\qquad c\neq0"></div>
+    <h3>3.6 The eigenspace of <span class="tx" data-t="\lambda=0"></span></h3>
+    <p class="pl-xy">Together with the zero vector (<span class="tx" data-t="c=0"></span>), all these multiples form the second eigenspace, <span class="tx" data-t="E_0"></span>, the set of all solutions of <span class="tx" data-t="Pv=0"></span>. It is the span of the eigenvector <span class="tx" data-t="u_3"></span> given above, and its vectors are exactly the vectors of the <span class="tx" data-t="z"></span>-axis:</p>
+    <p class="pl-rd" hidden>Together with the zero vector (<span class="tx" data-t="c=0"></span>), all these multiples form the second eigenspace, <span class="tx" data-t="E_0"></span>, the set of all solutions of <span class="tx" data-t="Pv=0"></span>. It is the span of the eigenvector <span class="tx" data-t="u_3"></span> given above, and its vectors are exactly the vectors of the line through the origin along the normal, that is, those with <span class="tx" data-t="v=(n^{\top}v)\,n"></span>:</p>
+    <div class="fx tx d pl-xy" data-t="E_0=\{v:\ Pv=0\}=\operatorname{span}\left\{\begin{bmatrix}0\\0\\1\end{bmatrix}\right\}"></div>
+    <div class="fx tx d pl-xy" data-t="=\left\{c\begin{bmatrix}0\\0\\1\end{bmatrix}:\ c\in\mathbb{R}\right\}=\left\{\begin{bmatrix}0\\0\\c\end{bmatrix}:\ c\in\mathbb{R}\right\}"></div>
+    <div class="fx d dyn pl-rd" data-dyn="sp0" hidden></div>
+    <div class="fx tx d pl-rd" hidden data-x="" data-t="=\{c\,u_3:\ c\in\mathbb{R}\}=\{v:\ v=(n^{\top}v)\,n\}"></div>
+    <p>The dimension of <span class="tx" data-t="E_0"></span> is the number of independent eigenvectors it contains, here the single direction <span class="tx" data-t="u_3"></span>, so <span class="tx" data-t="\dim E_0=1"></span>. In the language of the projection, <span class="tx" data-t="E_0"></span> is the null space of <span class="tx" data-t="P"></span>, and <span class="tx" data-t="1"></span> is the dimension <span class="tx" data-t="d-k"></span> of the perpendicular direction.</p>
+
+    <h2>4. Two Eigenspaces</h2>
+    <h3>4.1 The two eigenspaces</h3>
+    <p>Sections 2 and 3 gave two eigenspaces of <span class="tx" data-t="P"></span>: the plane, for <span class="tx" data-t="\lambda=1"></span>, and the line perpendicular to it, for <span class="tx" data-t="\lambda=0"></span>.</p>
+    <div class="fx tx d pl-xy" data-t="E_1=\operatorname{span}\left\{\begin{bmatrix}1\\0\\0\end{bmatrix},\ \begin{bmatrix}0\\1\\0\end{bmatrix}\right\}\ \ (\dim E_1=2),\qquad E_0=\operatorname{span}\left\{\begin{bmatrix}0\\0\\1\end{bmatrix}\right\}\ \ (\dim E_0=1)"></div>
+    <div class="fx tx d pl-rd" hidden data-x="" data-t="E_1=\operatorname{span}\{u_1,\,u_2\}=\{v:\ n^{\top}v=0\}\ \ (\dim E_1=2),\qquad E_0=\operatorname{span}\{u_3\}\ \ (\dim E_0=1)"></div>
+    <p>In the language of the projection, <span class="tx" data-t="E_1"></span> is the range of <span class="tx" data-t="P"></span> and <span class="tx" data-t="E_0"></span> is the null space of <span class="tx" data-t="P"></span>.</p>
+    <h3>4.2 Independent and computed separately</h3>
+    <p>The two eigenspaces are independent, and each is computed separately: <span class="tx" data-t="E_1"></span> from <span class="tx" data-t="(P-I)v=0"></span> and <span class="tx" data-t="E_0"></span> from <span class="tx" data-t="Pv=0"></span>. They are also orthogonal, because <span class="tx" data-t="P"></span> is symmetric.</p>
+    <p class="pl-xy">For example, <span class="tx" data-t="u_1"></span> and <span class="tx" data-t="u_2"></span> are both orthogonal to <span class="tx" data-t="u_3"></span>:</p>
+    <div class="fx tx d pl-xy" data-t="u_1^{\top}u_3=1\cdot0+0\cdot0+0\cdot1=0,\qquad u_2^{\top}u_3=0\cdot0+1\cdot0+0\cdot1=0"></div>
+    <p class="pl-rd" hidden>For example, <span class="tx" data-t="u_3=n"></span> is orthogonal to the plane, so <span class="tx" data-t="n^{\top}u_1=0"></span> and <span class="tx" data-t="n^{\top}u_2=0"></span>, because <span class="tx" data-t="u_1"></span> and <span class="tx" data-t="u_2"></span> lie in the plane.</p>
+    <p>Together the two eigenspaces account for all <span class="tx" data-t="d=3"></span> independent directions: <span class="tx" data-t="2+1=3"></span>.</p>
+    <h3>4.3 Combining vectors inside one eigenspace</h3>
+    <p>Inside one eigenspace, vectors can be combined freely. If <span class="tx" data-t="u"></span> and <span class="tx" data-t="w"></span> both belong to <span class="tx" data-t="E_1"></span>, then any non-zero combination of them is again an eigenvector with the same eigenvalue:</p>
+    <div class="fx tx d" data-t="P(a\,u+b\,w)=a\,Pu+b\,Pw=a\,u+b\,w"></div>
+    <p class="pl-xy">For example, <span class="tx" data-t="2u_1+3u_2=(2,3,0)^{\top}"></span> stays in the plane:</p>
+    <div class="fx tx d pl-xy" data-t="P\begin{bmatrix}2\\3\\0\end{bmatrix}=\begin{bmatrix}2\\3\\0\end{bmatrix}=1\cdot\begin{bmatrix}2\\3\\0\end{bmatrix}"></div>
+    <p>This is why every non-zero vector of the plane retains its original direction. The same holds inside <span class="tx" data-t="E_0"></span>, where every non-zero multiple of <span class="tx" data-t="u_3"></span> is mapped to <span class="tx" data-t="0"></span>.</p>
+    <h3>4.4 Combining vectors across the two eigenspaces</h3>
+    <p>Across the two eigenspaces, vectors cannot be combined. If <span class="tx" data-t="u"></span> lies in <span class="tx" data-t="E_1"></span> and <span class="tx" data-t="w"></span> lies in <span class="tx" data-t="E_0"></span>, both non-zero, then</p>
+    <div class="fx tx d" data-t="P(u+w)=u\ \neq\ \lambda\,(u+w)\quad\text{for every }\lambda"></div>
+    <p>To see this, suppose <span class="tx" data-t="P(u+w)=\lambda\,(u+w)"></span>. Then <span class="tx" data-t="u=\lambda u+\lambda w"></span>, that is,</p>
+    <div class="fx tx d" data-t="(1-\lambda)\,u=\lambda\,w"></div>
+    <p>The left side lies in the plane and the right side is perpendicular to it, so both sides are zero. That forces <span class="tx" data-t="\lambda=1"></span> and <span class="tx" data-t="w=0"></span>, or <span class="tx" data-t="\lambda=0"></span> and <span class="tx" data-t="u=0"></span>, which contradicts both being non-zero.</p>
+    <p class="pl-xy">For example, <span class="tx" data-t="(1,0,1)^{\top}=(1,0,0)^{\top}+(0,0,1)^{\top}"></span> mixes the two spaces:</p>
+    <div class="fx tx d pl-xy" data-t="P\begin{bmatrix}1\\0\\1\end{bmatrix}=\begin{bmatrix}1\\0\\0\end{bmatrix}\neq\lambda\begin{bmatrix}1\\0\\1\end{bmatrix}\quad\text{for every }\lambda"></div>
+    <p class="pl-xy">The first component would require <span class="tx" data-t="\lambda=1"></span> and the third would require <span class="tx" data-t="\lambda=0"></span>, which cannot both hold.</p>
+    <p class="pl-rd" hidden>Such a mixed vector is moved to a different direction, because its component in <span class="tx" data-t="E_0"></span> is flattened while its component in <span class="tx" data-t="E_1"></span> is kept.</p>
+
+    <h2>5. Summary</h2>
+    <h3>5.1 Eigenvalues and eigenspaces</h3>
+    <p>A projection onto a <span class="tx" data-t="k"></span>-dimensional subspace of <span class="tx" data-t="\mathbb{R}^{d}"></span> has the eigenvalue <span class="tx" data-t="1"></span> with multiplicity <span class="tx" data-t="k"></span> (the vectors in the subspace) and the eigenvalue <span class="tx" data-t="0"></span> with multiplicity <span class="tx" data-t="d-k"></span> (the vectors perpendicular to it). Here <span class="tx" data-t="d=3"></span> and <span class="tx" data-t="k=2"></span>:</p>
+    <table class="sum">
+        <tr><th>Eigenvalue</th><th>Eigenspace</th><th>Vectors</th><th>Dimension</th></tr>
+        <tr><td><span class="tx" data-t="\lambda=1"></span></td><td><span class="tx" data-t="E_1=\operatorname{range}(P)"></span></td><td>in the plane; retain their original direction</td><td><span class="tx" data-t="k=2"></span></td></tr>
+        <tr><td><span class="tx" data-t="\lambda=0"></span></td><td><span class="tx" data-t="E_0=\operatorname{null}(P)"></span></td><td>perpendicular to the plane; flattened to the origin</td><td><span class="tx" data-t="d-k=1"></span></td></tr>
+    </table>
+    <p>The eigenvalues form the diagonal matrix</p>
+    <div class="fx tx d" data-t="\Lambda=\begin{bmatrix}1&0&0\\0&1&0\\0&0&0\end{bmatrix}"></div>
+    <h3>5.2 Checks against the article</h3>
+    <p>The trace equals the sum of the eigenvalues (Section 3.2 of the article), and the determinant equals their product (Section 3.3):</p>
+    <div class="fx tx d" data-t="\operatorname{tr}(P)=1+1+0=2=k,\qquad \det(P)=1\cdot1\cdot0=0"></div>
+    <p>The determinant is zero because one eigenvalue is zero: <span class="tx" data-t="P"></span> is singular, since it flattens the perpendicular direction into the origin.</p>
+    <h3>5.3 Diagonalisation</h3>
+    <p>The matrix <span class="tx" data-t="P"></span> is symmetric and has <span class="tx" data-t="k+(d-k)=3"></span> independent eigenvectors, namely <span class="tx" data-t="u_1"></span>, <span class="tx" data-t="u_2"></span> and <span class="tx" data-t="u_3"></span>, which are orthonormal (Section 4.2). Collecting them as the columns of <span class="tx" data-t="Q"></span> gives the diagonalisation of the symmetric case (Section 6.4 of the article), <span class="tx" data-t="P=Q\Lambda Q^{\top}"></span>:</p>
+    <div class="fx tx d pl-xy" data-t="Q=\begin{bmatrix}u_1&u_2&u_3\end{bmatrix}=\begin{bmatrix}1&0&0\\0&1&0\\0&0&1\end{bmatrix},\qquad P=Q\Lambda Q^{\top}=\Lambda"></div>
+    <div class="fx d dyn pl-rd" data-dyn="q" hidden></div>
+    <div class="fx tx d pl-rd" hidden data-x="" data-t="P=Q\Lambda Q^{\top}"></div>
+    <p class="pl-xy">For the <span class="tx" data-t="xy"></span>-plane, <span class="tx" data-t="P"></span> is already diagonal, so <span class="tx" data-t="Q=I"></span>.</p>
+    <p class="pl-rd" hidden>For the chosen plane, <span class="tx" data-t="P"></span> is not diagonal, and <span class="tx" data-t="Q"></span> rotates the coordinate axes onto the plane and its normal.</p>
+    <div class="simcards end"><a class="simcard s0" href="#article"><span class="k">Article</span><span class="t">Eigenvectors and eigenvalues</span><span class="d">The general theory: definitions, finding eigenvalues, diagonalisation and matrix powers.</span><span class="go">&larr; Back</span></a><a class="simcard s2" href="#simulation2"><span class="k">Simulation 2</span><span class="t">Quadratic form on the unit circle</span><span class="d">Extreme values of x&#7488;Ax for a symmetric matrix.</span><span class="go">Open &rarr;</span></a></div>
+</article>
+
+<article class="article wide" id="sim2" hidden>
+    <a class="back" href="#article">&larr; Article</a>
+    <div class="eyebrow">Simulation 2</div>
+    <h1>Eigenvectors on a Quadric Surface</h1>
+    <p class="intro">This page uses a symmetric matrix and its quadratic form on the unit circle to illustrate the article. Scroll down for the explanations and the interactive plot. Drag the plot to rotate it, and pick a preset in the control panel.</p>
+    <div id="root2"></div>
+    <div class="simcards end"><a class="simcard s0" href="#article"><span class="k">Article</span><span class="t">Eigenvectors and eigenvalues</span><span class="d">The general theory: definitions, finding eigenvalues, diagonalisation and matrix powers.</span><span class="go">&larr; Back</span></a><a class="simcard s1" href="#simulation"><span class="k">Simulation 1</span><span class="t">Projection matrix</span><span class="d">Eigenvalues 0 and 1 of a projection onto a plane.</span><span class="go">Open &rarr;</span></a></div>
+</article>
+
+<script>
+    (function(){
+        'use strict';
+
+        /* fluid scale: 1 = reference viewport 1536x741 (CSS px); sizes are in rem and scale with the smaller ratio */
+        const U_=()=>Math.max(.55,Math.min(innerWidth/1536,innerHeight/741,1.4));
+        const FS=n=>Math.round(n*U_()*10)/10;
+        const applyScale=()=>document.documentElement.style.setProperty('--u',U_()+'px');
+        applyScale();
+        const $=id=>document.getElementById(id);
+        function showErr(m){const e=$('err');e.style.display='block';e.textContent='\u26a0 '+m;}
+        window.addEventListener('error',e=>showErr(e.message));
+
+        /* ---------- linear algebra ---------- */
+        const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+        const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
+        const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+        const mul=(v,s)=>[v[0]*s,v[1]*s,v[2]*s];
+        const norm=v=>Math.sqrt(dot(v,v));
+        const unit=v=>mul(v,1/norm(v));
+        const cross=(p,q)=>[p[1]*q[2]-p[2]*q[1],p[2]*q[0]-p[0]*q[2],p[0]*q[1]-p[1]*q[0]];
+        const O=[0,0,0];
+        function mulberry32(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+        /* ---------- the projection plane ---------- */
+        const state={plane:'xy',seed:3,az:.7};
+        let G=null;
+        function buildGeometry(){
+            let n;
+            if(state.plane==='xy')n=[0,0,1];
+            else{const r=mulberry32(state.seed*7919+11);
+                do{n=unit([r()*2-1,r()*2-1,r()*2-1]);}while(Math.abs(n[2])>.8||Math.abs(n[2])<.3);
+                if(n[2]<0)n=mul(n,-1);}
+            const h=Math.abs(n[2])>.9?[1,0,0]:[0,0,1];
+            const e1=unit(cross(n,h)),e2=cross(n,e1);
+            G={n,e1,e2,Pv:v=>sub(v,mul(n,dot(n,v)))};
+            const R=[.7280,.6857,0];                                  /* on-screen "right" for the default camera */
+            state.az=Math.atan2(dot(R,e2),dot(R,e1));                 /* in-plane direction that points to the right */
+        }
+        const uAt=az=>add(mul(G.e1,Math.cos(az)),mul(G.e2,Math.sin(az)));
+        const bVec=(az,phiDeg,L)=>{const p=phiDeg*Math.PI/180;return mul(add(mul(uAt(az),Math.cos(p)),mul(G.n,Math.sin(p))),L);};
+
+        /* ---------- plot helpers ---------- */
+        const FONT='Cambria Math, STIX Two Math, Times New Roman, serif';
+        const COL={b:'#79b8e8',pb:'#f2a58a',w:'#a99be0',plane:'#b9d7f2',zero:'#e02424',ink:'#5b6478'};
+        const E=6;
+        const ln=(a,b,color,width,dash)=>({type:'scatter3d',mode:'lines',x:[a[0],b[0]],y:[a[1],b[1]],z:[a[2],b[2]],
+            line:{color,width,dash:dash||'solid'},showlegend:false,hoverinfo:'skip'});
+        const tip=(p,label,color,size,pos,hov)=>({type:'scatter3d',mode:label?'markers+text':'markers',x:[p[0]],y:[p[1]],z:[p[2]],
+            text:label?[label]:undefined,textposition:pos||'top center',textfont:{size:FS(15),color,family:FONT},
+            marker:{size:size||5,color,line:{width:1,color:'#fff'}},showlegend:false,
+            hovertemplate:(hov||label||'')+'<extra></extra>',hoverlabel:{font:{family:FONT,size:FS(13)},align:'left'}});
+        const ring=(p,color,hov)=>({type:'scatter3d',mode:'markers',x:[p[0]],y:[p[1]],z:[p[2]],
+            marker:{size:11,color:'rgba(255,255,255,0)',line:{width:2.5,color}},showlegend:false,hovertemplate:hov+'<extra></extra>'});
+        const arrow=(v,color,label,width,hov,pos)=>[ln(O,v,color,width||8),tip(v,label,color,5,pos||'top center',hov)];
+        const axisLn=(v,color,width,dash)=>ln(mul(v,-E*1.2),mul(v,E*1.2),color,width||3,dash);
+        const planeMesh=opacity=>{
+            const R=E*.95,c=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([m,n])=>add(mul(G.e1,m*R),mul(G.e2,n*R)));
+            return[{type:'mesh3d',x:c.map(p=>p[0]),y:c.map(p=>p[1]),z:c.map(p=>p[2]),i:[0,0],j:[1,2],k:[2,3],color:COL.plane,
+                opacity:opacity||.3,flatshading:true,hoverinfo:'skip',showlegend:false},
+                {type:'scatter3d',mode:'lines',x:[...c.map(p=>p[0]),c[0][0]],y:[...c.map(p=>p[1]),c[0][1]],z:[...c.map(p=>p[2]),c[0][2]],
+                    line:{color:COL.plane,width:3},showlegend:false,hoverinfo:'skip'}];
+        };
+        const angleArc=(ub,up,r)=>{
+            const th=Math.acos(Math.max(-1,Math.min(1,dot(ub,up)))),pts=[];
+            for(let i=0;i<=24;i++){const s=i/24,a=Math.sin((1-s)*th)/Math.sin(th),b=Math.sin(s*th)/Math.sin(th);pts.push(mul(add(mul(ub,a),mul(up,b)),r));}
+            return[{type:'scatter3d',mode:'lines',x:pts.map(p=>p[0]),y:pts.map(p=>p[1]),z:pts.map(p=>p[2]),line:{color:COL.ink,width:6},showlegend:false,hoverinfo:'skip'},
+                tip(mul(unit(add(ub,up)),r+1.3),'\u03b8',COL.ink,2,'middle center','angle \u03b8 between b and Pb')];
+        };
+        const originDot=()=>({type:'scatter3d',mode:'markers',x:[0],y:[0],z:[0],marker:{size:6,color:COL.zero,line:{width:1,color:'#fff'}},
+            showlegend:false,hovertemplate:'0<extra></extra>'});
+        const layout=cam=>{
+            const ax=t=>({range:[-E,E],title:{text:t,font:{size:FS(13),family:FONT}},showticklabels:false,showbackground:false,
+                gridcolor:'#eef1f6',zerolinecolor:'#cfd6e2',zerolinewidth:2});
+            return{margin:{l:0,r:0,t:0,b:0},showlegend:false,uirevision:'keep',
+                scene:{xaxis:ax('x'),yaxis:ax('y'),zaxis:ax('z'),aspectmode:'cube',camera:cam}};
+        };
+
+        /* ---------- the figures ---------- */
+        const bNow=()=>bVec(state.az,42,4.6);
+        const cloud=(()=>{const r=mulberry32(5),pts=[];for(let i=0;i<110;i++){let p;do{p=[r()*2-1,r()*2-1,r()*2-1];}while(norm(p)>1);pts.push(mul(p,4.6));}return pts;})();
+        const xyz=P=>({x:P.map(p=>p[0]),y:P.map(p=>p[1]),z:P.map(p=>p[2])});
+        const cloudTrace=(P,color)=>({type:'scatter3d',mode:'markers',...xyz(P),marker:{size:4,color,line:{width:.5,color:'#fff'}},showlegend:false,hoverinfo:'skip'});
+
+        const FIGS=[
+            {id:'fig1',ids:['f1a','f1b'],build:[
+                    ()=>[...planeMesh(.18),cloudTrace(cloud,COL.b)],
+                    ()=>[...planeMesh(.3),cloudTrace(cloud.map(G.Pv),COL.pb)]]},
+            {id:'fig2',ids:['f2a','f2b'],build:[
+                    ()=>{const b=bNow(),pb=G.Pv(b);
+                        return[...planeMesh(.28),...arrow(b,COL.b,'b',8,'b','top center'),ln(b,pb,'#9aa5b8',4,'dash'),...arrow(pb,COL.pb,'Pb',9,'Pb','bottom center'),
+                            tip(mul(add(b,pb),.5),'e = b \u2212 Pb','#7d8aa0',2,'middle right','error e = b \u2212 Pb')];},
+                    ()=>{const b=bNow(),pb=G.Pv(b),ub=unit(b),up=unit(pb);
+                        return[...planeMesh(.18),axisLn(ub,COL.b,3,'dash'),axisLn(up,COL.pb,3,'dash'),...arrow(b,COL.b,'b',8,'b','top center'),...arrow(pb,COL.pb,'Pb',8,'Pb','bottom center'),...angleArc(ub,up,2.4)];}]},
+            {id:'fig3',ids:['f3'],build:[
+                    ()=>{const v=mul(uAt(state.az),4.4);
+                        return[...planeMesh(.28),ln(O,v,COL.b,9),tip(v,'v = Pv',COL.b,5,'top center','v, and Pv = v'),ring(v,COL.pb,'Pv = v')];}]},
+            {id:'fig4',ids:['f4'],build:[
+                    ()=>{const v=mul(G.n,3.8);
+                        return[...planeMesh(.28),...arrow(v,COL.b,'v',9,'v'),ln(v,O,'#9aa5b8',4,'dash'),tip(O,'Pv = 0',COL.zero,7,'bottom center','Pv = 0, the zero vector')];}]},
+        ];
+        const rendered=new Set();
+        const cams={};                                           /* one shared camera per figure */
+        function drawFig(f){
+            const cfg={displayModeBar:false,responsive:true};
+            cams[f.id]=cams[f.id]||{eye:{x:1.4,y:-1.5,z:.95}};
+            f.ids.forEach((id,i)=>Plotly.react(id,[...f.build[i](),originDot()],layout(cams[f.id]),cfg));
+            if(!rendered.has(f.id)){
+                rendered.add(f.id);
+                if(f.ids.length>1){let busy=false;
+                    f.ids.forEach((id,j)=>$(id).on('plotly_relayout',ev=>{
+                        if(busy||!ev['scene.camera'])return;
+                        cams[f.id]=ev['scene.camera'];busy=true;
+                        Plotly.relayout(f.ids[1-j],{'scene.camera':cams[f.id]}).then(()=>{busy=false;});
+                    }));}
+            }
+        }
+        function drawAll(){FIGS.forEach(f=>{if(rendered.has(f.id))drawFig(f);});}
+
+        /* render a figure the first time it scrolls into view (several WebGL plots on one page) */
+        function watchFigures(){
+            const io=new IntersectionObserver(es=>es.forEach(en=>{
+                if(en.isIntersecting){const f=FIGS.find(q=>q.id===en.target.id);if(f&&!rendered.has(f.id))drawFig(f);}
+            }),{rootMargin:'250px'});
+            FIGS.forEach(f=>io.observe($(f.id)));
+        }
+
+        /* ---------- plane switch ---------- */
+        const asc=n=>(Math.abs(n)<.0005?0:n).toFixed(2);
+        function applyPlaneText(){
+            const xy=state.plane==='xy';
+            document.querySelectorAll('.pl-xy').forEach(el=>{el.hidden=!xy;});
+            document.querySelectorAll('.pl-rd').forEach(el=>{el.hidden=xy;});
+            const nTex='('+G.n.map(asc).join(',\\ ')+')^{\\top}';
+            const pRows=[0,1,2].map(i=>[0,1,2].map(j=>asc((i===j?1:0)-G.n[i]*G.n[j])).join('&')).join('\\\\');
+            const e1Tex='e_1='+'('+G.e1.map(asc).join(',\\ ')+')^{\\top}';
+            const e2Tex='e_2='+'('+G.e2.map(asc).join(',\\ ')+')^{\\top}';
+            const Pm=[0,1,2].map(i=>[0,1,2].map(j=>(i===j?1:0)-G.n[i]*G.n[j]));
+            const vE=[0,1,2].map(i=>4*G.e1[i]+5*G.e2[i]);
+            const PvE=Pm.map(row=>row[0]*vE[0]+row[1]*vE[1]+row[2]*vE[2]);
+            const col=a=>'\\begin{bmatrix}'+a.map(asc).join('\\\\')+'\\end{bmatrix}';
+            const vN=G.n.map(x=>7*x);
+            const PvN=Pm.map(row=>row[0]*vN[0]+row[1]*vN[1]+row[2]*vN[2]);
+            const ex0vTex='v=7n='+col(vN);
+            const ex0Tex='Pv=\\begin{bmatrix}'+Pm.map(row=>row.map(asc).join('&')).join('\\\\')+'\\end{bmatrix}'+col(vN)+'\\approx'+col(PvN)+'=0\\cdot v';
+            const sp0Tex='E_0=\\{v:\\ Pv=0\\}=\\operatorname{span}\\left\\{u_3=n='+col(G.n)+'\\right\\}';
+            const qTex='Q=\\begin{bmatrix}u_1&u_2&u_3\\end{bmatrix}=\\begin{bmatrix}'+[0,1,2].map(i=>[G.e1[i],G.e2[i],G.n[i]].map(asc).join('&')).join('\\\\')+'\\end{bmatrix}';
+            const spTex='E_1=\\{v:\\ Pv=v\\}=\\operatorname{span}\\left\\{u_1='+col(G.e1)+',\\ u_2='+col(G.e2)+'\\right\\}';
+            const exvTex='v=4e_1+5e_2='+col(vE);
+            const exTex='Pv=\\begin{bmatrix}'+Pm.map(row=>row.map(asc).join('&')).join('\\\\')+'\\end{bmatrix}'+col(vE)+'\\approx'+col(PvE)+'=1\\cdot v';
+            const pTex='P=I-nn^{\\top}=\\begin{bmatrix}'+pRows+'\\end{bmatrix}';
+            document.querySelectorAll('[data-dyn]').forEach(el=>{
+                const t={n:nTex,e1:e1Tex,e2:e2Tex,exv:exvTex,ex:exTex,sp:spTex,ex0v:ex0vTex,ex0:ex0Tex,sp0:sp0Tex,q:qTex}[el.dataset.dyn]||pTex;
+                if(typeof katex==='undefined'){el.textContent=t;return;}
+                katex.render(t,el,{throwOnError:false,displayMode:el.classList.contains('d')});
+            });
+        }
+        document.addEventListener('click',e=>{
+            const t=e.target.closest('[data-plane]');if(!t)return;
+            state.plane=t.dataset.plane;
+            document.querySelectorAll('[data-plane]').forEach(b=>b.classList.toggle('on',b.dataset.plane===state.plane));
+            buildGeometry();applyPlaneText();drawAll();
+        });
+
+        /* ---------- article: formula boxes, KaTeX and routing ---------- */
+        document.querySelectorAll('.article .fx').forEach((el,i)=>{if(!el.classList.contains('res'))el.style.background='hsl('+((i*137.508)%360).toFixed(1)+',62%,93%)';});
+        document.querySelectorAll('.tx').forEach(el=>{
+            if(typeof katex==='undefined'){el.textContent=el.dataset.t;return;}
+            katex.render(el.dataset.t,el,{throwOnError:false,displayMode:el.classList.contains('d')});
+        });
+        function route(){
+            const h=location.hash,simOn=h==='#simulation',sim2On=h==='#simulation2';
+            $('article').hidden=simOn||sim2On;$('sim').hidden=!simOn;$('sim2').hidden=!sim2On;
+            if(sim2On)[60,400].forEach(ms=>setTimeout(()=>window.dispatchEvent(new Event('resize')),ms));
+            window.scrollTo(0,0);
+            if(simOn)setTimeout(()=>{FIGS.forEach(f=>{if(rendered.has(f.id))f.ids.forEach(id=>Plotly.Plots.resize($(id)));});},50);
+        }
+        window.addEventListener('hashchange',route);
+        let rz=null;
+        window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(applyScale,80);});
+        if(typeof Plotly==='undefined')showErr('Plotly failed to load (needs internet).');
+        else{buildGeometry();watchFigures();}
+        applyPlaneText();
+        route();
+    })();
+</script>
+<script>
+    /* Copy as LaTeX: when the selection contains rendered formulas, the clipboard gets the underlying
+       LaTeX ($...$ inline, $$...$$ display) instead of KaTeX's duplicated visual/MathML text. */
+    document.addEventListener('copy',function(e){
+        var sel=window.getSelection();
+        if(!sel||sel.isCollapsed||!sel.rangeCount)return;
+        var box=document.createElement('div');
+        for(var i=0;i<sel.rangeCount;i++)box.appendChild(sel.getRangeAt(i).cloneContents());
+        if(!box.querySelector('.katex'))return;
+        var tex=function(el){var a=el.querySelector('annotation[encoding="application/x-tex"]');return a?a.textContent:'';};
+        box.querySelectorAll('.katex-display').forEach(function(d){var t=tex(d);d.replaceWith(document.createTextNode(t?'\n$$'+t+'$$\n':''));});
+        box.querySelectorAll('.katex').forEach(function(k){var t=tex(k);k.replaceWith(document.createTextNode(t?'$'+t+'$':''));});
+        box.style.cssText='position:fixed;left:-99999px;top:0;width:60rem';
+        document.body.appendChild(box);
+        var text=box.innerText.replace(/\n{3,}/g,'\n\n'),html=box.innerHTML;
+        document.body.removeChild(box);
+        e.clipboardData.setData('text/plain',text);
+        e.clipboardData.setData('text/html',html);
+        e.preventDefault();
+    });
+</script>
+
+<script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+    const kx=(t,d)=>katex.renderToString(t,{throwOnError:false,displayMode:!!d});
+    const M=({t})=><span className="tx" dangerouslySetInnerHTML={{__html:kx(t)}}/>;
+    const D=({t,h,res})=><div className={res?'fx res':'fx'} style={res?undefined:{background:'hsl('+((h*137.508)%360).toFixed(1)+',62%,93%)'}} dangerouslySetInnerHTML={{__html:kx(t,true)}}/>;
+
+    function App() {
+        const [coeffs, setCoeffs] = useState({ a: 1.4, b: 0.4, c: 1.2, preset: 'bowl' });
+
+        const canvasRef = useRef(null);
+        const canvasRef2 = useRef(null);
+        const link = useRef({ busy: false });
+        const stateRef = useRef(coeffs);
+        stateRef.current = coeffs;
+
+        const computeEigens = (a, b, c) => {
+            const trace = a + c;
+            const det = a * c - (b/2) * (b/2);
+            const disc = Math.sqrt(Math.max(0, trace*trace / 4 - det));
+            const lambda1 = trace / 2 + disc;
+            const lambda2 = trace / 2 - disc;
+            let v1 = [1, 0], v2 = [0, 1];
+            if (Math.abs(b/2) > 1e-7) {
+                v1 = [b/2, lambda1 - a];
+                v2 = [b/2, lambda2 - a];
+            } else {
+                if (a >= c) { v1 = [1, 0]; v2 = [0, 1]; }
+                else { v1 = [0, 1]; v2 = [1, 0]; }
+            }
+            const norm1 = Math.hypot(v1[0], v1[1]) || 1;
+            const norm2 = Math.hypot(v2[0], v2[1]) || 1;
+            return {
+                lambda1,
+                lambda2,
+                v1: [v1[0] / norm1, v1[1] / norm1],
+                v2: [v2[0] / norm2, v2[1] / norm2]
+            };
+        };
+
+        const eigen = computeEigens(coeffs.a, coeffs.b, coeffs.c);
+
+        useEffect(() => {
+            const canvas = canvasRef.current;
+            const container = canvas.parentElement;
+
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf8f9fa);
+
+            const camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 100);
+            camera.position.set(0, 4.5, 5);
+
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            const controls = new THREE.OrbitControls(camera, canvas);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            link.current.R = { camera, controls };
+            controls.addEventListener('change', () => {
+                const o = link.current.L; if (!o || link.current.busy) return;
+                link.current.busy = true; o.camera.position.copy(camera.position).setLength(o.camera.position.length()); o.controls.update(); link.current.busy = false;
+            });
+
+            const grid = new THREE.GridHelper(4, 20, 0xdee2e6, 0xe9ecef);
+            scene.add(grid);
+
+            const discGeom = new THREE.BufferGeometry();
+            const vertices = [];
+            for (let i = 0; i <= 30; i++) {
+                for (let j = 0; j <= 64; j++) {
+                    vertices.push((i/30)*Math.cos(j/64*Math.PI*2), 0, (i/30)*Math.sin(j/64*Math.PI*2));
+                }
+            }
+            const indices = [];
+            for (let i = 0; i < 30; i++) {
+                for (let j = 0; j < 64; j++) {
+                    const c = i*65 + j, n = c + 65;
+                    indices.push(c, n, c+1);
+                    indices.push(c+1, n, n+1);
+                }
+            }
+            discGeom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            discGeom.setIndex(indices);
+
+            const surfaceMat = new THREE.MeshBasicMaterial({ color: 0x91a7ff, side: THREE.DoubleSide, transparent: true, opacity: 0.6 });
+            const surfaceMesh = new THREE.Mesh(discGeom, surfaceMat);
+            scene.add(surfaceMesh);
+
+            const boundaryLine = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x5f3dc4, linewidth: 3 }));
+            scene.add(boundaryLine);
+
+            const circlePts = [];
+            for (let i = 0; i <= 100; i++) {
+                circlePts.push(new THREE.Vector3(Math.cos(i/50*Math.PI), 0, Math.sin(i/50*Math.PI)));
+            }
+            const unitCircle = new THREE.Line(new THREE.BufferGeometry().setFromPoints(circlePts), new THREE.LineBasicMaterial({ color: 0xced4da }));
+            scene.add(unitCircle);
+
+            const dashN = 48;
+            const dashGeom = new THREE.BufferGeometry();
+            dashGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(dashN * 2 * 3), 3));
+            const dashLines = new THREE.LineSegments(dashGeom, new THREE.LineDashedMaterial({ color: 0xadb5bd, dashSize: 0.06, gapSize: 0.05 }));
+            dashLines.frustumCulled = false;
+            scene.add(dashLines);
+
+            const evLine1 = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x2b8a3e, linewidth: 4 }));
+            const evLine2 = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0xd9480f, linewidth: 4 }));
+            scene.add(evLine1, evLine2);
+
+            const markerGeom = new THREE.SphereGeometry(0.065, 20, 20);
+            const maxMarker1 = new THREE.Mesh(markerGeom, new THREE.MeshBasicMaterial({ color: 0x2b8a3e }));
+            const maxMarker2 = new THREE.Mesh(markerGeom, new THREE.MeshBasicMaterial({ color: 0x2b8a3e }));
+            const minMarker1 = new THREE.Mesh(markerGeom, new THREE.MeshBasicMaterial({ color: 0xd9480f }));
+            const minMarker2 = new THREE.Mesh(markerGeom, new THREE.MeshBasicMaterial({ color: 0xd9480f }));
+            scene.add(maxMarker1, maxMarker2, minMarker1, minMarker2);
+
+            const fontLoader = new THREE.FontLoader();
+            fontLoader.load('https://unpkg.com/three@0.128.0/examples/fonts/helvetiker_regular.typeface.json', (font) => {
+                const textMat = new THREE.MeshBasicMaterial({ color: 0x495057 });
+                const textGeom = new THREE.TextGeometry("Unit Circle Input Space (||x|| = 1)", { font, size: 0.09, height: 0.005 });
+                const textMesh = new THREE.Mesh(textGeom, textMat);
+                textMesh.position.set(-1.8, 0.01, 1.6);
+                textMesh.rotation.x = -Math.PI / 2;
+                scene.add(textMesh);
+            });
+
+            let reqId;
+            const animate = () => {
+                reqId = requestAnimationFrame(animate);
+                controls.update();
+
+                const { a, b, c } = stateRef.current;
+                const { lambda1, lambda2, v1, v2 } = computeEigens(a, b, c);
+
+                const pos = surfaceMesh.geometry.attributes.position;
+                for (let i = 0; i < pos.count; i++) {
+                    const x1 = pos.getX(i), x2 = pos.getZ(i);
+                    pos.setY(i, a*x1*x1 + b*x1*x2 + c*x2*x2);
+                }
+                pos.needsUpdate = true;
+
+                const boundaryPoints = [];
+                for (let i = 0; i <= 100; i++) {
+                    const ang = i / 50 * Math.PI, x1 = Math.cos(ang), x2 = Math.sin(ang);
+                    boundaryPoints.push(new THREE.Vector3(x1, a*x1*x1 + b*x1*x2 + c*x2*x2, x2));
+                }
+                boundaryLine.geometry.setFromPoints(boundaryPoints);
+
+                const dp = dashGeom.attributes.position;
+                for (let i = 0; i < dashN; i++) {
+                    const ang = i / dashN * Math.PI * 2, x1 = Math.cos(ang), x2 = Math.sin(ang);
+                    dp.setXYZ(2 * i, x1, 0, x2);
+                    dp.setXYZ(2 * i + 1, x1, a * x1 * x1 + b * x1 * x2 + c * x2 * x2, x2);
+                }
+                dp.needsUpdate = true;
+                dashLines.computeLineDistances();
+
+                evLine1.geometry.setFromPoints([new THREE.Vector3(-v1[0], 0.002, -v1[1]), new THREE.Vector3(v1[0], 0.002, v1[1])]);
+                evLine2.geometry.setFromPoints([new THREE.Vector3(-v2[0], 0.002, -v2[1]), new THREE.Vector3(v2[0], 0.002, v2[1])]);
+
+                maxMarker1.position.set(v1[0], lambda1, v1[1]);
+                maxMarker2.position.set(-v1[0], lambda1, -v1[1]);
+                minMarker1.position.set(v2[0], lambda2, v2[1]);
+                minMarker2.position.set(-v2[0], lambda2, -v2[1]);
+
+                renderer.render(scene, camera);
+            };
+            animate();
+
+            const handleResize = () => {
+                if (!container) return;
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            };
+            window.addEventListener('resize', handleResize);
+
+            return () => {
+                cancelAnimationFrame(reqId);
+                window.removeEventListener('resize', handleResize);
+            };
+        }, []);
+        useEffect(() => {
+            const canvas = canvasRef2.current;
+            const container = canvas.parentElement;
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf8f9fa);
+            const camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 100);
+            camera.position.set(0, 9.5, 11.5);
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            const controls = new THREE.OrbitControls(camera, canvas);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            link.current.L = { camera, controls };
+            controls.addEventListener('change', () => {
+                const o = link.current.R; if (!o || link.current.busy) return;
+                link.current.busy = true; o.camera.position.copy(camera.position).setLength(o.camera.position.length()); o.controls.update(); link.current.busy = false;
+            });
+            scene.add(new THREE.GridHelper(4, 20, 0xdee2e6, 0xe9ecef));
+
+            const geom = new THREE.BufferGeometry();
+            const vertices = [];
+            const R = 1.3, N = 36;
+            for (let i = 0; i <= N; i++) {
+                for (let j = 0; j <= N; j++) {
+                    vertices.push(-R + 2 * R * i / N, 0, -R + 2 * R * j / N);
+                }
+            }
+            const indices = [];
+            for (let i = 0; i < N; i++) {
+                for (let j = 0; j < N; j++) {
+                    const c0 = i * (N + 1) + j, n0 = c0 + N + 1;
+                    indices.push(c0, n0, c0 + 1);
+                    indices.push(c0 + 1, n0, n0 + 1);
+                }
+            }
+            geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            geom.setIndex(indices);
+            geom.setAttribute('color', new THREE.BufferAttribute(new Float32Array(vertices.length), 3));
+            const mesh = new THREE.Mesh(geom, new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }));
+            scene.add(mesh);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+            const sun = new THREE.DirectionalLight(0xffffff, 0.55);
+            sun.position.set(3, 8, 4);
+            scene.add(sun);
+            const wire = new THREE.Mesh(geom, new THREE.MeshBasicMaterial({ color: 0x5c6b8a, wireframe: true, transparent: true, opacity: 0.25 }));
+            scene.add(wire);
+            const stops = [[0.48, 0.64, 0.95], [0.94, 0.94, 0.98], [0.99, 0.70, 0.50]];
+
+            let reqId;
+            const animate = () => {
+                reqId = requestAnimationFrame(animate);
+                controls.update();
+                const { a, b, c } = stateRef.current;
+                const pos = mesh.geometry.attributes.position;
+                for (let i = 0; i < pos.count; i++) {
+                    const x1 = pos.getX(i), x2 = pos.getZ(i);
+                    pos.setY(i, a * x1 * x1 + b * x1 * x2 + c * x2 * x2);
+                }
+                pos.needsUpdate = true;
+                let lo = Infinity, hi = -Infinity;
+                for (let i = 0; i < pos.count; i++) { const y = pos.getY(i); if (y < lo) lo = y; if (y > hi) hi = y; }
+                const span = hi - lo || 1, col = geom.attributes.color;
+                for (let i = 0; i < pos.count; i++) {
+                    const t = (pos.getY(i) - lo) / span, k = t < 0.5 ? 0 : 1, u = t < 0.5 ? t * 2 : (t - 0.5) * 2;
+                    col.setXYZ(i, stops[k][0] + (stops[k + 1][0] - stops[k][0]) * u, stops[k][1] + (stops[k + 1][1] - stops[k][1]) * u, stops[k][2] + (stops[k + 1][2] - stops[k][2]) * u);
+                }
+                col.needsUpdate = true;
+                geom.computeVertexNormals();
+                renderer.render(scene, camera);
+            };
+            animate();
+
+            const handleResize = () => {
+                if (!container) return;
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            };
+            window.addEventListener('resize', handleResize);
+            return () => {
+                cancelAnimationFrame(reqId);
+                window.removeEventListener('resize', handleResize);
+            };
+        }, []);
+
+        const applyPreset = (type) => {
+            if (type === 'bowl') setCoeffs({ a: 1.4, b: 0.4, c: 1.2, preset: 'bowl' });
+            else if (type === 'saddle') setCoeffs({ a: 1.0, b: 2.2, c: -1.0, preset: 'saddle' });
+            else if (type === 'hill') setCoeffs({ a: -1.2, b: -0.6, c: -1.4, preset: 'hill' });
+        };
+
+        const { a, b, c } = coeffs;
+        const { lambda1: l1, lambda2: l2, v1, v2 } = eigen;
+        const fv = (v) => a * v[0] * v[0] + b * v[0] * v[1] + c * v[1] * v[1];
+        const n2 = (x) => x.toFixed(2), n3 = (x) => x.toFixed(3), n4 = (x) => x.toFixed(4);
+        const z3 = (x) => n3(Math.abs(x) < 5e-4 ? 0 : x);
+        const xe = [1, 2];
+        const aNum = [[a, b / 2], [b / 2, c]];
+        const exProd = String.raw`Ax=\begin{bmatrix}${n2(a)}&${n2(b / 2)}\\${n2(b / 2)}&${n2(c)}\end{bmatrix}\begin{bmatrix}1\\2\end{bmatrix}=\begin{bmatrix}(${n2(a)})\cdot1+(${n2(b / 2)})\cdot2\\(${n2(b / 2)})\cdot1+(${n2(c)})\cdot2\end{bmatrix}=\begin{bmatrix}${n2(a + b)}\\${n2(b / 2 + 2 * c)}\end{bmatrix}`;
+        const exDot = String.raw`x^{\top}Ax=1\cdot(${n2(a + b)})+2\cdot(${n2(b / 2 + 2 * c)})=${n2(a + 2 * b + 4 * c)}`;
+        const exPoly = String.raw`f(1,2)=a\cdot1^{2}+b\cdot1\cdot2+c\cdot2^{2}=(${n2(a)})+(${n2(2 * b)})+(${n2(4 * c)})=${n2(a + 2 * b + 4 * c)}`;
+        const sg = (x) => (x >= 0 ? '+' : '-') + '\\,' + Math.abs(x).toFixed(2);
+        const vec = (n, v) => String.raw`${n}=(${n3(v[0])},\ ${n3(v[1])})^{\top}`;
+        const sg3 =(x) => (x >= 0 ? '+' : '-') + Math.abs(x).toFixed(3);
+        const sub = (n, v) => String.raw`f(${n})=${n2(a)}(${n3(v[0])})^{2}\ ${sg(b)}(${n3(v[0])})(${n3(v[1])})\ ${sg(c)}(${n3(v[1])})^{2}=${n4(fv(v))}=\lambda_${n.slice(-1)}`;
+        const fTex = String.raw`f(x_1,x_2)=${n2(a)}\,x_1^{2}\ ${sg(b)}\,x_1x_2\ ${sg(c)}\,x_2^{2}`;
+        const aTex = String.raw`A=\begin{bmatrix}${n2(a)}&${n2(b / 2)}\\${n2(b / 2)}&${n2(c)}\end{bmatrix}`;
+        const tr = a + c, dt = a * c - (b / 2) * (b / 2);
+        const charTex = String.raw`\det\begin{bmatrix}${n2(a)}-\lambda&${n2(b / 2)}\\${n2(b / 2)}&${n2(c)}-\lambda\end{bmatrix}=\lambda^{2}-${n3(tr)}\lambda\ ${sg3(dt)}=0\ \Longrightarrow\ \lambda_1=${n3(l1)},\ \ \lambda_2=${n3(l2)}`;
+        const eigRaw = (l) => [b / 2, l - a];
+        const eigDir = (k, l, v) => { const q = eigRaw(l); return String.raw`(A-\lambda_${k}I)v=0\ \Longrightarrow\ (${n3(a - l)})\,x_1+${n3(b / 2)}\,x_2=0\ \Longrightarrow\ v\propto\left(\tfrac{b}{2},\ \lambda_${k}-a\right)=(${n3(q[0])},\ ${n3(q[1])}),\quad \|v\|=${n3(Math.hypot(q[0], q[1]))}`; };
+        const eigUnit = (k, v) => String.raw`v_${k}=\frac{v}{\|v\|}=(${n3(v[0])},\ ${n3(v[1])})^{\top}`;
+        const eigTex = (k, l, v) => String.raw`\begin{bmatrix}${n3(a - l)}&${n3(b / 2)}\\${n3(b / 2)}&${n3(c - l)}\end{bmatrix}v=0\ \Longrightarrow\ v_${k}=(${n3(v[0])},\ ${n3(v[1])})^{\top},\quad \|v_${k}\|=1`;
+
+        return (
+            <React.Fragment>
+                <h2>1. An Optimization Problem On A Quadric Surface</h2>
+                <h3>1.1 The quadric surface</h3>
+                <p>Consider a quadric surface, the graph of a quadratic polynomial in the variables <M t="x_1,\dots,x_d"/>. In two variables, the quadric used in the plot is</p>
+                <D h={31} t={String.raw`f(x_1,x_2)=a\,x_1^{2}+b\,x_1x_2+c\,x_2^{2}`}/>
+                <h3>1.2 The unit-length constraint</h3>
+                <p>The goal is to find the global maximum and the global minimum of the surface under a constraint. Here the constraint is unit length: the vector <M t="x=(x_1,\dots,x_d)^{\top}"/> must satisfy</p>
+                <D h={32} t={String.raw`x_1^{2}+x_2^{2}+\dots+x_d^{2}=\sum_{i=1}^{d}x_i^{2}=1`}/>
+                <p>For <M t="d=2"/>, this is the unit circle.</p>
+                <h3>1.3 The optimization problem</h3>
+                <p>The problem is therefore to maximise and to minimise the quadric <M t="f(x)"/> over all unit vectors:</p>
+                <D h={33} t={String.raw`\max_{\|x\|=1}f(x)\qquad\text{and}\qquad \min_{\|x\|=1}f(x)`}/>
+
+                <h2>2. The Matrix Form Of A Quadric</h2>
+                <h3>2.1 Defining x and A</h3>
+                <p>A quadric can be written with matrices. Let <M t="x"/> be the vector that holds the variables of the feature space, <M t="x=(x_1,x_2)^{\top}"/> (in general <M t="x_i"/> for <M t="i=1,\dots,n"/>). Let the matrix <M t="A"/> hold the coefficients <M t="a"/>, <M t="b"/> and <M t="c"/> in the following arrangement: <M t="a"/> and <M t="c"/>, the coefficients of the squared terms, go on the diagonal, and the coefficient <M t="b"/> of the cross term is split equally into the two off-diagonal entries:</p>
+                <D h={34} t={String.raw`A=\begin{bmatrix}a&b/2\\b/2&c\end{bmatrix}`}/>
+                <h3>2.2 Expanding the product</h3>
+                <p>Expand the product <M t="x^{\top}Ax"/> step by step. First, <M t="Ax"/>:</p>
+                <D h={35} t={String.raw`Ax=\begin{bmatrix}a&b/2\\b/2&c\end{bmatrix}\begin{bmatrix}x_1\\x_2\end{bmatrix}=\begin{bmatrix}a\,x_1+\tfrac{b}{2}x_2\\[2pt]\tfrac{b}{2}x_1+c\,x_2\end{bmatrix}`}/>
+                <p>Then multiply by <M t="x^{\top}"/> from the left:</p>
+                <D h={36} t={String.raw`x^{\top}Ax=x_1\left(a\,x_1+\tfrac{b}{2}x_2\right)+x_2\left(\tfrac{b}{2}x_1+c\,x_2\right)`}/>
+                <p>Multiply out and collect the terms:</p>
+                <D h={37} t={String.raw`x^{\top}Ax=a\,x_1^{2}+\tfrac{b}{2}x_1x_2+\tfrac{b}{2}x_1x_2+c\,x_2^{2}=a\,x_1^{2}+b\,x_1x_2+c\,x_2^{2}`}/>
+                <p>This is the original quadric, so <M t="f(x)=x^{\top}Ax"/>.</p>
+                <h3>2.3 Example: a numerical check</h3>
+                <p>For the matrix selected in the plot, <M t={aTex}/>, take the vector <M t="x=(1,2)^{\top}"/>. The matrix form gives</p>
+                <D h={38} t={exProd}/>
+                <D h={39} t={exDot}/>
+                <p>and the polynomial form gives the same value:</p>
+                <D h={40} t={exPoly}/>
+                <h3>2.4 Symmetry and higher dimensions</h3>
+                <p>The matrix <M t="A"/> has an important property: it is symmetric, <M t="A=A^{\top}"/>, because its two off-diagonal entries are equal. This holds for every quadric, since the coefficient of the cross term can always be split equally.</p>
+                <p>The same holds in <M t="n"/> dimensions. The vector <M t="x"/> is an <M t="n\times1"/> column vector, the matrix <M t="A"/> is an <M t="n\times n"/> symmetric matrix, and <M t="x^{\top}Ax"/> is a quadric in <M t="x_1,\dots,x_n"/>: the diagonal entries give the squared terms, and each pair of equal off-diagonal entries gives one cross term. The problem becomes</p>
+                <D h={41} t={String.raw`\max_{\|x\|=1}\ x^{\top}Ax\qquad\text{and}\qquad \min_{\|x\|=1}\ x^{\top}Ax`}/>
+
+                <h2>3. Eigenvalues And Eigenvectors</h2>
+                <h3>3.1 The eigenvalues give the extremes</h3>
+                <p>The extremes of the quadric are closely related to the eigenvalues and eigenvectors of <M t="A"/>. An <M t="n\times n"/> matrix has <M t="n"/> eigenvalues, counting repetitions (Section 3.1 of the article), and, because <M t="A"/> is symmetric, <M t="n"/> independent eigenvectors, which are even orthogonal (Section 6.4 of the article). Under the unit-length constraint, the largest eigenvalue is the global maximum of the quadric, and the smallest eigenvalue is the global minimum:</p>
+                <D res t={String.raw`\max_{\|x\|=1}\ x^{\top}Ax=\lambda_{\max},\qquad \min_{\|x\|=1}\ x^{\top}Ax=\lambda_{\min}`}/>
+                <p>This can be proved with a Lagrange function, or with the diagonalisation <M t="A=Q\Lambda Q^{\top}"/>. Neither proof is part of this simulation, so we use the result. For <M t="d=2"/>, we write the eigenvalues as <M t="\lambda_1\ge\lambda_2"/>, with eigenvectors <M t="v_1"/> and <M t="v_2"/>.</p>
+                <h3>3.2 The eigenvectors give the inputs</h3>
+                <p>The eigenvalues are the extreme values that <M t="f(x)"/> can produce. But which input <M t="x"/> produces them? That is given by the corresponding eigenvector. An eigenvector is only a direction (Section 2 of the article). Together with the unit-length constraint, it gives the points <M t="x"/> that produce the extreme: the unit-length points along the direction of <M t="v"/> are <M t="x=\pm v"/>, and <M t="f(\pm v)=\lambda"/> (Section 6.3 verifies this). Hence</p>
+                <ul>
+                    <li>the largest eigenvalue <M t="\lambda_1"/> is the global maximum, reached at <M t="x=\pm v_1"/>;</li>
+                    <li>the smallest eigenvalue <M t="\lambda_2"/> is the global minimum, reached at <M t="x=\pm v_2"/>.</li>
+                </ul>
+
+                <h2>4. Reading The Plot</h2>
+                <figure className="fig">
+                    <div className="selbar">
+                        <div>
+                            <div className="ct">Matrix</div>
+                            <M t={aTex}/>
+                        </div>
+                        <div>
+                            <div className="ct">Quadric</div>
+                            <M t={fTex}/>
+                        </div>
+                        <div>
+                            <div className="ct">Preset</div>
+                            <div className="presets">
+                                <button className={'pill' + (coeffs.preset === 'bowl' ? ' on' : '')} onClick={() => applyPreset('bowl')}>Bowl</button>
+                                <button className={'pill' + (coeffs.preset === 'saddle' ? ' on' : '')} onClick={() => applyPreset('saddle')}>Saddle</button>
+                                <button className={'pill' + (coeffs.preset === 'hill' ? ' on' : '')} onClick={() => applyPreset('hill')}>Hill</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="plots2">
+                        <div className="pv"><div className="ptitle">The surface f(x)</div><canvas ref={canvasRef2}></canvas></div>
+                        <div className="pv"><div className="ptitle">f(x) on the unit circle, with the eigenvectors</div><canvas ref={canvasRef}></canvas></div>
+                    </div>
+                    <div className="eigbar">
+                        <div className="ct">Eigensystem</div>
+                        <div className="erow"><span className="val mx"><M t={String.raw`\lambda_1=${n3(l1)}`}/></span><M t={vec('v_1', v1)}/></div>
+                        <div className="erow"><span className="val mn"><M t={String.raw`\lambda_2=${n3(l2)}`}/></span><M t={vec('v_2', v2)}/></div>
+                    </div>
+                    <figcaption>Left: the surface alone. Right: the same surface with the curve above the unit circle, the eigenvector directions and the extreme points. Drag either plot to rotate; the two rotate together.</figcaption>
+                </figure>
+                <h3>4.1 The input plane and the unit circle</h3>
+                <p>The grid on the ground is the input plane <M t="(x_1,x_2)"/>, shared by both plots. The grey circle drawn on it is the unit circle of Section 1.2, labelled in the right plot as the input space under the constraint. Only the points of this circle are allowed as inputs.</p>
+                <h3>4.2 The surface</h3>
+                <p>The blue surface is the quadric itself, the general view of <M t="f(x)"/>: its height above each point <M t="(x_1,x_2)"/> of the plane is the value <M t="f(x)"/>. The left plot shows this surface alone. It changes shape with the matrix: a bowl, a saddle or a hill.</p>
+                <h3>4.3 The purple curve</h3>
+                <p>In the right plot, the purple curve is the highlighted edge of the surface. It is obtained by putting the points of the unit circle into <M t="f"/> and plotting the resulting values as heights. The light grey dashed lines join each point of the grey circle to the point of the purple curve above it, so the length of each dashed line is the value <M t="f"/> at that input. A quadric alone traces a surface; together with the input constraint, it traces a curve on that surface. All admissible values of <M t="f"/> lie on this curve.</p>
+                <h3>4.4 The eigenvector directions</h3>
+                <p>The green and orange lines on the ground plane are the directions of the eigenvectors <M t="v_1"/> and <M t="v_2"/>. Each line cuts the unit circle at two opposite points, <M t="v"/> and <M t="-v"/>.</p>
+                <h3>4.5 The markers</h3>
+                <p>The markers lie above these four points, at the height of the surface. The green markers, at <M t="\pm v_1"/>, sit at the height <M t="\lambda_1"/>, the highest point of the purple curve. The orange markers, at <M t="\pm v_2"/>, sit at the height <M t="\lambda_2"/>, its lowest point. This is the result of Section 3.2 seen in the plot.</p>
+
+                <h2>5. The Rayleigh&ndash;Ritz Quotient</h2>
+                <h3>5.1 The quotient</h3>
+                <p>The problem solved above is known as the <span class="hl">Rayleigh&ndash;Ritz</span> problem. Its formal version uses the quotient</p>
+                <D h={43} t={String.raw`R(A,x)=\frac{x^{\top}Ax}{x^{\top}x}`}/>
+                <p>The quotient is defined for every non-zero vector <M t="x"/>, since dividing by <M t="x^{\top}x"/> removes the effect of length. Under the unit-length constraint, <M t="\|x\|=1"/>, the denominator equals <M t="1"/>, so the quotient is just its numerator, the quadric itself: <M t="R(A,x)=x^{\top}Ax=f(x)"/>.</p>
+                <h3>5.2 The interpretation</h3>
+                <p>The interpretation is simple: any value that a function takes under an input constraint is bounded by its extremes, the global minimum and the global maximum. Here the quotient is <M t="f"/>, and the extremes are the eigenvalues, the smallest and the largest. Stated formally:</p>
+                <D res t={String.raw`\lambda_{\min}\ \le\ \frac{x^{\top}Ax}{x^{\top}x}\ \le\ \lambda_{\max}\qquad\text{for every }x\neq0`}/>
+
+                <h2>6. Solving The Problem</h2>
+                <h3>6.1 Finding the eigenvalues</h3>
+                <p>For the matrix selected in the plot, <M t={aTex}/>, the equation <M t="Ax=\lambda x"/> has a non-zero solution only when <M t="A-\lambda I"/> is singular, that is, <M t="\det(A-\lambda I)=0"/> (Section 4 of the article):</p>
+                <D h={44} t={charTex}/>
+                <h3>6.2 Finding the eigenvectors</h3>
+                <p>For each eigenvalue, solve <M t="(A-\lambda I)v=0"/>. The first row gives the direction of <M t="v"/>, which is then scaled to unit length (Section 2 of the article). For <M t="\lambda_1"/>:</p>
+                <D h={45} t={eigDir(1, l1, v1)}/>
+                <D h={46} t={eigUnit(1, v1)}/>
+                <p>and for <M t="\lambda_2"/>:</p>
+                <D h={47} t={eigDir(2, l2, v2)}/>
+                <D h={48} t={eigUnit(2, v2)}/>
+                <h3>6.3 The two points on the unit circle</h3>
+                <p>An eigenvector <M t="v"/> gives a direction. Its line through the origin, <M t="\{tv:\ t\in\mathbb{R}\}"/>, meets the unit-length constraint <M t="\|tv\|=|t|\,\|v\|=1"/> only for <M t="t=\pm1"/>, since <M t="v"/> has unit length. The line therefore cuts the unit circle at exactly two points, which we define as</p>
+                <D h={49} t={String.raw`p_{+}=v,\qquad p_{-}=-v`}/>
+                <p>Both points are solutions. Using <M t="Av=\lambda v"/> and <M t="v^{\top}v=1"/>:</p>
+                <D h={50} t={String.raw`f(p_{+})=v^{\top}Av=v^{\top}(\lambda v)=\lambda\,v^{\top}v=\lambda`}/>
+                <D h={51} t={String.raw`f(p_{-})=(-v)^{\top}A(-v)=(-1)^{2}\,v^{\top}Av=\lambda`}/>
+                <p>So <M t="v"/> and <M t="-v"/> give the same value, the eigenvalue.</p>
+                <h3>6.4 Substituting the numbers</h3>
+                <p>For the selected matrix, the four points give:</p>
+                <D h={52} t={sub('v_1', v1)}/>
+                <D h={53} t={sub('-v_1', v1.map(x => -x))}/>
+                <D h={54} t={sub('v_2', v2)}/>
+                <D h={55} t={sub('-v_2', v2.map(x => -x))}/>
+                <p>The unit-length points along <M t="v_1"/> give the global maximum, and those along <M t="v_2"/> give the global minimum:</p>
+                <D res t={String.raw`f(\pm v_1)=\lambda_1=${n3(l1)}\ \text{(maximum)},\qquad f(\pm v_2)=\lambda_2=${n3(l2)}\ \text{(minimum)}`}/>
+
+                <h2>7. Summary</h2>
+                <h3>7.1 Extremes and where they occur</h3>
+                <p>Under the unit-length constraint, the quadric <M t="x^{\top}Ax"/> of a symmetric matrix takes its extreme values at the eigenvectors:</p>
+                <table className="sum">
+                    <thead><tr><th>Eigenvalue</th><th>Value of the quadric</th><th>Inputs</th></tr></thead>
+                    <tbody>
+                    <tr><td><M t={String.raw`\lambda_1=${n3(l1)}`}/></td><td>global maximum</td><td><M t={String.raw`x=\pm v_1`}/></td></tr>
+                    <tr><td><M t={String.raw`\lambda_2=${n3(l2)}`}/></td><td>global minimum</td><td><M t={String.raw`x=\pm v_2`}/></td></tr>
+                    </tbody>
+                </table>
+                <p>Every other unit vector gives a value between the two, as the Rayleigh&ndash;Ritz quotient states.</p>
+                <h3>7.2 Checks against the article</h3>
+                <p>The trace equals the sum of the eigenvalues (Section 3.2 of the article), and the determinant equals their product (Section 3.3):</p>
+                <D h={56} t={String.raw`\operatorname{tr}(A)=a+c=${n3(tr)}=\lambda_1+\lambda_2=${n3(l1 + l2)}`}/>
+                <D h={57} t={String.raw`\det(A)=ac-\tfrac{b^{2}}{4}=${n3(dt)}=\lambda_1\lambda_2=${n3(l1 * l2)}`}/>
+                <p>Since <M t="A"/> is symmetric, the two eigenvectors are orthogonal:</p>
+                <D h={58} t={String.raw`v_1^{\top}v_2=(${n3(v1[0])})(${n3(v2[0])})+(${n3(v1[1])})(${n3(v2[1])})=${z3(v1[0] * v2[0] + v1[1] * v2[1])}`}/>
+                <h3>7.3 Diagonalisation</h3>
+                <p>Collecting the orthonormal eigenvectors as the columns of <M t="Q"/> gives the diagonalisation of the symmetric case (Section 6.4 of the article), <M t="A=Q\Lambda Q^{\top}"/>:</p>
+                <D h={59} t={String.raw`Q=\begin{bmatrix}v_1&v_2\end{bmatrix}=\begin{bmatrix}${n3(v1[0])}&${n3(v2[0])}\\${n3(v1[1])}&${n3(v2[1])}\end{bmatrix},\qquad \Lambda=\begin{bmatrix}${n3(l1)}&0\\0&${n3(l2)}\end{bmatrix}`}/>
+            </React.Fragment>
+        );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root2')).render(<App />);
+</script>
+<script>
+    (function(){
+        if(location.protocol!=='file:')return;
+        document.querySelectorAll('.ref .vid[data-id]').forEach(function(v){
+            var id=v.getAttribute('data-id');
+            v.innerHTML='<a class="thumb" href="https://youtu.be/'+id+'" target="_blank" rel="noopener" aria-label="Watch on YouTube"><img src="https://img.youtube.com/vi/'+id+'/hqdefault.jpg" alt=""><span>&#9654;</span></a>';
+        });
+    })();
+</script>
+</body>
+</html>

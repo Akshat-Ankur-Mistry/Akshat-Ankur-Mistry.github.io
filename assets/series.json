@@ -86,6 +86,15 @@
           { "text": "How Two Neurons Solve the XOR Problem", "url": "illustration/machine-learning/how-two-neurons-solve-xor-problem/index.html" },
           { "text": "Byte-Pair-Encoding (BPE) Tokenization - Training + Encoding Simulator", "url": "illustration/machine-learning/bpe-tokenization-simulator/index.html" }
         ]
+      },
+      {
+        "heading": "Eigen's",
+        "description": "Exploration of 'eigenvalue', 'eigenvector', 'eigenspace', and Principle Components",
+        "links": [
+          { "text": "Quick Article", "url": "illustration/eigens/eigenvalue-and-eigenvector/index.html" },
+          { "text": "Eigenvectors of a Projection Matrix", "url": "illustration/eigens/eigenvalue-and-eigenvector/index.html#simulation" },
+          { "text": "Eigenvectors on a Quadric Surface", "url": "illustration/eigens/eigenvalue-and-eigenvector/index.html#simulation2" }
+        ]
       }
     ]
   }
