@@ -73,10 +73,11 @@
     "groups": [
       {
         "heading": "Certifications",
-        "description": "Targeted sample questions designed to support concept revision, knowledge assessment, and certification exam preparation. These resources are intended as focused practice materials, not comprehensive study guides.",
+        "description": "I prepared using a mix of paid and unpaid questions. Below is a collection of a few hundred from the unpaid sources, alongside several LLM authored.",
         "links": [
-          { "text": "Claude Certified Architect - Foundations (CCAR-F) | Domain 3 Sample Questions", "url": "illustration/ccar-f/domain-3/index.html" },
-          { "text": "Claude Certified Associate - Foundations (CCAO-F) | Complete Question Set", "url": "illustration/ccao-f/index.html" }
+          { "text": "Claude Certified Associate - Foundations (CCAO-F) | Complete Coverage", "url": "illustration/ccao-f/index.html" },
+          { "text": "Claude Certified Developer - Foundations (CCDV-F) | Complete Coverage", "url": "illustration/ccdv-f/index.html" },
+          { "text": "Claude Certified Architect - Foundations (CCAR-F) | Domain 3 Coverage", "url": "illustration/ccar-f/domain-3/index.html" }
         ]
       },
       {
