@@ -77,7 +77,8 @@
         "links": [
           { "text": "Claude Certified Associate - Foundations (CCAO-F) | Complete Coverage", "url": "illustration/ccao-f/index.html" },
           { "text": "Claude Certified Developer - Foundations (CCDV-F) | Complete Coverage", "url": "illustration/ccdv-f/index.html" },
-          { "text": "Claude Certified Architect - Foundations (CCAR-F) | Domain 3 Coverage", "url": "illustration/ccar-f/domain-3/index.html" }
+          { "text": "Claude Certified Architect - Foundations (CCAR-F) | Domain 3 Coverage", "url": "illustration/ccar-f/domain-3/index.html" },
+          { "text": "Claude Certified Architect - PROFESSIONAL (CCAR-P) | Complete Coverage", "url": "illustration/ccar-p/index.html" }
         ]
       },
       {
