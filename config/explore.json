@@ -12,20 +12,32 @@
     "title": "Promoted",
     "items": [
       {
-        "label": "Claude 101: The Foundation to CCA-F",
-        "link": "https://medium.com/@akshat.mistry/claude-101-the-foundation-to-cca-f-7d4243e42d45"
+        "label": "AIF-C01 · Part 9 · Polly and Rekognition",
+        "link": "https://www.linkedin.com/pulse/aif-c01-part-9-amazon-polly-rekognition-akshat-mistry-fo6ef/"
+      },
+      {
+        "label": "AIF-C01 · Part 10 · Lex, Personalize and Textract",
+        "link": "https://www.linkedin.com/pulse/aif-c01-part-10-amazon-lex-personalize-textract-akshat-mistry-oawrf/"
+      },
+      {
+        "label": "AIF-C01 · Part 11 · Kendra, Augmented AI, medical services",
+        "link": "https://www.linkedin.com/pulse/aif-c01-part-11-amazon-kendra-augmented-ai-amazons-medical-mistry-l3xcf/"
+      },
+      {
+        "label": "CCAO-F practice questions",
+        "link": "illustration/ccao-f/index.html"
+      },
+      {
+        "label": "CCDV-F practice questions",
+        "link": "illustration/ccdv-f/index.html"
+      },
+      {
+        "label": "CCAR-F practice questions · Domain 3",
+        "link": "illustration/ccar-f/domain-3/index.html"
       },
       {
         "label": "CCAR-P practice questions",
         "link": "illustration/ccar-p/index.html"
-      },
-      {
-        "label": "Byte-Pair Encoding, simulated",
-        "link": "illustration/machine-learning/bpe-tokenization-simulator/index.html"
-      },
-      {
-        "label": "Eigenvectors, explained",
-        "link": "illustration/eigens/eigenvalue-and-eigenvector/index.html"
       }
     ]
   },
@@ -33,42 +45,117 @@
     {
       "id": "articles",
       "title": "Articles",
-      "description": "Essays on machine learning and AI engineering, published on Medium and LinkedIn.",
+      "description": "Essays on AI engineering and certification prep, on LinkedIn and Medium.",
       "groups": [
         {
-          "title": "CCAR-F Study Series",
+          "title": "AWS AIF-C01 Preparation",
           "items": [
             {
-              "title": "Claude 101: The Foundation to CCA-F",
+              "title": "AIF-C01 · Part 1 · Cloud basics",
+              "link": "https://www.linkedin.com/pulse/aws-certified-ai-practitioner-aif-c01-cloud-basics-akshat-mistry-vpbvf/"
+            },
+            {
+              "title": "AIF-C01 · Part 2 · AWS global infrastructure",
+              "link": "https://www.linkedin.com/pulse/aws-certified-ai-practitioner-aif-c01-global-akshat-mistry-sa1vf/"
+            },
+            {
+              "title": "AIF-C01 · Part 3 · Foundation models, customization and Amazon Bedrock",
+              "link": "https://www.linkedin.com/pulse/aws-certified-ai-practitioner-aif-c01-part-3-models-amazon-mistry-n4jsf/"
+            },
+            {
+              "title": "AIF-C01 · Part 4 · How a model picks the next token",
+              "link": "https://www.linkedin.com/pulse/aws-certified-ai-practitioner-aif-c01-part-4-how-model-akshat-mistry-nf8of/"
+            },
+            {
+              "title": "AIF-C01 · Part 5 · Choosing and evaluating an FM, and vector stores",
+              "link": "https://www.linkedin.com/pulse/aws-certified-ai-practitioner-aif-c01-part-5-choice-fm-akshat-mistry-otcxf/"
+            },
+            {
+              "title": "AIF-C01 · Part 6 · Bedrock Agents and the CloudWatch family",
+              "link": "https://www.linkedin.com/pulse/aws-certified-ai-practitioner-aif-c01-part-6-amazon-bedrock-mistry-c6dkf/"
+            },
+            {
+              "title": "AIF-C01 · Part 7 · Amazon Comprehend family",
+              "link": "https://www.linkedin.com/pulse/aif-c01-part-7-amazon-comprehend-family-akshat-mistry-5c0ef/"
+            },
+            {
+              "title": "AIF-C01 · Part 8 · Amazon Translate and Transcribe",
+              "link": "https://www.linkedin.com/pulse/copy-aif-c01-part-8-amazon-translate-transcribe-akshat-mistry-tifof/"
+            },
+            {
+              "title": "AIF-C01 · Part 9 · Amazon Polly and Rekognition",
+              "link": "https://www.linkedin.com/pulse/aif-c01-part-9-amazon-polly-rekognition-akshat-mistry-fo6ef/"
+            },
+            {
+              "title": "AIF-C01 · Part 10 · Amazon Lex, Personalize and Textract",
+              "link": "https://www.linkedin.com/pulse/aif-c01-part-10-amazon-lex-personalize-textract-akshat-mistry-oawrf/"
+            },
+            {
+              "title": "AIF-C01 · Part 11 · Amazon Kendra, Augmented AI and medical services",
+              "link": "https://www.linkedin.com/pulse/aif-c01-part-11-amazon-kendra-augmented-ai-amazons-medical-mistry-l3xcf/"
+            }
+          ]
+        },
+        {
+          "title": "Anthropic Architect Foundations (CCAR-F) Preparation",
+          "items": [
+            {
+              "title": "CCAR-F · Claude 101: the foundation",
               "link": "https://medium.com/@akshat.mistry/claude-101-the-foundation-to-cca-f-7d4243e42d45"
             },
             {
-              "title": "Part-II | The Seven 'stop_reason' Values",
+              "title": "CCAR-F · Part 2 · The seven stop_reason values",
               "link": "https://medium.com/@akshat.mistry/part-ii-the-seven-stop-reason-values-b0626f486d1b"
             },
             {
-              "title": "Part III | 'tool_use', End to End: The Agentic Loop in Three Iterations",
+              "title": "CCAR-F · Part 3 · tool_use and the agentic loop",
               "link": "https://medium.com/@akshat.mistry/tool-use-end-to-end-the-agentic-loop-in-three-iterations-87cde7765dfc"
             },
             {
-              "title": "Part IV | Multi-Agent Coordination: The Hub-and-Spoke Architecture",
+              "title": "CCAR-F · Part 4 · Multi-agent hub-and-spoke",
               "link": "https://medium.com/@akshat.mistry/part-iv-multi-agent-coordination-the-hub-and-spoke-architecture-529ad62d10c7"
             },
             {
-              "title": "Part V | Multi-Step Workflows: Enforcement and Handoff Patterns",
+              "title": "CCAR-F · Part 5 · Multi-step workflows: enforcement and handoff",
               "link": "https://medium.com/@akshat.mistry/part-v-multi-step-workflows-enforcement-and-handoff-patterns-106f676d799f"
             },
             {
-              "title": "Part VI | Session State, Resumption, and Forking",
+              "title": "CCAR-F · Part 6 · Session state, resumption and forking",
               "link": "https://medium.com/@akshat.mistry/part-vi-session-state-resumption-and-forking-3ff40f4d48d9"
             },
             {
-              "title": "Part VII | Tool Design and MCP Integration",
+              "title": "CCAR-F · Part 7 · Tool design and MCP",
               "link": "https://medium.com/@akshat.mistry/part-vii-tool-design-and-mcp-integration-cf0147c91146"
             },
             {
-              "title": "Part VIII | Claude Code Configuration & Workflows",
+              "title": "CCAR-F · Part 8 · Claude Code configuration and workflows",
               "link": "https://medium.com/@akshat.mistry/part-viii-cca-f-domain-3-claude-code-configuration-workflows-91959a6f5dd1"
+            }
+          ]
+        },
+        {
+          "title": "Anthropic Architect Professional (CCAR-P) Preparation",
+          "items": [
+            {
+              "title": "CCAR-P · Choosing the right pattern: design decisions to defend",
+              "link": "https://www.linkedin.com/pulse/choosing-right-pattern-design-decisions-defend-ccar-p-akshat-mistry-vvbff"
+            },
+            {
+              "title": "CCAR-P · Design patterns: quick revision",
+              "link": "https://lnkd.in/p/dJqsYi3C"
+            },
+            {
+              "title": "CCAR-P · Domain 1 · Multi-agent systems and architectural value",
+              "link": "https://www.linkedin.com/pulse/multi-agent-systems-architectural-value-ccar-p-domain-1-akshat-mistry-hb3cf"
+            }
+          ]
+        },
+        {
+          "title": "Reflections",
+          "items": [
+            {
+              "title": "What four Claude certifications changed · Prompts vs code enforcement",
+              "link": "https://lnkd.in/p/dHFZA7Z9"
             }
           ]
         },
@@ -76,7 +163,7 @@
           "title": "Machine Learning Units",
           "items": [
             {
-              "title": "The Artificial Neuron: A Field Guide",
+              "title": "Artificial neuron · Field guide",
               "link": "https://medium.com/@akshat.mistry/the-artificial-neuron-a-field-guide-354a45612744"
             }
           ]
@@ -85,19 +172,19 @@
           "title": "From Text to Learned Representations",
           "items": [
             {
-              "title": "Overview | Part-1 | From Words to Vectors",
+              "title": "Text representations · Part 1 · From words to vectors",
               "link": "https://medium.com/@akshat.mistry/from-words-to-vectors-a905d8ff07f5"
             },
             {
-              "title": "Overview | Part-2 | ELMo, Functionally Explained",
+              "title": "Text representations · Part 2 · ELMo explained",
               "link": "https://medium.com/@akshat.mistry/elmo-functionally-explained-0becc59ff40d"
             },
             {
-              "title": "DeepDive | Part-3 | Byte-Pair Encoding (BPE) Tokenizers",
+              "title": "Text representations · Part 3 · Byte-pair encoding (BPE) tokenizers",
               "link": "https://medium.com/@akshat.mistry/byte-pair-encoding-bpe-tokenizers-c6f0813e6a61"
             },
             {
-              "title": "DeepDive | Part-4 | Token IDs Are Labels: Why One-Hot Encoding Removes False Geometry",
+              "title": "Text representations · Part 4 · Token IDs, one-hot encoding and false geometry",
               "link": "https://medium.com/@akshat.mistry/token-ids-are-labels-why-one-hot-encoding-removes-false-geometry-855f7e78072e"
             }
           ]
@@ -106,26 +193,26 @@
     },
     {
       "id": "open-questionnaires",
-      "title": "Open-Questionnaires",
-      "description": "Free, publicly available sample questions, gathered for certification preparation.",
+      "title": "FREE-Questionnaires",
+      "description": "Free public practice questions, aggregated in one place.",
       "groups": [
         {
-          "title": "Certifications",
+          "title": "Anthropic Claude · FREE Practice Questions",
           "items": [
             {
-              "title": "Claude Certified Associate - Foundations (CCAO-F) | Complete Coverage",
+              "title": "CCAO-F · Associate (Foundations) · 200+ FREE Practice Questions",
               "link": "illustration/ccao-f/index.html"
             },
             {
-              "title": "Claude Certified Developer - Foundations (CCDV-F) | Complete Coverage",
+              "title": "CCDV-F · Developer (Foundations) · 230+ FREE Practice Questions",
               "link": "illustration/ccdv-f/index.html"
             },
             {
-              "title": "Claude Certified Architect - Foundations (CCAR-F) | Domain 3 Coverage",
+              "title": "CCAR-F · Architect (Foundations) · Domain 3 coverage",
               "link": "illustration/ccar-f/domain-3/index.html"
             },
             {
-              "title": "Claude Certified Architect - PROFESSIONAL (CCAR-P) | Complete Coverage",
+              "title": "CCAR-P · Architect (Professional) · 500 FREE Practice Questions",
               "link": "illustration/ccar-p/index.html"
             }
           ]
@@ -135,17 +222,17 @@
     {
       "id": "illustrations",
       "title": "Illustrations",
-      "description": "Interactive aids for the articles, and illustrations that stand on their own.",
+      "description": "Interactive aids for the articles, or standalone illustrations.",
       "groups": [
         {
           "title": "Machine Learning Fundamentals",
           "items": [
             {
-              "title": "How Two Neurons Solve the XOR Problem",
+              "title": "XOR problem · How two neurons solve it",
               "link": "illustration/machine-learning/how-two-neurons-solve-xor-problem/index.html"
             },
             {
-              "title": "Byte-Pair-Encoding (BPE) Tokenization - Training + Encoding Simulator",
+              "title": "BPE tokenization · Training and encoding simulator",
               "link": "illustration/machine-learning/bpe-tokenization-simulator/index.html"
             }
           ]
@@ -154,15 +241,15 @@
           "title": "Eigen's",
           "items": [
             {
-              "title": "Quick Article",
+              "title": "Eigenvalues and eigenvectors · Quick article",
               "link": "illustration/eigens/eigenvalue-and-eigenvector/index.html"
             },
             {
-              "title": "Eigenvectors of a Projection Matrix",
+              "title": "Eigenvectors · Projection matrix simulation",
               "link": "illustration/eigens/eigenvalue-and-eigenvector/index.html#simulation"
             },
             {
-              "title": "Eigenvectors on a Quadric Surface",
+              "title": "Eigenvectors · Quadric surface simulation",
               "link": "illustration/eigens/eigenvalue-and-eigenvector/index.html#simulation2"
             }
           ]
