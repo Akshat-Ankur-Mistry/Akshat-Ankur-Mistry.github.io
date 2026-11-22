@@ -1,38 +1,97 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Writing - Akshat Mistry</title>
-    <meta name="description" content="Essays on machine learning foundations and AI tooling, grouped by topic. Hosted on Medium." />
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="styles.css" />
-    <script>
-        document.documentElement.classList.add('js');
-    </script>
+  <meta charset="UTF-8" />
+  <!-- fixed 1280px-wide layout: phones show the desktop view, scaled to fit -->
+  <meta name="viewport" content="width=1280" />
+  <title>Explore - Akshat Mistry</title>
+  <meta name="description" content="Articles, open questionnaires and interactive illustrations by Akshat Mistry." />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="assets/site.css?v=20261123d" />
+  <script>
+    document.documentElement.classList.add('js');
+  </script>
 </head>
-<body>
+<body class="deck explore">
 <header class="nav">
-    <div class="nav-inner container">
-        <a class="nav-mark" href="index.html">Akshatmistry.</a>
-    </div>
+  <div class="nav-inner container">
+    <a class="nav-mark" href="index.html" data-wordmark data-name="Mistry Akshat Ankur"><span class="wm" aria-hidden="true"></span></a>
+    <nav class="nav-links" id="nav-links" aria-label="Primary"></nav>
+  </div>
 </header>
-<main>
-    <section class="explore container">
-        <header class="explore-head">
-            <p class="eyebrow">Writing</p>
-            <h1>Essays, hosted on Medium</h1>
-            <p class="explore-intro">
-                Grouped by series below. Every link opens the full piece on Medium.
-            </p>
-        </header>
-        <! - Populated at runtime from assets/series.json - see content.js >
-        <div id="series-archive"></div>
-    </section>
+
+<main class="xp" id="xp-main">
+  <section class="xp-hero" id="xp-hero">
+    <h1 class="xp-title" id="xp-title">Explore</h1>
+
+    <!-- a black pill that opens out into a search field on click -->
+    <div class="xp-search" id="xp-search" role="search">
+      <button type="button" class="xp-open" id="xp-open" aria-label="Open search"></button>
+      <svg class="xp-ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg>
+      <span class="xp-label">Search</span>
+      <input class="xp-input" id="xp-input" type="text" placeholder="Search titles" autocomplete="off" spellcheck="false" aria-label="Search titles" />
+      <button type="button" class="xp-clear" id="xp-clear" aria-label="Clear search" hidden>&times;</button>
+    </div>
+
+    <!-- hints (direct links): shown while the field is open and empty -->
+    <div class="xp-hints" id="xp-hints" hidden></div>
+
+    <!-- suggestions appear here, in their own box -->
+    <div class="xp-results" id="xp-results" hidden></div>
+  </section>
+
+  <!-- the category boxes (built from config/explore.json) -->
+  <div class="xp-cats" id="xp-cats"></div>
+
+  <!-- the Promoted box -->
+  <aside class="xp-promo" id="xp-promo"></aside>
+
+  <!-- one category, opened in full: details on the left, every item on the right -->
+  <section class="xp-view" id="xp-view" hidden>
+    <div class="xp-view-side">
+      <button type="button" class="xp-back" id="xp-back">
+        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 10H4M9 5l-5 5 5 5"/></svg>
+        Explore
+      </button>
+      <h2 class="xp-view-title" id="xp-view-title"></h2>
+      <p class="xp-view-desc" id="xp-view-desc"></p>
+      <p class="xp-view-count" id="xp-view-count"></p>
+      <div class="xp-modes" role="group" aria-label="View">
+        <button type="button" class="xp-mode is-on" id="xp-mode-list" aria-pressed="true">
+          <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14"/></svg>
+          List
+        </button>
+        <button type="button" class="xp-mode" id="xp-mode-tiles" aria-pressed="false">
+          <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="11" y="3" width="6" height="6" rx="1"/><rect x="3" y="11" width="6" height="6" rx="1"/><rect x="11" y="11" width="6" height="6" rx="1"/></svg>
+          Tiles
+        </button>
+      </div>
+      <div class="xp-filter">
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg>
+        <input id="xp-filter" type="text" autocomplete="off" spellcheck="false" aria-label="Filter this list" />
+      </div>
+    </div>
+    <div class="xp-view-list" id="xp-view-list"></div>
+  </section>
 </main>
-<script src="script.js"></script>
-<script src="content.js"></script>
+
+<div class="about-modal-backdrop" id="about-modal-backdrop" hidden>
+  <div class="about-modal-panel" role="dialog" aria-modal="true" aria-labelledby="about-modal-name">
+    <button type="button" class="about-modal-close" data-close-about aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round" />
+      </svg>
+    </button>
+    <p class="about-modal-name" id="about-modal-name"></p>
+    <div class="about-modal-scroll">
+      <div id="about-modal-body"></div>
+      <div class="about-modal-contacts" id="about-contacts"></div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/site.js?v=20261123d"></script>
 </body>
 </html>

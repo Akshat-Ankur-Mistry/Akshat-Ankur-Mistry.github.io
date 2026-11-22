@@ -1,0 +1,2798 @@
+/*
+Two families, deliberately: nav/body/UI text stays on the same system-font
+approach apple.com uses (-apple-system/BlinkMacSystemFont gives Mac/iOS
+visitors real SF Pro for free, since SF Pro itself can't be shipped as a
+webfont off Apple platforms; Inter is the fallback for everyone else). The
+hero headline gets its own serif - matching the reference's editorial
+headline-vs-sans-UI pairing - via IBM Plex Serif.
+*/
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Inter+Tight:wght@300..800&family=IBM+Plex+Serif:wght@400;500&display=swap');
+
+:root {
+    /* headlines, wordmark, big numbers: Inter Tight (a tighter, more refined cut of Inter, variable weight 300-800).
+    UI text stays on Inter / the system font below. To try another look, change only this line. */
+    --font-head: 'Inter Tight', 'Helvetica Neue', Arial, 'Liberation Sans', sans-serif;
+    --bg: #ffffff;
+    --panel: #eae9e4;
+    --ink: #1b1b1a;
+    --ink-soft: #625f58;
+    --ink-faint: #96938a;
+    --line: rgba(27, 27, 26, 0.1);
+    --line-strong: rgba(27, 27, 26, 0.2);
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-display: 'IBM Plex Serif', 'Iowan Old Style', Georgia, serif;
+    --font-body: var(--font-sans);
+    --text-xs: 0.75rem;
+    --text-sm: 0.9rem;
+    --text-base: 1.05rem;
+    --text-md: 1.2rem;
+    --text-lg: 1.5rem;
+    --text-xl: 2rem;
+    --text-2xl: 2.75rem;
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.5rem;
+    --space-6: 2.25rem;
+    --space-7: 3.25rem;
+    --space-8: 4.5rem;
+    --radius-sm: 10px;
+    --radius-md: 20px;
+    --radius-lg: 32px;
+    --radius-pill: 999px;
+    --measure: 60ch;
+    --nav-h: 4.5rem;
+    --blue: #4169e1;
+    --dur-fast: 160ms;
+    --dur-med: 420ms;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+    -webkit-text-size-adjust: 100%;
+    /* the reduced-motion block below already forces this back to auto -
+    this is the smooth-scroll behavior it was written to guard against. */
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: 1.6;
+}
+
+h1,
+h2,
+h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    text-wrap: balance;
+    margin: 0;
+}
+
+p {
+    margin: 0;
+}
+
+a {
+    color: inherit;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+
+.container {
+    width: 100%;
+    max-width: 78rem;
+    margin-inline: auto;
+    padding-inline: var(--space-5);
+}
+
+:focus-visible {
+    outline: 2.5px solid var(--ink);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+::selection {
+    background: rgba(247, 216, 155, 0.85);
+    color: #0a0a0a;
+}
+
+.eyebrow {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+}
+
+/* ---------- progressive-enhancement reveal ---------- */
+.js .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity var(--dur-med) var(--ease), transform var(--dur-med) var(--ease);
+}
+
+.js .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+    .js .reveal {
+        opacity: 1;
+        transform: none;
+    }
+    .hero-slide,
+    .hero-slide.is-active {
+        transition-delay: 0s !important;
+    }
+}
+
+/* ---------- nav ---------- */
+.nav {
+    /* pinned across the whole scroll, not just the hero - the frosted glass
+    on ::before only earns its keep if content keeps passing behind it as
+    the page scrolls, rather than scrolling away with everything else. */
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    height: var(--nav-h);
+    display: flex;
+    align-items: center;
+}
+
+/*
+The frosted-glass backdrop lives on this ::before, not on .nav itself.
+backdrop-filter creates a stacking context on whatever element it's set
+on - same trapping effect as z-index - so if .nav had it directly,
+.nav-links would still be sealed inside .nav's context with no way to
+out-rank .portrait-shadow outside it. A ::before has no descendants of
+its own to trap, so it can carry the blur with no side effect on stacking.
+*/
+.nav::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* translucent + blurred, not solid - the portrait extends up behind the
+    nav (see .portrait-shadow's poke), and a fully opaque background here
+    would hide it completely up to one hard line right at the nav's own
+    edge, then reveal it all at once. Frosted glass keeps nav text legible
+    without masking the image so abruptly. */
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.nav-inner {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-mark {
+    /* explicitly --font-sans, not --font-display - the wordmark stays sans
+    ("jonnyczar." in the reference) even though the hero headline below is
+    serif; the two are deliberately different faces, not a mistake to sync */
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: var(--text-md);
+    text-decoration: none;
+    color: var(--ink);
+}
+
+.nav-links {
+    /* higher than .portrait-shadow's z-index:20 - the portrait renders above
+    the nav bar itself (so it stays crisp, not dimmed by the nav's frosted
+    glass), but the actual links need to out-rank the portrait too, or the
+    image covers them and they stop being clickable. */
+    position: relative;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: var(--text-sm);
+}
+
+.nav-links a,
+.nav-links button {
+    /* a background chip, not just text - once above the portrait, these can
+    land on top of dark hair, and var(--ink-soft) text has no chance of
+    staying legible against that without something opaque behind it. */
+    font: inherit;
+    white-space: nowrap;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius-pill);
+    text-decoration: none;
+    color: var(--ink-soft);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+
+.nav-links a:hover,
+.nav-links button:hover,
+.nav-links a[aria-current='page'] {
+    color: var(--ink);
+    border-color: var(--line-strong);
+}
+
+/* ---------- hero ---------- */
+/*
+The first screen is exactly: nav + hero, nothing else. Everything is derived
+from the space left under the nav (--hero-h) so the whole composition scales
+with the viewport instead of relying on fixed rem sizes:
+  --hero-h  vertical room available for the portrait (viewport - nav - gutter)
+  --panel-w the panel's width (container max, minus its side padding)
+  --ph      portrait height: limited by height *and* by width, so on a
+            narrow-but-tall window the portrait shrinks rather than crowding
+            the text out of the panel.
+The panel is a fixed fraction of the portrait's height, which is what keeps
+the head breaking out above it at every size. The series section simply
+starts below this box, so it only appears on scroll.
+*/
+/*
+Scroll-pinned hero: .hero-pin is (screen + --scroll-run) tall and the hero
+sticks just under the nav for that whole stretch, so the page stands still
+while scroll position drives everything (see site.js - RUN there must match).
+*/
+.hero-pin {
+    --scroll-run: 180vh;
+    height: calc(100vh - var(--nav-h) + var(--scroll-run));
+}
+
+@supports (height: 100svh) {
+    .hero-pin {
+        --scroll-run: 180svh;
+        height: calc(100svh - var(--nav-h) + var(--scroll-run));
+    }
+}
+
+.hero-wrap {
+    position: sticky;
+    top: var(--nav-h);
+    --hero-gutter: 2rem;
+    --hero-h: calc(100vh - var(--nav-h) - var(--hero-gutter));
+    --panel-w: calc(min(78rem, 100vw) - 3rem);
+    --ph: min(var(--hero-h), calc(var(--panel-w) * 0.613));
+    height: calc(100vh - var(--nav-h));
+    display: flex;
+    flex-direction: column;
+    /* centred (with the portrait's overhang reserved on the panel below) so a
+    tall, narrow screen gets the hero in the middle, not stuck at the bottom */
+    justify-content: center;
+    padding-bottom: var(--hero-gutter);
+}
+
+@supports (height: 100svh) {
+    .hero-wrap {
+        --hero-h: calc(100svh - var(--nav-h) - var(--hero-gutter));
+        height: calc(100svh - var(--nav-h));
+    }
+}
+
+.hero-panel {
+    position: relative;
+    flex: none;
+    margin-top: calc(var(--ph) * 0.44);
+    height: calc(var(--ph) * 0.56);
+    background-color: var(--panel);
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, transparent 40%, rgba(20, 20, 18, 0.22) 100%);
+    border-radius: var(--radius-lg);
+    display: grid;
+    grid-template-columns: 1fr minmax(0, 0.42fr);
+    align-items: center;
+    padding-inline: calc(var(--ph) * 0.085);
+    gap: var(--space-5);
+}
+
+.hero-copy {
+    grid-column: 1;
+    /* never run under the portrait: panel width minus portrait width
+    (0.75 * --ph) minus left padding and breathing room */
+    max-width: min(46ch, calc(var(--panel-w) - var(--ph) * 0.9 - 2rem));
+    /* full panel height: the stage below fills everything above the contacts,
+    so its clip edge is the panel's own top edge */
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: calc(var(--ph) * 0.07);
+}
+
+/* ---------- hero slides ---------- */
+.hero-stage {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/*
+Slides are positioned by site.js on every frame from the scroll position
+(one leaves up through the stage's top edge, then the next rises in), so there
+are no CSS transitions here - they would only lag behind the scrub.
+*/
+.hero-slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-bottom: clamp(0.6rem, calc(var(--ph) * 0.03), var(--space-5));
+    transform: translateY(105%);
+    opacity: 0;
+    visibility: hidden;
+    will-change: transform, opacity;
+}
+
+.slide-eyebrow {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: clamp(0.7rem, calc(var(--ph) * 0.02), 0.8rem);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: clamp(0.5rem, calc(var(--ph) * 0.025), var(--space-4));
+}
+
+.slide-lead {
+    font-size: clamp(1.15rem, calc(var(--ph) * 0.054), 2.6rem);
+    line-height: 1.2;
+    color: var(--ink);
+}
+
+.slide-link {
+    align-self: flex-start;
+    margin-top: clamp(0.6rem, calc(var(--ph) * 0.03), var(--space-5));
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: clamp(0.85rem, calc(var(--ph) * 0.03), 1.1rem);
+    color: var(--blue);
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 0.15rem;
+}
+
+.slide-link:hover {
+    opacity: 0.75;
+}
+
+/* progress dots, left edge of the panel; also clickable */
+.hero-dots {
+    position: absolute;
+    left: calc(var(--ph) * 0.03);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.hero-dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--ink-faint);
+    opacity: 0.5;
+    transition: opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+
+.hero-dot:hover {
+    opacity: 0.85;
+}
+
+.hero-dot.is-active {
+    background: var(--ink);
+    opacity: 1;
+    transform: scale(1.35);
+}
+
+/* Hero type: plain neo-grotesque sans, regular weight, with a blue accent
+phrase (.hl) - replaces the earlier serif. */
+.hero-headline,
+.slide-lead {
+    font-family: var(--font-head);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+}
+
+.hl {
+    color: var(--blue);
+}
+
+/* the name in the intro line - opens the About window */
+.about-link {
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-thickness: 0.07em;
+    text-underline-offset: 0.16em;
+}
+.about-link:hover { text-decoration-thickness: 0.12em; }
+
+.hero-headline {
+    font-size: clamp(1.15rem, calc(var(--ph) * 0.054), 2.6rem);
+    line-height: 1.2;
+    color: var(--ink);
+}
+
+.hero-contacts {
+    margin-top: clamp(0.6rem, calc(var(--ph) * 0.03), var(--space-5));
+    font-family: var(--font-sans);
+    font-size: clamp(0.75rem, calc(var(--ph) * 0.022), var(--text-sm));
+}
+
+/*
+The dash separators are their own <span>s in the HTML, not ::after content
+on the links - an ::after glued onto an <a> renders *inside* that anchor's
+box, so hovering/underlining/focusing the link visibly swallows the dash
+too. Plain siblings keep the separator neutral.
+*/
+.contact-sep {
+    color: var(--ink-faint);
+    margin-inline: 0.4em;
+}
+
+.contact-link {
+    position: relative;
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding: 0;
+}
+
+.contact-link:hover {
+    color: var(--ink);
+    text-decoration: underline;
+}
+
+/* Small feedback bubble for the email "copy" buttons (see site.js) */
+.copy-tooltip {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 0.4rem);
+    transform: translate(-50%, 4px);
+    background: var(--ink);
+    color: var(--bg);
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    white-space: nowrap;
+    padding: 0.3rem 0.65rem;
+    border-radius: var(--radius-sm);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.copy-tooltip.is-visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.hero-figure {
+    grid-column: 2;
+    grid-row: 1;
+    height: 100%;
+}
+
+/*
+.portrait-shadow is positioned against .hero-panel so its offsets ignore the
+panel's padding: bottom/right sit flush with the panel's true edges, and its
+height (--ph) is taller than the panel, so the head breaks out above the top.
+The drop-shadow filter lives on the <img> itself so it follows the photo's
+transparent-PNG silhouette rather than a rectangular box.
+*/
+.portrait-shadow {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    height: var(--ph);
+    aspect-ratio: 896 / 1194;
+}
+
+.portrait-frame {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    /* only bottom-right sits on a real edge (the panel's own corner) */
+    border-radius: 0 0 var(--radius-lg) 0;
+    /* visible, not hidden: the zoom below must never be sliced by the frame */
+    overflow: visible;
+}
+
+.portrait-frame img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: bottom right;
+    filter: drop-shadow(0 3px 6px rgba(20, 20, 18, 0.16));
+}
+
+/*
+Narrow screens: no room for text beside the photo, so the panel fills the
+space under the nav and stacks portrait (flexible row) above the text
+(natural height). Still exactly one screen.
+*/
+@media (max-width: 700px) {
+    .hero-wrap {
+        --hero-gutter: 1rem;
+    }
+    .hero-panel {
+        height: var(--hero-h);
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, 1fr) auto;
+        align-items: stretch;
+        padding: var(--space-5);
+        gap: var(--space-4);
+    }
+    .hero-figure {
+        grid-column: 1;
+        grid-row: 1;
+        min-height: 0;
+        display: flex;
+        justify-content: center;
+    }
+    .hero-copy {
+        grid-column: 1;
+        grid-row: 2;
+        max-width: none;
+    }
+    .portrait-shadow {
+        position: relative;
+        height: 100%;
+        max-width: 100%;
+    }
+    .portrait-frame {
+        border-radius: 0;
+    }
+    .hero-headline,
+    .slide-lead {
+        font-size: clamp(1.1rem, 5vw, 1.6rem);
+    }
+    .hero-copy {
+        padding-bottom: 0;
+    }
+    .hero-stage {
+        flex: none;
+        height: clamp(9rem, 24vh, 12rem);
+    }
+    .hero-slide {
+        padding-bottom: var(--space-3);
+    }
+    .hero-dots {
+        left: auto;
+        right: var(--space-5);
+        top: auto;
+        bottom: var(--space-5);
+        transform: none;
+        flex-direction: row;
+    }
+    .hero-contacts {
+        font-size: var(--text-sm);
+    }
+}
+
+/* ---------- certifications: full-screen black stage ---------- */
+.cert-stage {
+    --cert-bg: #0b0c0d;
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(1.25rem, 6vh, 3.5rem) 0 clamp(1.25rem, 5vh, 3rem);
+    background: var(--cert-bg);
+    color: #fff;
+    /* a sheet that rises from the bottom (--b: 0..1) and later leaves off the
+    top (--c: 0..1); both are written to :root by site.js each frame */
+    transform: translateY(calc((1 - var(--b, 0)) * 100% - var(--c, 0) * 100%));
+    visibility: hidden;
+    pointer-events: none;
+    will-change: transform;
+}
+
+.cert-head {
+    padding-inline: clamp(1.25rem, 5vw, 4rem);
+}
+
+.cert-eyebrow {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: clamp(0.65rem, 1.1vw, 0.8rem);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8b8f94;
+}
+
+.cert-title {
+    margin-top: clamp(0.5rem, 2vh, 1rem);
+    font-family: var(--font-head);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    font-size: clamp(2rem, min(6vw, 10vh), 4.75rem);
+    color: #fff;
+}
+
+.cert-stage .hl {
+    color: #f4a93d;
+}
+
+/*
+Three certifications on screen at a time (two on narrow screens), sliding left
+forever. The fade zones sit well inside the screen edges, so badges dissolve
+with padding around them rather than being cut off at the very edge. The
+animation runs regardless of the pointer - no hover pause.
+*/
+/* --per (badges on screen), --i (which badge the row is stepped to) and
+--cert-fs (name size) are written by site.js */
+.cert-stage {
+    --per: 3;
+}
+
+.cert-marquee {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    /* the left and right margin columns (one column each = 100% / (per + 2)) fade
+    from fully transparent at the screen edge to fully clear where the middle
+    columns begin, so a badge sliding into a margin dissolves gradually, in step
+    with how far into the margin it is, and is never faded anywhere else */
+    --margin: calc(100% / (var(--per, 3) + 2));
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--margin), #000 calc(100% - var(--margin)), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 var(--margin), #000 calc(100% - var(--margin)), transparent 100%);
+}
+
+.cert-track {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    width: max-content;
+    /* the screen is (per + 2) equal columns; the row starts one column in, so the
+    first column is the left margin and the last is the right margin (two
+    identical copies of the list, so it loops) */
+    margin-left: calc(100vw / (var(--per, 3) + 2));
+    /* moved every frame by site.js (smooth, constant speed) */
+    will-change: transform;
+}
+
+/* fewer badges than fit: nothing moves, and no second copy is shown */
+.cert-stage.is-static .cert-track > li[aria-hidden='true'] {
+    display: none;
+}
+
+.cert {
+    flex: none;
+    /* opacity is set per frame by site.js: a badge fades out as it leaves the window */
+    /* one column = 1 / (per + 2) of the screen */
+    width: calc(100vw / (var(--per, 3) + 2));
+    padding-inline: 1vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    /* each badge and its text centred in its column: equal spacing, and the
+    group sits centred in the window */
+    align-items: center;
+    text-align: center;
+}
+
+.cert-badge {
+    --badge: min(32vh, calc(100vw / (var(--per, 3) + 2) - 3vw));
+    width: var(--badge);
+    height: var(--badge);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.cert-badge img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    user-select: none;
+}
+
+/* no badge image: the name is set in big type, centred inside a box the exact
+size and position of a real badge (same --badge square), with the name and
+dates underneath like every other entry */
+.cert-badge-text {
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.25rem;
+    text-align: center;
+    font-family: var(--font-head);
+    font-size: calc(var(--badge) * 0.13);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+    color: #f4a93d;
+}
+
+.cert-name {
+    margin-top: clamp(0.6rem, 2vh, 1.1rem);
+    font-family: var(--font-head);
+    font-size: var(--cert-fs, 18px);
+    white-space: nowrap;
+    line-height: 1.2;
+    color: #fff;
+    text-decoration: none;
+}
+
+a.cert-name:hover {
+    text-decoration: underline;
+}
+
+.cert-dates {
+    margin-top: 0.4rem;
+    font-family: var(--font-head);
+    font-size: calc(var(--cert-fs, 18px) * 0.78);
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+    color: #9a9ea3;
+}
+
+
+/* ---------- about popup ---------- */
+body.modal-open {
+    overflow: hidden;
+}
+
+.about-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+    background: rgba(27, 27, 26, 0.35);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.about-modal-backdrop[hidden] {
+    display: none;
+}
+
+.about-modal-panel {
+    position: relative;
+    /* width is a fixed target (the reading-column width is a design choice,
+    independent of how much text there is), but height is a ceiling -
+    short content should shrink the panel down to fit it, with scrolling
+    only kicking in once content actually reaches this max. */
+    width: min(90vw, 52rem);
+    max-height: min(85vh, 38rem);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* heavier blur than .nav::before's formula, but *more* opaque, not less
+    - this panel is the main event, not a bar something scrolls behind,
+    so what's behind it should read as an indistinct wash of light/dark
+    rather than something translucent enough to compete with the text.
+    More blur washes it out; more opacity keeps it from just showing
+    through anyway underneath that blur. */
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 24px 50px -20px rgba(20, 20, 18, 0.35);
+}
+
+.about-modal-close {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-3);
+    z-index: 1;
+    width: 1.75rem;
+    height: 1.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.7);
+    color: var(--ink-soft);
+    transition: color var(--dur-fast) var(--ease);
+}
+
+.about-modal-close:hover {
+    color: var(--ink);
+}
+
+.about-modal-close svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.about-modal-name {
+    /* same treatment as .nav-mark ("Akshatmistry.") - sans, weight 600,
+    left-aligned, not the serif headline register - this *is* that mark,
+    hardcoded in index.html rather than pulled from the config. Sits
+    outside .about-modal-scroll so it (and the close button) stay in view
+    no matter how far down the bio you scroll.
+    Left/right match .about-modal-scroll below exactly, so the header and
+    the body text share one straight edge instead of the header looking
+    inset differently than the paragraphs under it. */
+    margin: 0;
+    padding: var(--space-6) var(--space-6) var(--space-4);
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: var(--text-md);
+    color: var(--ink);
+    border-bottom: 1px solid var(--line);
+}
+
+.about-modal-scroll {
+    /* flex items default to min-height:auto, which lets a tall child grow
+    past its flex parent's max-height instead of ever scrolling within
+    it - min-height:0 is what actually lets this obey .about-modal-panel's
+    max-height and scroll internally. */
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--space-5) var(--space-6) var(--space-6);
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+}
+
+.about-modal-scroll::-webkit-scrollbar {
+    width: 7px;
+}
+
+.about-modal-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.about-modal-scroll::-webkit-scrollbar-thumb {
+    background-color: var(--line-strong);
+    border-radius: var(--radius-pill);
+}
+
+.about-modal-scroll p {
+    color: var(--ink);
+    font-size: var(--text-sm);
+    line-height: 1.62;
+    margin: 0 0 var(--space-4);
+}
+
+.about-modal-scroll p:last-of-type {
+    margin-bottom: 0;
+}
+
+.about-modal-contacts {
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--line);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+}
+
+/* ---------- scroll-driven bits ---------- */
+/* writing slide: always plain black text */
+.slide-lead,
+.slide-lead .hl,
+.slide-link {
+    color: #14120d;
+}
+
+/* the hero is pushed up ahead of the rising black sheet (--b: 0..1) */
+.hero-wrap {
+    transform: translateY(calc(var(--b, 0) * -100vh));
+}
+
+/* the panel colour is set per frame by site.js (grey -> pastel yellow); to
+go back to a plain grey panel, delete the backgroundColor lines there */
+
+/* page-load entrance */
+@keyframes hero-rise {
+    from {
+        opacity: 0;
+        transform: translateY(28px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.hero-panel {
+    animation: hero-rise 0.9s var(--ease) backwards;
+}
+
+.portrait-shadow {
+    animation: hero-rise 1.1s var(--ease) 0.15s backwards;
+}
+
+/* ---------- welcome page as a deck of steps ---------- */
+/* no page scroll at all: site.js moves one step per gesture */
+body.deck {
+    height: 100vh;
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: none;
+}
+
+@supports (height: 100svh) {
+    body.deck {
+        height: 100svh;
+    }
+}
+
+.deck .hero-pin {
+    height: auto;
+}
+
+/* step dots: fixed on the right; the difference blend keeps them visible on
+white, grey, yellow and black alike */
+.hero-dots {
+    position: fixed;
+    right: 1.25rem;
+    left: auto;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+    z-index: 95;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    mix-blend-mode: difference;
+}
+
+.hero-dot {
+    background: #fff;
+    opacity: 0.45;
+}
+
+.hero-dot.is-active {
+    background: #fff;
+    opacity: 1;
+}
+
+/* the last step: an empty grey page (placeholder for what comes next);
+sits under the nav and under the black card, which leaves off the top to reveal it */
+.next-page {
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    background: var(--panel);
+    visibility: hidden;
+}
+
+/* the portrait eases up a touch during the first step (--a is 0..1). The zoom
+is anchored at the bottom-right corner, so the photo only grows up and to the
+left, into open space; the frame no longer clips it, and the panel-corner
+rounding sits on the image itself so it still matches the panel. */
+.portrait-frame img {
+    border-radius: 0 0 var(--radius-lg) 0;
+    transform: scale(calc(1 + var(--a, 0) * 0.035));
+    transform-origin: 100% 100%;
+}
+
+/* the count under "His certifications." on the black page (number comes from certifications.json) */
+.cert-count {
+    margin-top: clamp(0.4rem, 1.2vh, 0.8rem);
+    font-family: var(--font-head);
+    font-size: clamp(1rem, min(2vw, 3.4vh), 1.6rem);
+    color: #9a9ea3;
+}
+
+.cert-count-num {
+    color: #f4a93d;
+    font-weight: 700;
+}
+
+.cert-plus {
+    color: #6b6f74;
+}
+
+/* the underlined provider name: opens that provider's list popup */
+.cert-provider {
+    font: inherit;
+    color: #fff;
+    padding: 0;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+    cursor: pointer;
+    transition: color var(--dur-fast) var(--ease);
+}
+
+.cert-provider:hover,
+.cert-provider:focus-visible {
+    color: #f4a93d;
+}
+
+/* ---------- provider list popup ---------- */
+.cert-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: rgba(8, 9, 10, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.cert-modal-backdrop[hidden] {
+    display: none;
+}
+
+.cert-modal-panel {
+    position: relative;
+    width: min(90vw, 36rem);
+    max-height: min(80vh, 34rem);
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 2rem 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: var(--radius-lg);
+    background: rgba(28, 29, 32, 0.72);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.6);
+    color: #fff;
+}
+
+.cert-modal-close {
+    position: absolute;
+    top: 0.9rem;
+    right: 0.9rem;
+    width: 1.9rem;
+    height: 1.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #b6b9bd;
+    transition: color var(--dur-fast) var(--ease);
+}
+
+.cert-modal-close:hover {
+    color: #fff;
+}
+
+.cert-modal-close svg {
+    width: 1.05rem;
+    height: 1.05rem;
+}
+
+.cert-modal-title {
+    font-family: var(--font-head);
+    font-weight: 400;
+    font-size: clamp(1.3rem, 3.2vw, 1.75rem);
+    letter-spacing: -0.01em;
+    margin-bottom: 1.1rem;
+    padding-right: 2rem;
+}
+
+.cert-modal-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    min-height: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.cert-modal-item {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.25rem;
+    padding: 0.95rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    font-family: var(--font-head);
+}
+
+.cert-modal-name {
+    font-size: 1rem;
+    color: #fff;
+}
+
+.cert-modal-dates {
+    flex: none;
+    font-size: 0.85rem;
+    color: #a3a7ac;
+    white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+    .cert-modal-item {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+}
+
+/* ---------- last page: "His Target." ---------- */
+/* fades and rises in as the black card leaves (--c: 0..1, written by site.js) */
+.next-page {
+    /* no header bar on this page, so the content starts at the top */
+    padding-top: 0;
+}
+
+body.deck .nav {
+    /* fades out as the last page is revealed */
+    opacity: calc(1 - var(--c, 0));
+}
+
+.next-inner {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(1.5rem, 6vh, 3.5rem) clamp(1.25rem, 5vw, 4rem) clamp(1.5rem, 6vh, 3.5rem);
+    opacity: var(--c, 0);
+    transform: translateY(calc((1 - var(--c, 0)) * 2.5rem));
+}
+
+.next-eyebrow {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: clamp(0.65rem, 1.1vw, 0.8rem);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.next-title {
+    margin-top: clamp(0.5rem, 2vh, 1rem);
+    font-family: var(--font-head);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    font-size: clamp(2rem, min(6vw, 10vh), 4.75rem);
+    color: var(--ink);
+}
+
+/* one card: centred. two cards: side by side, equal width. never more than two. */
+.target-cards {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(1rem, 3vw, 2.5rem);
+}
+
+.target-card {
+    flex: 0 1 30rem;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 20px 50px -28px rgba(20, 20, 18, 0.35);
+    font-family: var(--font-head);
+}
+
+/* two cards: a grid, so both are the same height even if one name wraps */
+.target-cards.has-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 30rem));
+    align-items: stretch;
+    align-content: center;
+    justify-content: center;
+}
+
+.target-cards.has-2 .target-card {
+    flex: none;
+}
+
+.target-issuer {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--blue);
+}
+
+.target-name {
+    margin-top: 0.6rem;
+    font-family: inherit;
+    font-weight: 400;
+    /* one line, always; --target-fs is set by site.js so the longest name fits
+    and every card uses the same size */
+    font-size: var(--target-fs, 28px);
+    white-space: nowrap;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+    color: var(--ink);
+}
+
+.target-code {
+    margin-top: 0.35rem;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+}
+
+.target-prep {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+}
+
+.target-prep-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.target-prep-date {
+    font-size: 1.15rem;
+    color: var(--ink);
+}
+
+@media (max-width: 700px) {
+    .target-cards.has-2 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* every line on a target card is a single line */
+.target-issuer,
+.target-code,
+.target-prep-label,
+.target-prep-date {
+    white-space: nowrap;
+}
+
+/* horizontal cards (is-rows): one card per row, equal size - name block on the left,
+preparation date on the right. Used when side-by-side cards would need small text. */
+.target-cards.is-rows,
+.target-cards.is-stack {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: 1fr;
+    align-items: stretch;
+    gap: clamp(0.75rem, 2vh, 1.25rem);
+    flex: none;
+    margin: auto;
+    width: 100%;
+    max-width: 56rem;
+}
+
+.target-cards.is-rows .target-card,
+.target-cards.is-stack .target-card {
+    flex: none;
+    max-width: none;
+    width: 100%;
+}
+
+.target-cards.is-rows .target-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 2rem;
+    align-content: center;
+    align-items: center;
+}
+
+.target-cards.is-rows .target-issuer,
+.target-cards.is-rows .target-name,
+.target-cards.is-rows .target-code {
+    grid-column: 1;
+}
+
+.target-cards.is-rows .target-prep {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    margin: 0;
+    padding: 0 0 0 2rem;
+    border-top: 0;
+    border-left: 1px solid var(--line);
+}
+
+/* if a name can never fit, cut it with an ellipsis rather than overlap anything */
+.target-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---------- animated wordmark: "Mistry Akshat Ankur" <-> "MAA." ---------- */
+/*
+Two looks, each with its own style:
+  long  - the full name, plain and calm: ink, medium weight, normal spacing
+  short - the monogram: bold, widely spaced capitals in the site blue, closed
+          with an amber full stop
+Going short, the tail of each word (istry / kshat / nkur) closes up and fades,
+word by word from the left, the spaces shrink, the initials spread out and turn
+blue, and the dot pops in last. Going long it all plays in reverse order.
+*/
+.nav-mark {
+    --wm-ease: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.nav-mark .wm {
+    display: inline-flex;
+    align-items: baseline;
+    white-space: nowrap;
+}
+
+.wm-word {
+    display: inline-flex;
+}
+
+.wm-i {
+    display: inline-block;
+    color: var(--ink);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    transition:
+        color 0.7s var(--wm-ease),
+        letter-spacing 0.9s var(--wm-ease),
+        font-weight 0.9s var(--wm-ease);
+}
+
+.wm-r {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    white-space: nowrap;
+    width: var(--w, auto);
+    opacity: 1;
+    letter-spacing: -0.01em;
+    /* opening back out: last word first */
+    transition:
+        width 0.8s var(--wm-ease),
+        opacity 0.6s ease 0.15s;
+}
+
+.wm-word:nth-of-type(1) .wm-r { transition-delay: 0.3s, 0.45s; }
+.wm-word:nth-of-type(3) .wm-r { transition-delay: 0.15s, 0.3s; }
+.wm-word:nth-of-type(5) .wm-r { transition-delay: 0s, 0.15s; }
+
+.wm-gap {
+    display: inline-block;
+    width: 0.3em;
+    transition: width 0.8s var(--wm-ease) 0.2s;
+}
+
+.wm-dot {
+    display: inline-block;
+    width: 0;
+    overflow: hidden;
+    opacity: 0;
+    color: var(--lc2, #f4a93d);
+    font-weight: 800;
+    transform: translateY(0.35em) scale(0.4);
+    transform-origin: left bottom;
+    transition:
+        width 0.5s var(--wm-ease),
+        opacity 0.3s ease,
+        transform 0.5s var(--wm-ease);
+}
+
+/* the monogram */
+/* the monogram's two colours (--lc1 for the letters, --lc2 for the dot) are picked by the script */
+.is-short .wm-i {
+    color: var(--lc1, var(--blue));
+    font-weight: 800;
+    letter-spacing: 0.16em;
+}
+
+/* closing up: first word first */
+.is-short .wm-r {
+    width: 0;
+    opacity: 0;
+    transition:
+        width 0.8s var(--wm-ease),
+        opacity 0.4s ease;
+}
+
+.is-short .wm-word:nth-of-type(1) .wm-r { transition-delay: 0s, 0s; }
+.is-short .wm-word:nth-of-type(3) .wm-r { transition-delay: 0.15s, 0.15s; }
+.is-short .wm-word:nth-of-type(5) .wm-r { transition-delay: 0.3s, 0.3s; }
+
+.is-short .wm-gap {
+    width: 0;
+    transition-delay: 0.15s;
+}
+
+.is-short .wm-dot {
+    width: 0.35em;
+    opacity: 1;
+    transform: none;
+    transition-delay: 0.85s;
+}
+
+/* welcome page: the wordmark uses the headline face too (weight animates smoothly - it is a variable font) */
+body.deck .nav-mark {
+    font-family: var(--font-head);
+}
+
+/* headline face: slightly tighter tracking than Arial needed */
+.hero-headline,
+.slide-lead,
+.cert-title,
+.next-title {
+    letter-spacing: -0.02em;
+}
+
+/* ---------- logo: set in the same face as the page content ---------- */
+/* Inter Tight, the face of the hero headline ("Akshat Mistry is a Software Engineer...").
+Full name: regular weight, tight tracking, mixed case. Monogram: bold, spaced, blue. */
+body.deck .nav-mark {
+    position: relative;
+    z-index: 31;
+    font-family: var(--font-head);
+    font-size: clamp(1.15rem, 1.8vw, 1.6rem);
+    line-height: 1;
+}
+
+.wm-i,
+.wm-r {
+    font-family: var(--font-head);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+}
+
+.is-short .wm-i {
+    font-family: var(--font-head);
+    font-weight: 700;
+    letter-spacing: 0.16em;
+}
+
+.wm-dot {
+    font-family: var(--font-head);
+}
+
+/* Going short: starting after the M, every letter in turn shrinks and fades while its
+width closes to nothing, so the initials slide together behind it; the spaces close last
+and the dot pops in at the end. Going back, the letters unfold from the last to the first. */
+.nav-mark .wm-r,
+.nav-mark.is-short .wm-r {
+    width: auto;
+    opacity: 1;
+    overflow: visible;
+    transition: none;
+}
+
+.nav-mark .wm-c {
+    display: inline-block;
+    width: var(--cw, auto);
+    transform-origin: 50% 80%;
+    /* unfolding: last letter first */
+    transition:
+        width 0.5s var(--wm-ease) calc(var(--ri) * 40ms),
+        transform 0.5s var(--wm-ease) calc(var(--ri) * 40ms),
+        opacity 0.4s ease calc(var(--ri) * 40ms);
+}
+
+.nav-mark.is-short .wm-c {
+    width: 0;
+    opacity: 0;
+    transform: scale(0.15);
+    /* folding away: first letter first */
+    transition:
+        width 0.5s var(--wm-ease) calc(var(--gi) * 45ms),
+        transform 0.5s var(--wm-ease) calc(var(--gi) * 45ms),
+        opacity 0.35s ease calc(var(--gi) * 45ms);
+}
+
+.nav-mark .wm-gap {
+    transition-delay: 0s;
+}
+
+.nav-mark.is-short .wm-gap {
+    transition-delay: 0.75s;
+}
+
+.nav-mark.is-short .wm-dot {
+    transition-delay: 1.25s;
+}
+
+/* ---------- pill buttons (home page) ----------
+Solid black pill with white text and no arrow. On hover (or keyboard focus) a right arrow
+slides in and, on the welcome page, the pill fills with a random pastel. Used by the two nav buttons and the
+"Explore his content" link. */
+body.deck .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    padding: 0.45rem 1.05rem;
+    border: 1px solid #141413;
+    border-radius: 999px;
+    background: #141413;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    color: #fff;
+    font-family: var(--font-sans);
+    font-size: 0.92rem;
+    font-weight: 500;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        background-color 0.25s var(--ease),
+        color 0.25s var(--ease),
+        border-color 0.25s var(--ease);
+}
+
+/* on the welcome page the hover colour is one of six pastels, picked at random each time (script
+sets --pbg / --pfg); with none set (explore page) it simply stays black */
+body.deck .pill:hover,
+body.deck .pill:focus-visible {
+    background: var(--pbg, #141413);
+    border-color: var(--pbg, #141413);
+    color: var(--pfg, #fff);
+}
+
+/* the arrow: takes no room at rest, opens out and slides in on hover */
+.pill-chev {
+    display: inline-flex;
+    max-width: 0;
+    margin-left: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition:
+        max-width 0.3s var(--ease),
+        margin-left 0.3s var(--ease),
+        opacity 0.25s var(--ease);
+}
+
+.pill-chev svg {
+    flex: none;
+    width: 1.1rem;
+    height: 1.1rem;
+    transform: translateX(-0.4rem);
+    transition: transform 0.3s var(--ease);
+}
+
+body.deck .pill:hover .pill-chev,
+body.deck .pill:focus-visible .pill-chev {
+    max-width: 1.2rem;
+    margin-left: 0.35rem;
+    opacity: 1;
+}
+
+body.deck .pill:hover .pill-chev svg,
+body.deck .pill:focus-visible .pill-chev svg {
+    transform: none;
+}
+
+/* the "Explore his content" pill carries a text arrow that nudges right instead */
+body.deck .slide-link.pill {
+    padding: 0.55rem 1.05rem;
+    margin-top: clamp(0.6rem, calc(var(--ph) * 0.03), var(--space-5));
+}
+
+body.deck .slide-link.pill:hover,
+body.deck .slide-link.pill:focus-visible {
+    background: var(--pbg, #141413);
+    border-color: var(--pbg, #141413);
+    color: var(--pfg, #fff);
+    opacity: 1;
+}
+
+/* the text arrow on the "Explore his content" pill follows the same rule: hidden until hover */
+.pill-go {
+    display: inline-block;
+    max-width: 0;
+    margin-left: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateX(-0.4rem);
+    transition:
+        max-width 0.3s var(--ease),
+        margin-left 0.3s var(--ease),
+        opacity 0.25s var(--ease),
+        transform 0.3s var(--ease);
+}
+
+body.deck .slide-link.pill:hover .pill-go,
+body.deck .slide-link.pill:focus-visible .pill-go {
+    max-width: 1.4rem;
+    margin-left: 0.4rem;
+    opacity: 1;
+    transform: none;
+}
+
+/* about text: "\n" in home.json becomes a line break; *colour coded* words use the site blue */
+.about-modal-scroll p {
+    white-space: pre-line;
+}
+
+.about-modal-scroll .hl {
+    color: var(--blue);
+}
+
+/* ---------- explore page ---------- */
+/* black on white; scrolls normally (unlike the welcome page's deck) */
+body.deck.explore {
+    height: auto;
+    min-height: 100vh;
+    overflow: auto;
+    overscroll-behavior: auto;
+    touch-action: auto;
+    background: #fff;
+}
+
+.xp-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.xp-title {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: clamp(3.5rem, 13vw, 10rem);
+    line-height: 0.92;
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+    color: #0d0d0d;
+}
+
+/* the search control: a black pill that opens out into a field */
+.xp-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 9.5rem;
+    height: 3.25rem;
+    margin-top: clamp(1.5rem, 4.5vh, 2.75rem);
+    border: 1px solid #0d0d0d;
+    border-radius: 999px;
+    background: #0d0d0d;
+    color: #fff;
+    cursor: pointer;
+    overflow: hidden;
+    transition:
+        width 0.5s var(--ease),
+        background-color 0.3s var(--ease),
+        color 0.3s var(--ease);
+}
+
+.xp-search.is-open {
+    width: min(38rem, calc(100vw - 3rem));
+    background: #fff;
+    color: #0d0d0d;
+    cursor: text;
+}
+
+.xp-open {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: 999px;
+}
+
+.xp-search.is-open .xp-open {
+    pointer-events: none;
+}
+
+.xp-ico {
+    flex: none;
+    width: 1.2rem;
+    height: 1.2rem;
+    margin-left: 1.2rem;
+}
+
+.xp-label {
+    margin-left: 0.6rem;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: opacity 0.2s ease;
+}
+
+.xp-search.is-open .xp-label {
+    position: absolute;
+    left: 3rem;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.xp-input {
+    flex: 1;
+    min-width: 0;
+    width: 0;
+    margin-left: 0.7rem;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: inherit;
+    font-family: var(--font-sans);
+    font-size: 1.05rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease 0.15s;
+}
+
+.xp-search.is-open .xp-input {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.xp-clear {
+    flex: none;
+    width: 2rem;
+    height: 2rem;
+    margin-right: 0.6rem;
+    border-radius: 50%;
+    color: #8a8780;
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+.xp-clear:hover {
+    color: #0d0d0d;
+}
+
+.xp-clear[hidden] {
+    display: none;
+}
+
+/* suggestions: their own box, a little below the bar */
+.xp-results {
+    width: min(38rem, calc(100vw - 3rem));
+    margin-top: 1rem;
+    padding: 0.5rem;
+    border: 1px solid rgba(13, 13, 13, 0.12);
+    border-radius: 1.25rem;
+    background: #fff;
+    box-shadow: 0 28px 60px -34px rgba(0, 0, 0, 0.4);
+    text-align: left;
+}
+
+.xp-results[hidden] {
+    display: none;
+}
+
+.xp-row {
+    display: block;
+    padding: 0.7rem 0.95rem;
+    border-radius: 0.85rem;
+    color: #0d0d0d;
+    text-decoration: none;
+}
+
+.xp-row:hover,
+.xp-row.is-active {
+    background: #f1f0ec;
+}
+
+.xp-row-cat {
+    display: block;
+    margin-bottom: 0.15rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8a8780;
+}
+
+.xp-row-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 1rem;
+    line-height: 1.32;
+}
+
+.xp-row-sub {
+    font-style: italic;
+}
+
+.xp-row-title mark {
+    background: none;
+    color: inherit;
+    font-weight: 700;
+}
+
+.xp-empty {
+    padding: 1.25rem 1rem 0.75rem;
+}
+
+.xp-empty-title {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: clamp(2rem, 5vw, 2.7rem);
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: #0d0d0d;
+}
+
+.xp-empty-sub {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: #8a8780;
+}
+
+.xp-empty-msg {
+    margin-top: 2rem;
+    font-size: 1.05rem;
+    color: #0d0d0d;
+    /* never broken mid-word: the script shrinks the size until the title fits in at most 2 lines */
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+.xp-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+.xp-chip {
+    padding: 0.4rem 0.9rem;
+    border: 1px solid rgba(13, 13, 13, 0.18);
+    border-radius: 999px;
+    font-size: 0.88rem;
+    color: #0d0d0d;
+    transition: background-color 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.xp-chip:hover {
+    background: #0d0d0d;
+    border-color: #0d0d0d;
+    color: #fff;
+}
+
+/* the page rests as: heading + search / three category boxes / Promoted box, all in one
+screen (no page scroll); a category box opens that category in full */
+body.deck.explore {
+    overflow-y: auto;       /* only a fallback for very short windows */
+}
+
+.xp {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    height: calc(100vh - var(--nav-h));
+    padding: 0 1.5rem clamp(0.9rem, 3vh, 2rem);
+}
+
+@supports (height: 100svh) {
+    .xp {
+        height: calc(100svh - var(--nav-h));
+    }
+}
+
+.xp-hero {
+    min-height: 0;
+    padding: 0;
+}
+
+.xp-title {
+    font-size: clamp(3.5rem, min(14vw, 22vh), 11rem);
+}
+
+/* the category boxes */
+.xp-cats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(0.75rem, 1.6vw, 1.5rem);
+    width: 100%;
+    max-width: 80rem;
+    margin: clamp(0.75rem, 3vh, 2rem) auto 0;
+}
+
+.xp-cats[hidden],
+.xp-promo[hidden],
+.xp-view[hidden],
+.xp-hero[hidden] {
+    display: none;
+}
+
+.xp-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: clamp(7.5rem, 21vh, 11.5rem);
+    padding: clamp(0.9rem, 2.4vh, 1.5rem) clamp(1.1rem, 1.8vw, 1.6rem);
+    border: 1.5px solid #0d0d0d;
+    border-radius: 1.25rem;
+    background: #fff;
+    color: #0d0d0d;
+    text-align: left;
+    transition: background-color 0.3s var(--ease), color 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+
+.xp-box-title {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: clamp(1.3rem, 2.1vw, 1.8rem);
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+}
+
+.xp-box-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-top: 0.4rem;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: #6f6c65;
+    transition: color 0.3s var(--ease);
+}
+
+.xp-box-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+}
+
+.xp-box-count {
+    letter-spacing: 0.02em;
+}
+
+.xp-box-go {
+    display: inline-flex;
+    transition: transform 0.3s var(--ease);
+}
+
+/* on hover a box fills with one of six pastels, picked at random each time (the script sets
+--hbg / --hfg / --hdesc) */
+.xp-box:hover,
+.xp-box:focus-visible {
+    background: var(--hbg, #f7d89b);
+    border-color: var(--hbg, #f7d89b);
+    color: var(--hfg, #14120d);
+}
+
+.xp-box:hover .xp-box-desc,
+.xp-box:focus-visible .xp-box-desc {
+    color: var(--hdesc, #5f5a4e);
+}
+
+.xp-box:hover .xp-box-go,
+.xp-box:focus-visible .xp-box-go {
+    transform: translateX(4px);
+}
+
+/* Promoted: the label, and under it a single slow line of links drifting left. Hovering the
+box stops the drift; the link under the pointer turns black and shows an arrow (until then the
+titles sit in quotation marks). */
+.xp-promo {
+    width: 100%;
+    max-width: 80rem;
+    margin: clamp(1.25rem, 4.5vh, 2.75rem) auto 0;
+    padding: clamp(0.75rem, 1.8vh, 1.1rem) 0;
+    border-radius: 1.25rem;
+    background: #f3f2ee;
+    overflow: hidden;
+}
+
+.xp-promo-title {
+    display: block;
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: #6f6c65;
+}
+
+.xp-promo-marquee {
+    margin-top: 0.45rem;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 4%, #000 96%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 4%, #000 96%, transparent 100%);
+}
+
+.xp-promo-track {
+    display: flex;
+    width: max-content;
+    animation: xp-promo-scroll var(--dur, 60s) linear infinite;
+    will-change: transform;
+}
+
+@keyframes xp-promo-scroll {
+    to {
+        transform: translateX(calc(var(--shift, 0px) * -1));
+    }
+}
+
+.xp-promo:hover .xp-promo-track {
+    animation-play-state: paused;
+}
+
+.xp-promo-link {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    margin-right: clamp(2.5rem, 5vw, 4.5rem);
+    padding: 0.45rem 0.95rem;
+    border-radius: 999px;
+    color: #0d0d0d;
+    font-size: 0.98rem;
+    line-height: 1.2;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.25s var(--ease), color 0.25s var(--ease);
+}
+
+.xp-promo-label::before {
+    content: '\201C';
+}
+
+.xp-promo-label::after {
+    content: '\201D';
+}
+
+.xp-promo-go {
+    display: inline-flex;
+    max-width: 0;
+    margin-left: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-width 0.3s var(--ease), margin-left 0.3s var(--ease), opacity 0.25s var(--ease);
+}
+
+.xp-promo-link:hover,
+.xp-promo-link:focus-visible {
+    background: #0d0d0d;
+    color: #fff;
+}
+
+.xp-promo-link:hover .xp-promo-label::before,
+.xp-promo-link:hover .xp-promo-label::after,
+.xp-promo-link:focus-visible .xp-promo-label::before,
+.xp-promo-link:focus-visible .xp-promo-label::after {
+    content: none;
+}
+
+.xp-promo-link:hover .xp-promo-go,
+.xp-promo-link:focus-visible .xp-promo-go {
+    max-width: 1.4rem;
+    margin-left: 0.55rem;
+    opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .xp-promo-track {
+        animation: none;
+    }
+    .xp-promo-marquee {
+        overflow-x: auto;
+    }
+}
+
+.xp-go {
+    flex: none;
+    display: inline-flex;
+    color: #b3b0a8;
+    transition: color 0.2s var(--ease), transform 0.25s var(--ease);
+}
+
+.xp-view-list .xp-list a:hover .xp-go {
+    color: #0d0d0d;
+    transform: translate(2px, -2px);
+}
+
+/* a category, opened in full: details left, the whole list right (it scrolls inside its own panel) */
+.xp-view {
+    grid-row: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(15rem, 0.85fr) minmax(0, 2fr);
+    gap: clamp(1.5rem, 4vw, 4.5rem);
+    width: 100%;
+    max-width: 80rem;
+    min-height: 0;
+    margin: 0 auto;
+    padding-top: clamp(1rem, 4vh, 3rem);
+}
+
+.xp-view-side {
+    align-self: start;
+}
+
+.xp-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.9rem 0.4rem 0.7rem;
+    border: 1px solid rgba(13, 13, 13, 0.2);
+    border-radius: 999px;
+    font-size: 0.9rem;
+    color: #0d0d0d;
+    transition: background-color 0.25s var(--ease), color 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+
+.xp-back:hover {
+    background: #0d0d0d;
+    border-color: #0d0d0d;
+    color: #fff;
+}
+
+.xp-view-title {
+    margin-top: clamp(1rem, 3vh, 2rem);
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    letter-spacing: -0.035em;
+    line-height: 1;
+    color: #0d0d0d;
+    overflow-wrap: anywhere;
+}
+
+.xp-view-desc {
+    margin-top: 0.9rem;
+    max-width: 30ch;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    color: #6f6c65;
+}
+
+.xp-view-count {
+    margin-top: 0.9rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8a8780;
+}
+
+.xp-filter {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+    padding: 0.65rem 1rem;
+    border: 1px solid rgba(13, 13, 13, 0.2);
+    border-radius: 999px;
+    color: #6f6c65;
+}
+
+.xp-filter:focus-within {
+    border-color: #0d0d0d;
+    color: #0d0d0d;
+}
+
+.xp-filter input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #0d0d0d;
+    font: inherit;
+    font-size: 0.95rem;
+}
+
+.xp-view-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(13, 13, 13, 0.3) transparent;
+}
+
+.xp-view-list .xp-list li {
+    border-bottom: 1px solid rgba(13, 13, 13, 0.1);
+}
+
+.xp-view-list .xp-list a {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.25rem;
+    padding: 0.95rem 0.25rem;
+    color: #0d0d0d;
+    font-size: 1.02rem;
+    line-height: 1.4;
+    text-decoration: none;
+}
+
+.xp-view-list .xp-list a:hover .xp-item-title {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+}
+
+.xp-item-title mark {
+    background: none;
+    color: inherit;
+    font-weight: 700;
+}
+
+.xp-view-empty {
+    padding: 1.5rem 0.25rem;
+    color: #6f6c65;
+}
+
+/* narrow desktop windows: stack, and let the page scroll if it must */
+@media (max-width: 900px) {
+    .xp {
+        height: auto;
+        min-height: calc(100vh - var(--nav-h));
+    }
+    .xp-cats {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .xp-view {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* ---------- explore: search mode ---------- */
+/* Layout changes with .is-searching (heading moves up and shrinks, bar widens). Colours change
+with .xp-dark, which the script sets while search is open: the page rests white, search turns
+it black. */
+body.deck.explore {
+    transition: background-color 0.55s var(--ease), color 0.55s var(--ease);
+}
+
+.explore .nav::before {
+    transition: background-color 0.55s var(--ease);
+}
+
+body.explore .nav-mark .wm-i,
+body.explore .nav-mark .wm-r {
+    transition: color 0.55s var(--ease);
+}
+
+.xp-hero {
+    transition: padding-top 0.55s var(--ease), min-height 0.55s var(--ease);
+}
+
+.xp-title {
+    transition: color 0.55s var(--ease), font-size 0.55s var(--ease);
+}
+
+/* ----- layout while searching ----- */
+body.explore.is-searching .xp-hero {
+    justify-content: flex-start;
+    min-height: calc(100vh - var(--nav-h));
+    padding-top: clamp(2.5rem, 11vh, 7rem);
+}
+
+body.explore.is-searching .xp-title {
+    font-size: clamp(2.4rem, 6vw, 4.5rem);
+}
+
+body.explore.is-searching .xp-search {
+    width: min(46rem, calc(100vw - 3rem));
+    height: 3.6rem;
+}
+
+body.explore.is-searching .xp-results,
+.xp-hints {
+    width: min(46rem, calc(100vw - 3rem));
+}
+
+/* ----- hints: direct links, there until the first letter is typed (light palette) ----- */
+.xp-hints {
+    margin-top: 1.75rem;
+    text-align: left;
+}
+
+.xp-hints[hidden] {
+    display: none;
+}
+
+.xp-hints-title {
+    padding: 0 0.95rem 0.6rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8a8780;
+}
+
+.xp-hint {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 0.95rem;
+    border-top: 1px solid rgba(13, 13, 13, 0.12);
+    border-radius: 0.6rem;
+    color: #0d0d0d;
+    font-size: 1.02rem;
+    line-height: 1.3;
+    text-decoration: none;
+    transition: background-color 0.2s var(--ease);
+}
+
+.xp-hint:hover {
+    background: #f1f0ec;
+}
+
+.xp-hint .xp-go {
+    color: #8a8780;
+}
+
+.xp-hint:hover .xp-go {
+    color: #0d0d0d;
+    transform: translate(2px, -2px);
+}
+
+/* ======================= dark palette (.xp-dark) ======================= */
+body.deck.explore.xp-dark {
+    background: #0a0a0a;
+    color: #fff;
+}
+
+body.explore.xp-dark .nav::before {
+    background: rgba(10, 10, 10, 0.72);
+}
+
+body.explore.xp-dark .nav-mark:not(.is-short) .wm-i,
+body.explore.xp-dark .nav-mark:not(.is-short) .wm-r {
+    color: #fff;
+}
+
+body.explore.xp-dark .nav-links .pill {
+    background: #fff;
+    border-color: #fff;
+    color: #0a0a0a;
+}
+
+body.explore.xp-dark .xp-title {
+    color: #fff;
+}
+
+/* search pill: white when resting, a ghost field when open */
+body.explore.xp-dark .xp-search {
+    background: #fff;
+    border-color: #fff;
+    color: #0a0a0a;
+}
+
+body.explore.xp-dark .xp-search.is-open {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.45);
+    color: #fff;
+}
+
+body.explore.xp-dark .xp-input::placeholder {
+    color: #8f8c85;
+}
+
+/* selected text in the dark search field (the default selection colour is dark-on-dark) */
+body.explore.xp-dark ::selection {
+    background: #f7d89b;
+    color: #0a0a0a;
+}
+
+body.explore.xp-dark .xp-clear {
+    color: #bdbab2;
+}
+
+body.explore.xp-dark .xp-clear:hover {
+    color: #fff;
+}
+
+/* results */
+body.explore.xp-dark .xp-results {
+    background: #141414;
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow: none;
+}
+
+body.explore.xp-dark .xp-row {
+    color: #fff;
+}
+
+body.explore.xp-dark .xp-row:hover,
+body.explore.xp-dark .xp-row.is-active {
+    background: #232323;
+}
+
+body.explore.xp-dark .xp-row-cat,
+body.explore.xp-dark .xp-hints-title {
+    color: #8f8c85;
+}
+
+body.explore.xp-dark .xp-empty-title,
+body.explore.xp-dark .xp-empty-msg {
+    color: #fff;
+}
+
+body.explore.xp-dark .xp-empty-sub {
+    color: #8f8c85;
+}
+
+body.explore.xp-dark .xp-chip {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+}
+
+body.explore.xp-dark .xp-chip:hover {
+    background: #fff;
+    border-color: #fff;
+    color: #0a0a0a;
+}
+
+/* hints */
+body.explore.xp-dark .xp-hint {
+    border-top-color: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
+body.explore.xp-dark .xp-hint:hover {
+    background: #181818;
+}
+
+body.explore.xp-dark .xp-hint .xp-go {
+    color: #8f8c85;
+}
+
+body.explore.xp-dark .xp-hint:hover .xp-go {
+    color: #fff;
+}
+
+/* category boxes */
+body.explore.xp-dark .xp-box {
+    background: #0a0a0a;
+    border-color: #fff;
+    color: #fff;
+}
+
+body.explore.xp-dark .xp-box-desc {
+    color: #9a978f;
+}
+
+/* box hover colours (one of six pastels, chosen by the script) - after the dark rules so they win */
+body.explore .xp-box:hover,
+body.explore .xp-box:focus-visible {
+    background: var(--hbg, #f7d89b);
+    border-color: var(--hbg, #f7d89b);
+    color: var(--hfg, #14120d);
+}
+
+body.explore .xp-box:hover .xp-box-desc,
+body.explore .xp-box:focus-visible .xp-box-desc {
+    color: var(--hdesc, #5f5a4e);
+}
+
+/* promoted */
+body.explore.xp-dark .xp-promo {
+    background: #161616;
+}
+
+body.explore.xp-dark .xp-promo-title {
+    color: #8f8c85;
+}
+
+body.explore.xp-dark .xp-promo-link {
+    color: #fff;
+}
+
+body.explore.xp-dark .xp-promo-link:hover,
+body.explore.xp-dark .xp-promo-link:focus-visible {
+    background: #fff;
+    color: #0a0a0a;
+}
+
+/* a category in full */
+body.explore.xp-dark .xp-back {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+}
+
+body.explore.xp-dark .xp-back:hover {
+    background: #fff;
+    border-color: #fff;
+    color: #0a0a0a;
+}
+
+body.explore.xp-dark .xp-view-title {
+    color: #fff;
+}
+
+body.explore.xp-dark .xp-view-desc {
+    color: #9a978f;
+}
+
+body.explore.xp-dark .xp-view-count {
+    color: #8f8c85;
+}
+
+body.explore.xp-dark .xp-filter {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #bdbab2;
+}
+
+body.explore.xp-dark .xp-filter:focus-within {
+    border-color: #fff;
+    color: #fff;
+}
+
+body.explore.xp-dark .xp-filter input {
+    color: #fff;
+}
+
+body.explore.xp-dark .xp-view-list {
+    border-top-color: rgba(255, 255, 255, 0.18);
+    scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+}
+
+body.explore.xp-dark .xp-view-list li {
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+body.explore.xp-dark .xp-view-list a {
+    color: #fff;
+}
+
+body.explore.xp-dark .xp-go {
+    color: #8f8c85;
+}
+
+body.explore.xp-dark .xp-view-list a:hover .xp-go {
+    color: #fff;
+}
+
+body.explore.xp-dark .xp-view-empty {
+    color: #9a978f;
+}
+
+/* ---------- category view: List / Tiles switch, sub-category groups, tiles ---------- */
+.xp-modes {
+    display: inline-flex;
+    gap: 0.2rem;
+    margin-top: 1.25rem;
+    padding: 0.2rem;
+    border: 1px solid rgba(13, 13, 13, 0.18);
+    border-radius: 999px;
+}
+
+.xp-mode {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    color: #6f6c65;
+    transition: background-color 0.25s var(--ease), color 0.25s var(--ease);
+}
+
+.xp-mode:hover {
+    color: #0d0d0d;
+}
+
+.xp-mode.is-on {
+    background: #0d0d0d;
+    color: #fff;
+}
+
+.xp-group + .xp-group {
+    margin-top: clamp(3rem, 8vh, 4.75rem);
+}
+
+.xp-group-head {
+    padding-bottom: 0.7rem;
+}
+
+.xp-group-title {
+    font-family: var(--font-sans);
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: #0d0d0d;
+}
+
+.xp-group-desc {
+    max-width: 60ch;
+    margin-top: 0.35rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: #6f6c65;
+}
+
+.xp-view-list .xp-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid rgba(13, 13, 13, 0.14);
+}
+
+/* Tiles: two columns, as many rows as there are items, each a random pastel */
+.xp-tiles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.xp-view-list .xp-tile {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.9rem;
+    min-height: 6.75rem;
+    padding: 1rem 1.1rem;
+    border-radius: 1rem;
+    background: var(--tile, #f7d89b);
+    color: #14120d;
+    font-size: 0.98rem;
+    font-weight: 500;
+    line-height: 1.3;
+    text-decoration: none;
+    transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.xp-view-list .xp-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 28px -18px rgba(20, 18, 13, 0.45);
+}
+
+.xp-tile .xp-item-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.xp-tile .xp-go {
+    align-self: flex-end;
+    color: rgba(20, 18, 13, 0.55);
+}
+
+.xp-view-list .xp-tile:hover .xp-go {
+    color: #14120d;
+    transform: translate(2px, -2px);
+}
+
+@media (max-width: 900px) {
+    .xp-tiles {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* ---------- explore: search mode fits the window ----------
+The search page is exactly one window tall: heading and field keep their size, the suggestion box
+takes whatever height is left and scrolls inside itself, so the field you type in is never pushed
+out of view. Everything is sized from the window height, so short windows get smaller type. */
+.xp-hero > * {
+    flex-shrink: 0;
+}
+
+body.explore.is-searching .xp-hero {
+    height: 100%;
+    min-height: 0;
+    padding-top: clamp(0.75rem, 5vh, 5rem);
+}
+
+body.explore.is-searching .xp-title {
+    font-size: clamp(2rem, min(6vw, 10vh), 4.5rem);
+}
+
+body.explore.is-searching .xp-search {
+    height: clamp(2.7rem, 6.5vh, 3.6rem);
+    margin-top: clamp(0.75rem, 2.5vh, 2.75rem);
+}
+
+body.explore.is-searching .xp-results {
+    flex: 0 1 auto;
+    min-height: 0;
+    margin-top: clamp(0.5rem, 1.8vh, 1rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+body.explore.is-searching .xp-hints {
+    margin-top: clamp(0.75rem, 2.5vh, 1.75rem);
+}
+
+body.explore.is-searching .xp-row {
+    padding: clamp(0.4rem, 1.2vh, 0.7rem) 0.95rem;
+}
+
+body.explore.is-searching .xp-row-title {
+    font-size: clamp(0.88rem, 2.1vh, 1rem);
+}
+
+body.explore.is-searching .xp-row-cat {
+    font-size: clamp(0.6rem, 1.4vh, 0.68rem);
+}
+
+body.explore.is-searching .xp-empty-title {
+    font-size: clamp(1.5rem, 5vh, 2.7rem);
+}
+
+/* narrow windows: the page may scroll, but the field stays on top and the list is capped */
+@media (max-width: 900px) {
+    body.explore.is-searching .xp-hero {
+        height: auto;
+        min-height: calc(100vh - var(--nav-h));
+    }
+    body.explore.is-searching .xp-results {
+        max-height: 60vh;
+    }
+}
+
+/* ---------- first page: the intro line sits in the middle of the space between the panel's top edge
+and the contacts (the contacts themselves stay where they were) ---------- */
+@media (min-width: 701px) {
+    .hero-slide:first-child {
+        justify-content: center;
+        padding-bottom: 0;
+        /* the stage ends a margin above the contacts; reach down past it (and a little for the
+        text's own spacing) so the intro is centred between the panel top and the contacts */
+        bottom: calc(-1 * (clamp(0.6rem, calc(var(--ph) * 0.03), var(--space-5)) + 0.4rem));
+    }
+}
+
+/* the small "Edit this site" link at the very end of the welcome page (opens Pages CMS) */
+.cms-link {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(0.9rem, 3vh, 1.75rem);
+    transform: translateX(-50%);
+    padding: 0.45rem 1rem;
+    border: 1px solid rgba(13, 13, 13, 0.25);
+    border-radius: 999px;
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #3a3935;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.cms-link[hidden] { display: none; }
+.cms-link:hover,
+.cms-link:focus-visible {
+    background: #0d0d0d;
+    border-color: #0d0d0d;
+    color: #fff;
+}

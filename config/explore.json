@@ -1,0 +1,173 @@
+{
+  "_help": [
+    "Everything on the explore page comes from this file.",
+    "Search matches every item's title across all categories (fuzzy: letters in order, close together).",
+    "Every link opens in a new tab.",
+    "promoted: a few hand-picked direct links, {title, items:[{label, link}]}. They scroll in the Promoted box at the bottom of the page, and the very same links are the 'Try' list shown when search is opened (they disappear once a letter is typed). Leave items empty to hide both. hints-title is the small heading above the 'Try' list.",
+    "categories: shown as boxes in this order. Each has id, title, description (the sub line) and groups. A group is a sub-category: {title, description?, items:[{title, link}]}. Add as many groups as you like in any category (e.g. 'Claude certifications', 'AWS certifications', 'ML generals'); both the List and Tiles views keep the groups apart under their own headings. A category may instead have a flat 'items' list (no sub-categories)."
+  ],
+  "title": "Explore",
+  "hints-title": "Try",
+  "promoted": {
+    "title": "Promoted",
+    "items": [
+      {
+        "label": "Claude 101: The Foundation to CCA-F",
+        "link": "https://medium.com/@akshat.mistry/claude-101-the-foundation-to-cca-f-7d4243e42d45"
+      },
+      {
+        "label": "CCAR-P practice questions",
+        "link": "illustration/ccar-p/index.html"
+      },
+      {
+        "label": "Byte-Pair Encoding, simulated",
+        "link": "illustration/machine-learning/bpe-tokenization-simulator/index.html"
+      },
+      {
+        "label": "Eigenvectors, explained",
+        "link": "illustration/eigens/eigenvalue-and-eigenvector/index.html"
+      }
+    ]
+  },
+  "categories": [
+    {
+      "id": "articles",
+      "title": "Articles",
+      "description": "Essays on machine learning and AI engineering, published on Medium and LinkedIn.",
+      "groups": [
+        {
+          "title": "CCAR-F Study Series",
+          "items": [
+            {
+              "title": "Claude 101: The Foundation to CCA-F",
+              "link": "https://medium.com/@akshat.mistry/claude-101-the-foundation-to-cca-f-7d4243e42d45"
+            },
+            {
+              "title": "Part-II | The Seven 'stop_reason' Values",
+              "link": "https://medium.com/@akshat.mistry/part-ii-the-seven-stop-reason-values-b0626f486d1b"
+            },
+            {
+              "title": "Part III | 'tool_use', End to End: The Agentic Loop in Three Iterations",
+              "link": "https://medium.com/@akshat.mistry/tool-use-end-to-end-the-agentic-loop-in-three-iterations-87cde7765dfc"
+            },
+            {
+              "title": "Part IV | Multi-Agent Coordination: The Hub-and-Spoke Architecture",
+              "link": "https://medium.com/@akshat.mistry/part-iv-multi-agent-coordination-the-hub-and-spoke-architecture-529ad62d10c7"
+            },
+            {
+              "title": "Part V | Multi-Step Workflows: Enforcement and Handoff Patterns",
+              "link": "https://medium.com/@akshat.mistry/part-v-multi-step-workflows-enforcement-and-handoff-patterns-106f676d799f"
+            },
+            {
+              "title": "Part VI | Session State, Resumption, and Forking",
+              "link": "https://medium.com/@akshat.mistry/part-vi-session-state-resumption-and-forking-3ff40f4d48d9"
+            },
+            {
+              "title": "Part VII | Tool Design and MCP Integration",
+              "link": "https://medium.com/@akshat.mistry/part-vii-tool-design-and-mcp-integration-cf0147c91146"
+            },
+            {
+              "title": "Part VIII | Claude Code Configuration & Workflows",
+              "link": "https://medium.com/@akshat.mistry/part-viii-cca-f-domain-3-claude-code-configuration-workflows-91959a6f5dd1"
+            }
+          ]
+        },
+        {
+          "title": "Machine Learning Units",
+          "items": [
+            {
+              "title": "The Artificial Neuron: A Field Guide",
+              "link": "https://medium.com/@akshat.mistry/the-artificial-neuron-a-field-guide-354a45612744"
+            }
+          ]
+        },
+        {
+          "title": "From Text to Learned Representations",
+          "items": [
+            {
+              "title": "Overview | Part-1 | From Words to Vectors",
+              "link": "https://medium.com/@akshat.mistry/from-words-to-vectors-a905d8ff07f5"
+            },
+            {
+              "title": "Overview | Part-2 | ELMo, Functionally Explained",
+              "link": "https://medium.com/@akshat.mistry/elmo-functionally-explained-0becc59ff40d"
+            },
+            {
+              "title": "DeepDive | Part-3 | Byte-Pair Encoding (BPE) Tokenizers",
+              "link": "https://medium.com/@akshat.mistry/byte-pair-encoding-bpe-tokenizers-c6f0813e6a61"
+            },
+            {
+              "title": "DeepDive | Part-4 | Token IDs Are Labels: Why One-Hot Encoding Removes False Geometry",
+              "link": "https://medium.com/@akshat.mistry/token-ids-are-labels-why-one-hot-encoding-removes-false-geometry-855f7e78072e"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "open-questionnaires",
+      "title": "Open-Questionnaires",
+      "description": "Free, publicly available sample questions, gathered for certification preparation.",
+      "groups": [
+        {
+          "title": "Certifications",
+          "items": [
+            {
+              "title": "Claude Certified Associate - Foundations (CCAO-F) | Complete Coverage",
+              "link": "illustration/ccao-f/index.html"
+            },
+            {
+              "title": "Claude Certified Developer - Foundations (CCDV-F) | Complete Coverage",
+              "link": "illustration/ccdv-f/index.html"
+            },
+            {
+              "title": "Claude Certified Architect - Foundations (CCAR-F) | Domain 3 Coverage",
+              "link": "illustration/ccar-f/domain-3/index.html"
+            },
+            {
+              "title": "Claude Certified Architect - PROFESSIONAL (CCAR-P) | Complete Coverage",
+              "link": "illustration/ccar-p/index.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "illustrations",
+      "title": "Illustrations",
+      "description": "Interactive aids for the articles, and illustrations that stand on their own.",
+      "groups": [
+        {
+          "title": "Machine Learning Fundamentals",
+          "items": [
+            {
+              "title": "How Two Neurons Solve the XOR Problem",
+              "link": "illustration/machine-learning/how-two-neurons-solve-xor-problem/index.html"
+            },
+            {
+              "title": "Byte-Pair-Encoding (BPE) Tokenization - Training + Encoding Simulator",
+              "link": "illustration/machine-learning/bpe-tokenization-simulator/index.html"
+            }
+          ]
+        },
+        {
+          "title": "Eigen's",
+          "items": [
+            {
+              "title": "Quick Article",
+              "link": "illustration/eigens/eigenvalue-and-eigenvector/index.html"
+            },
+            {
+              "title": "Eigenvectors of a Projection Matrix",
+              "link": "illustration/eigens/eigenvalue-and-eigenvector/index.html#simulation"
+            },
+            {
+              "title": "Eigenvectors on a Quadric Surface",
+              "link": "illustration/eigens/eigenvalue-and-eigenvector/index.html#simulation2"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

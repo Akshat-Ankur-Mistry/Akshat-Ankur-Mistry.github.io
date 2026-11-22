@@ -2,57 +2,87 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- fixed 1280px-wide layout: phones show the desktop view, scaled to fit, not a reflowed mobile layout -->
+  <meta name="viewport" content="width=1280" />
   <title>Akshat Mistry</title>
   <meta name="description" content="Software engineer writing about how machines learn to represent meaning." />
-  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="assets/site.css?v=20261123d" />
   <script>
     document.documentElement.classList.add('js');
   </script>
 </head>
-<body>
+<body class="deck">
 <header class="nav">
   <div class="nav-inner container">
-    <a class="nav-mark" href="index.html">Akshatmistry.</a>
-    <nav class="nav-links" aria-label="Primary">
-      <a href="explore.html">His Writing</a>
-      <button type="button" data-open-about>About Him</button>
-    </nav>
+    <a class="nav-mark" href="index.html" data-wordmark data-name="Mistry Akshat Ankur"><span class="wm" aria-hidden="true"></span></a>
+    <nav class="nav-links" id="nav-links" aria-label="Primary"></nav>
   </div>
 </header>
 
 <main>
+  <!-- .hero-pin is taller than the screen; the hero sticks inside it while the
+       page scrolls, and scroll position picks the slide (see site.js). -->
+  <div class="hero-pin">
   <section class="hero-wrap container">
     <div class="hero-panel">
       <div class="hero-copy">
-        <h1 class="hero-headline reveal" id="profile-headline"></h1>
-        <div class="hero-contacts reveal" id="hero-contacts">
-          <button type="button" class="contact-link" id="hero-contact-email" data-copy-email>Email</button>
-          <span class="contact-sep" aria-hidden="true"> - </span>
-          <a class="contact-link" id="hero-contact-linkedin" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-          <span class="contact-sep" aria-hidden="true"> - </span>
-          <a class="contact-link" id="hero-contact-medium" target="_blank" rel="noopener noreferrer">Medium</a>
+        <!-- The stage is the clipped window the slides move through: scrolling
+             pushes the current slide up past the panel's top edge, then the next
+             one rises in. Contacts below stay put. -->
+        <div class="hero-stage" id="hero-stage">
+          <section class="hero-slide is-active" data-slide>
+            <h1 class="hero-headline reveal" id="profile-headline"></h1>
+          </section>
+          <section class="hero-slide" data-slide aria-hidden="true">
+            <p class="slide-lead" id="s2-primary"></p>
+            <a class="slide-link pill pill-arrow" id="s2-button" href="#"></a>
+          </section>
         </div>
+        <div class="hero-contacts reveal" id="hero-contacts"></div>
       </div>
 
       <div class="hero-figure">
         <div class="portrait-shadow">
           <div class="portrait-frame">
-            <img id="profile-portrait" alt="Portrait" />
+            <img id="profile-portrait" alt="" />
           </div>
         </div>
       </div>
     </div>
   </section>
-
-  <section class="series-wrap container" id="series">
-    <a class="series-title" href="#series-root">Explore His Work</a>
-    <div class="series-grid" id="series-root"></div>
-  </section>
+  </div>
 </main>
+
+<!-- Step dots (fixed, right edge) and the empty grey page the last step lands on. -->
+<div class="hero-dots" id="hero-dots" aria-label="Page steps"></div>
+<div class="next-page" id="next-page" aria-hidden="true">
+  <div class="next-inner">
+    <div class="next-head">
+      <p class="next-eyebrow" id="s4-pre"></p>
+      <h2 class="next-title" id="s4-primary"></h2>
+    </div>
+    <div class="target-cards" id="target-cards"></div>
+  </div>
+  <!-- opens Pages CMS (config/homepage.json -> site.cms); hidden when no link is set -->
+  <a class="cms-link" id="cms-link" href="#" target="_blank" rel="noopener noreferrer" hidden></a>
+</div>
+
+<!-- Full-screen black certifications stage: fades in over the whole page while
+     the scroll position is inside the pinned stretch (see site.js), and
+     fades out when the page moves on. -->
+<div class="cert-stage" id="cert-stage" aria-hidden="true">
+  <div class="cert-head">
+    <p class="cert-eyebrow" id="s3-pre"></p>
+    <h2 class="cert-title" id="s3-primary"></h2>
+    <p class="cert-count" id="cert-count-line"></p>
+  </div>
+  <div class="cert-marquee">
+    <ul class="cert-track" id="cert-track"></ul>
+  </div>
+</div>
 
 <div class="about-modal-backdrop" id="about-modal-backdrop" hidden>
   <div class="about-modal-panel" role="dialog" aria-modal="true" aria-labelledby="about-modal-name">
@@ -61,21 +91,27 @@
         <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round" />
       </svg>
     </button>
-    <p class="about-modal-name" id="about-modal-name">Akshatmistry.</p>
+    <p class="about-modal-name" id="about-modal-name"></p>
     <div class="about-modal-scroll">
       <div id="about-modal-body"></div>
-      <div class="about-modal-contacts">
-        <button type="button" class="contact-link" id="about-contact-email" data-copy-email>Email</button>
-        <span class="contact-sep" aria-hidden="true"> - </span>
-        <a class="contact-link" id="about-contact-linkedin" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-        <span class="contact-sep" aria-hidden="true"> - </span>
-        <a class="contact-link" id="about-contact-medium" target="_blank" rel="noopener noreferrer">Medium</a>
-      </div>
+      <div class="about-modal-contacts" id="about-contacts"></div>
     </div>
   </div>
 </div>
 
-<script src="script.js"></script>
-<script src="content.js"></script>
+<!-- Popup listing one provider's certifications (name + dates), opened from the summary line -->
+<div class="cert-modal-backdrop" id="cert-modal" hidden>
+  <div class="cert-modal-panel" role="dialog" aria-modal="true" aria-labelledby="cert-modal-title">
+    <button type="button" class="cert-modal-close" id="cert-modal-close" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M6 6l12 12M18 6 6 18" stroke-linecap="round" />
+      </svg>
+    </button>
+    <h3 class="cert-modal-title" id="cert-modal-title"></h3>
+    <ul class="cert-modal-list" id="cert-modal-list"></ul>
+  </div>
+</div>
+
+<script src="assets/site.js?v=20261123d"></script>
 </body>
 </html>

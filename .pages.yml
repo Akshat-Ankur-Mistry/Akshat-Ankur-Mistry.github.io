@@ -1,0 +1,171 @@
+# Pages CMS configuration (https://pagescms.org) - edits are committed to this repository through
+# your GitHub login, and GitHub Pages republishes the site.
+#
+# Two files drive the whole site:
+#   config/homepage.json  -> index.html  (welcome page)
+#   config/explore.json   -> explore.html (explore page)
+# Colour coding in text: wrap words in *stars*, e.g. "His *Target.*"; write /* for a literal star.
+
+media:
+  - name: badges
+    label: Certification badges
+    input: config/badges
+    output: config/badges
+    extensions: [png, jpg, jpeg, webp, svg]
+  # New interactive pages: make a sub-folder (e.g. machine-learning/my-simulator) and upload its
+  # index.html (plus any css/js/images it uses). Link to it from the Explore page as
+  # illustration/<folder>/index.html.
+  - name: illustration
+    label: Illustrations (interactive pages)
+    input: illustration
+    output: illustration
+    extensions: [html, css, js, json, png, jpg, jpeg, webp, svg, gif]
+  - name: assets
+    label: Site images
+    input: assets
+    output: assets
+    extensions: [png, jpg, jpeg, webp, svg]
+
+content:
+  # ------------------------------------------------------------------ welcome page
+  - name: homepage
+    label: Welcome page
+    type: file
+    path: config/homepage.json
+    format: json
+    fields:
+      - name: site
+        label: Site
+        type: object
+        fields:
+          - { name: title, label: Browser tab title, type: string }
+          - name: logo
+            label: Logo (full name - the short form is made from first letters)
+            type: string
+          - name: cms
+            label: Edit button on the last page (empty link = hidden)
+            type: object
+            fields:
+              - { name: label, label: Label, type: string }
+              - { name: link, label: Link to your Pages CMS, type: string, required: false }
+          - name: nav
+            label: Top-bar buttons
+            type: object
+            list: true
+            fields:
+              - { name: label, label: Label, type: string }
+              - { name: link, label: Page to open (e.g. explore.html), type: string, required: false }
+              - { name: action, label: Action (type "about" to open the About popup), type: string, required: false }
+      - name: screens
+        label: Screens
+        type: object
+        fields:
+          - name: screen-1
+            label: Screen 1 - Intro
+            type: object
+            fields:
+              - { name: photo, label: Photo path, type: string }
+              - { name: photo-alt, label: Photo description, type: string }
+              - { name: primary, label: Intro line (*stars* = coloured and clickable name), type: text }
+              - name: contacts
+                label: Contacts
+                type: object
+                list: true
+                fields:
+                  - { name: key, label: Name, type: string }
+                  - { name: value, label: E-mail or link, type: string }
+              - name: about-him
+                label: About popup
+                type: object
+                fields:
+                  - { name: title, label: Title, type: string }
+                  - { name: paragraphs, label: Paragraphs, type: text, list: true }
+          - name: screen-2
+            label: Screen 2 - Writing
+            type: object
+            fields:
+              - { name: primary, label: Text, type: text }
+              - name: secondary-button
+                label: Button
+                type: object
+                fields:
+                  - { name: label, label: Label, type: string }
+                  - { name: link, label: Link, type: string }
+          - name: screen-3
+            label: Screen 3 - Certifications
+            type: object
+            fields:
+              - { name: pre-primary, label: Small heading, type: string }
+              - { name: primary, label: Heading (*stars* = coloured), type: string }
+              - { name: badge-folder, label: Badge folder, type: string }
+              - name: certifications
+                label: Certifications
+                type: object
+                list: true
+                fields:
+                  - { name: provider, label: Provider (e.g. Anthropic, AWS), type: string }
+                  - { name: name, label: Name, type: string }
+                  - { name: badge, label: Badge file name in the badge folder (empty = text-only), type: string, required: false }
+                  - { name: from, label: From (e.g. Nov 2026), type: string }
+                  - { name: to, label: To (e.g. Nov 2027), type: string }
+                  - { name: url, label: Link (optional), type: string, required: false }
+          - name: screen-4
+            label: Screen 4 - Target
+            type: object
+            fields:
+              - { name: pre-primary, label: Small heading, type: string }
+              - { name: primary, label: Heading (*stars* = coloured), type: string }
+              - { name: start-label, label: Date caption, type: string }
+              - name: cards
+                label: Target certifications (at most 2 are shown)
+                type: object
+                list: true
+                fields:
+                  - { name: provider, label: Provider, type: string }
+                  - { name: title, label: Title, type: string }
+                  - { name: subtitle, label: Code, type: string }
+                  - { name: start, label: Preparation start, type: string }
+
+  # ------------------------------------------------------------------ explore page
+  - name: explore
+    label: Explore page
+    type: file
+    path: config/explore.json
+    format: json
+    fields:
+      - { name: title, label: Big heading, type: string }
+      - { name: hints-title, label: Heading above the search suggestions, type: string }
+      - name: promoted
+        label: Promoted (also the search suggestions)
+        type: object
+        fields:
+          - { name: title, label: Heading, type: string }
+          - name: items
+            label: Links
+            type: object
+            list: true
+            fields:
+              - { name: label, label: Title, type: string }
+              - { name: link, label: Link, type: string }
+      - name: categories
+        label: Categories
+        type: object
+        list: true
+        fields:
+          - { name: id, label: Id (short, lowercase, used in the page address), type: string }
+          - { name: title, label: Title, type: string }
+          - { name: description, label: Description, type: text }
+          - name: groups
+            label: Sub-categories
+            type: object
+            list: true
+            fields:
+              - { name: title, label: Sub-category name, type: string }
+              - { name: description, label: Description (optional), type: string, required: false }
+              - name: items
+                label: Items
+                type: object
+                list: true
+                fields:
+                  - { name: title, label: Title, type: string }
+                  - { name: link, label: Link, type: string }

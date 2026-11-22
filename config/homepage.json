@@ -1,0 +1,130 @@
+{
+  "_help": [
+    "Everything on the welcome page comes from this file. Edit it and reload; no code changes needed.",
+    "COLOUR CODING: wrap text in *stars* to colour it, e.g. \"His *certifications.*\". It only shows where the screen supports it (screen-1 primary, screen-3 primary, screen-4 primary, the about text); everywhere else the stars are simply dropped.",
+    "LITERAL STAR: write /* or \\\\* (in JSON a backslash must be doubled) to print a real asterisk, e.g. \"5 /* rated\".",
+    "ESCAPES: normal JSON escapes work in any text: \\n new line (kept in the about text), \\\" quote, \\\\ backslash, \\u00e9 unicode.",
+    "site.logo: the full name, words separated by spaces. The monogram is made from each word's first letter (Mistry Akshat Ankur -> MAA.).",
+    "site.nav: buttons in the top bar. {label, link} opens a page; {label, action: 'about'} opens the About popup.",
+    "screen-1.contacts: [{key, value}]. An e-mail address (or mailto:) copies to the clipboard on click; any other value is a link. Shown on the panel and in the About popup.",
+    "screen-3 summary line (e.g. '4 Anthropic certifications + 1 AWS certification') is built automatically: one group per provider found in certifications, in the order they first appear, joined with ' + '. The count is how many certifications share that provider; click a provider to list them. There is nothing to configure.",
+    "screen-3.certifications: {provider, name, badge, from, to, url?}. badge is a file name inside screen-3.badge-folder (config/badges/) (leave empty for a text-only badge).",
+    "screen-4.cards: at most 2 are used. {provider, title, subtitle, start}. One card is centred, two sit side by side."
+  ],
+  "site": {
+    "title": "Akshat Mistry",
+    "logo": "Mistry Akshat Ankur",
+    "cms": {
+      "label": "Edit this site",
+      "link": "https://app.pagescms.org/Akshat-Ankur-Mistry/Akshat-Ankur-Mistry.github.io/main"
+    },
+    "nav": [
+      {
+        "label": "Explore His Content",
+        "link": "explore.html"
+      },
+      {
+        "label": "About Him",
+        "action": "about"
+      }
+    ]
+  },
+  "screens": {
+    "screen-1": {
+      "photo": "assets/portrait.png",
+      "photo-alt": "Portrait of Akshat Mistry",
+      "primary": "*Akshat Mistry* is a Software Engineer at Deloitte (US-India) and pursuing M.Tech from IIIT Dharwad",
+      "contacts": [
+        {
+          "key": "Email",
+          "value": "akshatankur2002@gmail.com"
+        },
+        {
+          "key": "LinkedIn",
+          "value": "https://www.linkedin.com/in/akshat-mistry-0b2a8528b"
+        },
+        {
+          "key": "Medium",
+          "value": "https://medium.com/@akshat.mistry"
+        }
+      ],
+      "about-him": {
+        "title": "Akshatmistry.",
+        "paragraphs": [
+          "Akshat is a curious, kind, and passionate learner who brings depth, creativity, and clarity to everything he takes on. His work is shaped by a strong desire to understand ideas deeply, connect them meaningfully, and share them in a way that feels simple, thoughtful, and useful.",
+          "His series, 'Prakriti', 'Nazarya', and 'Sankhya', reflect this spirit of learning. Each piece shows how he builds on concepts with care, looks beneath the surface, and turns complex thoughts into well-structured insights. For Akshat, learning is not passive. He learns best by teaching, explaining, and translating ideas into plain language until they become clear enough for others to connect with.",
+          "He also believes in keeping things simple. Akshat prefers to think in a practical, uncomplicated way: understand the options, choose a feasible path, and move forward with focus. This approach helps him stay grounded, especially when he is managing multiple responsibilities at once.",
+          "Akshat is comfortable handling parallel priorities without losing focus or follow-through. Within 10 days, he completed 2 Anthropic's professional certifications while balancing academic examinations, project submissions, and daily sprint responsibilities at work. He is also working toward a third certification, reflecting his discipline, adaptability, and ability to stay consistent across different areas of responsibility.",
+          "In client-facing environments, Akshat brings confidence, clarity, and strong communication. He is able to present ideas effectively, structure his thoughts well, and share his point of view in a way that is easy to follow. He communicates with both efficiency and warmth, making him comfortable in professional settings where clarity and presence matter.",
+          "Beyond his work, Akshat brings creativity and humour into everyday moments. He has a way of making ordinary things more interesting and adding a thoughtful, unexpected twist to what he creates. He is also someone who shows up during testing times, offers reassurance, and helps people around him feel that they can move forward.",
+          "And yes, Akshat actually loves to cook. For him, it is another way to create, care, and make ordinary moments feel a little more special."
+        ]
+      }
+    },
+    "screen-2": {
+      "primary": "He writes on Medium and LinkedIn bi-weekly.",
+      "secondary-button": {
+        "label": "Explore his content",
+        "link": "explore.html"
+      }
+    },
+    "screen-3": {
+      "pre-primary": "Credentials",
+      "primary": "His *certifications.*",
+      "badge-folder": "config/badges/",
+      "certifications": [
+        {
+          "provider": "Anthropic",
+          "name": "1. Claude Certified Architect - Professional",
+          "badge": "ccar-p.png",
+          "from": "Nov 2026",
+          "to": "Nov 2027",
+          "url": ""
+        },
+		{
+          "provider": "Anthropic",
+          "name": "2. Claude Certified Architect - Foundations",
+          "badge": "ccar-f.png",
+          "from": "Aug 2026",
+          "to": "Aug 2027",
+          "url": ""
+        },
+        {
+          "provider": "Anthropic",
+          "name": "3. Claude Certified Developer - Foundations",
+          "badge": "ccdv-f.png",
+          "from": "Oct 2026",
+          "to": "Oct 2027",
+          "url": ""
+        },
+        {
+          "provider": "Anthropic",
+          "name": "4. Claude Certified Associate - Foundations",
+          "badge": "ccao-f.png",
+          "from": "Aug 2026",
+          "to": "Aug 2027",
+          "url": ""
+        }
+      ]
+    },
+    "screen-4": {
+      "pre-primary": "What’s next",
+      "primary": "His *Target.*",
+      "start-label": "Preparation started",
+      "cards": [
+        {
+          "provider": "AWS",
+          "title": "AWS Certified AI Practitioner",
+          "subtitle": "AIF-C01",
+          "start": "Early Nov, 2026"
+        },
+        {
+          "provider": "Anthropic",
+          "title": "Claude Certified Developer - Professional",
+          "subtitle": "CCDV-P",
+          "start": "Mid Nov, 2026"
+        }
+      ]
+    }
+  }
+}
